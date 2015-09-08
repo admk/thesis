@@ -1,0 +1,77 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The IEEE 754 standard~\cite{ieee754} for floating-point computation is
+ubiquitous in computing machines. In practice, it is often neglected that
+floating-point computations almost always have roundoff errors. In fact,
+associativity and distributivity properties which we consider to be fundamental
+laws of real numbers no longer hold under floating-point arithmetic. This opens
+the possibility of using these rules to generate an expression equivalent to
+the original expression in real arithmetic, which could have better quality
+than the original when evaluated in floating point computation.
+
+By exploiting rules of equivalence in arithmetic, such as associativity $(a
++ b) + c \equiv a + (b + c)$ and distributivity $(a + b) \times c \equiv a
+\times c + b \times c$, it is possible to automatically generate different
+implementations of the same arithmetic expression. We optimize the structures
+of arithmetic expressions in terms of the following two quality metrics
+relevant to FPGA implementation: the resource usage when synthesized into
+circuits, and a bound on roundoff errors when evaluated. Our goal is the joint
+minimization of these two quality metrics. This optimization process provides
+a Pareto optimal set of implementations. For example, our tool discovered that
+with single precision floating-point representation, if $a \in [0.1, 0.2]$,
+then the expression ${(a + 1)}^2$ uses fewest resources when implemented in the
+form $(a + 1) \times (a + 1)$ but most accurate when expanded into $(((a \times
+a) + a) + a) + 1$. However it turns out that a third alternative, $((1 + a)
++ a) + (a \times a)$, is never desirable because it is neither more accurate
+nor uses fewer resources than the other two possible structures. Our aim is to
+automatically detect and utilize such information to optimize the structure of
+expressions.
+
+A na{\"\i}ve implementation of equivalent expression finding would be to
+explore all possible equivalent expressions to find optimal choices, However
+this would result in combinatorial explosion~\cite{ioualalen}. For instance,
+in worst case, the parsing of a simple summation of $n$ variables could
+result in $(2n - 1)!! = 1\times3\times5\times\cdots\times(2n - 1)$ distinct
+expressions~\cite{ioualalen, mouilleron}. This is further complicated by
+distributivity as ${(a + b)}^k$ could expand into an expression with a
+summation of $2^k$ terms each with $k - 1$ multiplications. Therefore, usually
+it would be infeasible to generate a complete set of equivalent expressions
+using the rules of equivalence, since an expression with a moderate number of
+terms will have a very large number of equivalent expressions. The methodology
+explained in this paper makes use of formal semantics as well as abstract
+interpretation~\cite{cousot77} to significantly reduce the space and time
+requirements and produce a subset of the Pareto frontier.
+
+In order to further increase the options available in the Pareto frontier,
+we introduce freedom in choosing mantissa widths for the evaluation of the
+expressions. Generally as the precision of the evaluation increases, the
+utilization of resources increases for the same expression. This gives
+flexibility in the trade-off between resource usage and precision. Our
+approach and its associated tool, SOAP, allow high-level synthesis flows to
+automatically determine whether it is a better choice to rewrite an expression,
+or change its precision in order to meet optimization goals.
+
+The three contributions of this paper are:
+\begin{enumerate}
+    \item Efficient methods for discovering equivalent structures of
+    arithmetic expressions.
+    \item A semantics-based program analysis that allows joint reasoning about
+    the resource usage and safe ranges of values and errors in floating-point
+    computation of arithmetic expressions.
+    \item A tool which produces RTL implementations on the area-accuracy
+    trade-off curve derived from structural optimization.
+\end{enumerate}
+
+This paper is structured as follows. Section~\ref{sec:related_work}
+discusses related existing work in high-level synthesis and the
+optimization of arithmetic expressions. We explain the basic
+concepts of semantics with abstract interpretation used in this
+paper in Section~\ref{sec:abstract_interpretation}. Using this,
+Section~\ref{sec:semantics} explains the concrete and abstract semantics
+for finding equivalent structure in arithmetic expressions, as well as
+the analysis of their resource usage estimates and bounds of errors.
+Section~\ref{sec:implementation} gives an overview of the implementation
+details in our tool. Then we discuss the results of optimized example
+expressions in Section~\ref{sec:results} and end with concluding remarks in
+Section~\ref{sec:conclusion}.

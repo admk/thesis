@@ -1,0 +1,38 @@
+\input{stropt/preamble}
+
+\begin{document}
+
+\begin{abstract}
+    This paper introduces SOAP, a new tool to automatically optimize the
+structure of arithmetic expressions for FPGA implementation as part of a
+high level synthesis flow, taking into account axiomatic rules derived
+from real arithmetic, such as distributivity, associativity and others. We
+explicitly target an optimized area/accuracy trade-off, allowing arithmetic
+expressions to be automatically re-written for this purpose. For the first
+time, we bring rigorous approaches from software static analysis, specifically
+formal semantics and abstract interpretation, to bear on source-to-source
+transformation for high-level synthesis. New abstract semantics are developed
+to generate a computable subset of equivalent expressions from an original
+expression. Using formal semantics, we calculate two objectives, the accuracy
+of computation and an estimate of resource utilization in FPGA\@. The
+optimization of these objectives produces a Pareto frontier consisting of a
+set of expressions. This gives the synthesis tool the flexibility to choose
+an implementation satisfying constraints on both accuracy and resource
+usage. We thus go beyond existing literature by not only optimizing the
+precision requirements of an implementation, but changing the structure of the
+implementation itself. Using our tool to optimize the structure of a variety of
+real world and artificially generated examples in single precision, we improve
+either their accuracy or the resource utilization by up to 60\%.
+\end{abstract}
+
+\input{stropt/introduction}
+\input{stropt/related_work}
+\input{stropt/abstract_interpretation}
+\input{stropt/semantics}
+\input{stropt/implementation}
+\input{stropt/results}
+\input{stropt/conclusion}
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv, stropt/references}
+
+\end{document}

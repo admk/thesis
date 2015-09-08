@@ -1,0 +1,131 @@
+\section{Program Syntax}
+
+We define a simple programming language, ONEVAR, which allows only one variable
+$\texttt{x}$ and the following sets:
+\newcommand{\realset}{\ensuremath\mathbb{R}}
+\newcommand{\opset}{\ensuremath\mathbf{OP}}
+\begin{IEEEeqnarray*}{rClCl}
+    n    &\in& \realset &\quad& \text{constants} \\
+    op_a &\in& \opset_a &\quad& \opset_a = \{ +, -, * \} \\
+    op_b &\in& \opset_b &\quad& \opset_b = \{ =, \neq, <, >, \leq, \geq \}
+\end{IEEEeqnarray*}
+
+ONEVAR has the following BNF style abstract syntax definition:
+\newcommand{\baror}{\ensuremath ~ | ~}
+\begin{IEEEeqnarray*}{rCl}
+    a &::=& \texttt{x}
+     \baror n
+     \baror a_1 ~ op_a ~ a_2 \\
+    b &::=& \texttt{true}
+     \baror \texttt{false}
+     \baror \texttt{not} ~ b
+     \baror \texttt{x} ~ op_r ~ n \\
+    S &::=& \texttt{x} := a
+     \baror \texttt{skip}
+     \baror S_1; S_2 \baror \\
+    ~ & ~ & \texttt{if} ~ b ~ \texttt{then} ~ S_1 ~ \texttt{else} ~ S_2
+     \baror \texttt{while} ~ b ~ \texttt{do} ~ S
+\end{IEEEeqnarray*}
+
+\section{Galois}
+
+In fact, the abstract interpretation was employed in the above-mentioned
+analysis, where it concerns only some certain property of the program, in this
+case, a computable safe bound of the variable $\varx$.
+
+The correctness of interval analysis in place of real analysis lies in the
+following relation between each other:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCll}
+        \alpha(r) &=& \left[ \min(r), \max(r) \right]
+             &\text{~for~} r \in \powersetof\realset \\
+        \gamma(i) &=& \left\{ r \in \realset ~|~ r \in i \right\}
+             &\text{~for~} i \in \intervalset \\
+        &~& \text{and~}
+            \alpha(r) \sqsubseteq i \text{~iff~} r \subseteq \gamma(i)
+    \end{IEEEeqnarraybox}
+\end{equation}
+
+In abstract interpretation frameworks, the functions $\alpha:
+\powersetof\realset \to \intervalset$ and $\gamma: \intervalset \to
+\powersetof\realset$ are respectively the abstraction function and the
+concretisation function. The relationship between $\powersetof\realset$ and
+$\intervalset$ with these two functions is known as a Galois connection, often
+written as follows:
+\begin{equation}
+    \lattice{\powersetof\realset}{\subseteq}
+    \galois{\alpha}{\gamma}
+    \lattice{\intervalset}{\sqsubseteq}
+\end{equation}
+
+Because of undecidability, the interval analysis may not terminate for
+languages with loops, to overcome this one may resort to a finite lattice or
+widening/narrowing operators~\cite{basic_absint}. In our method the expressions
+are with no control flows and the analysis is guaranteed to terminate.
+
+Let $\intervalset$ denote the set of intervals in the reals. It is clear that
+$\intervalset$ is a complete lattice~\cite{nielson}, with the join and meet
+rules in \eqref{eq:interval_operations}, as well as the partial order relation
+in \eqref{eq:interval_order}. The complete lattice has the least element $\bot
+= \varnothing$, as well as the greatest element $\top = \left[ -\infty, \infty
+\right]$.
+\begin{equation}
+    \interval{a}{b} \sqsubseteq \interval{c}{d}
+    \text{~iff~}
+    a \geq c \wedge b \leq d
+    \label{eq:interval_order}
+\end{equation}
+
+\section{FloPoCo}
+
+For the area estimation of expressions, FloPoCo~\cite{flopoco} was used to
+generate implementations of adders/subtracters and multipliers, then we used
+Xilinx Synthesis Technology (XST)~\cite{xst} to estimate the number of LUTs
+required in a Virtex-6 FPGA device (XC6VLX760) for these operators.
+
+
+\section{Extensions}
+\label{sub:extensions}
+
+\subsection{Simultaneous Optimization of Multiple Expressions}
+
+To simultaneously optimize multiple expressions, we introduce a new operator
+for expressions, the barrier operator $\mid$. Multiple expressions are
+concatenated using the barrier operator, for instance, the expressions $e_1$
+and $e_2$ concatenate to form a new expression $e$:
+\begin{equation}
+    e = e_1 \mid e_2
+\end{equation}
+The barrier operator has no rules of equivalence, this disallows any transforms
+across the expressions. For a single expression, the quality of accuracy
+is determined by its round-off error. However when evaluating multiple
+expressions there are choices of determining the overall accuracy. There are
+two reasons for this~\cite{martel09}: perhaps only a user-defined subset of the
+expressions that computes the final results concerns the user, and the other
+one is that we may wish to minimize either the $L^1$-norm, the $L^2$-norm, or
+the $L^\infty$-norm of the errors. We implemented our tool to minimize the
+$L^\infty$-norm of all expressions by defining the following semantics for the
+barrier operator:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        (x^\sharp_1, \mu^\sharp_1) \mid (x^\sharp_2, \mu^\sharp_2)
+    &=& (x^\sharp_1 \join x^\sharp_2, \mu^\sharp_1 \join \mu^\sharp_2), \\
+    \text{where~} [a, b] \join [c, d] &=& [\min(a, c), \max(b, d)]
+    \end{IEEEeqnarraybox}
+\end{equation}
+Then the multi-objective optimization techniques can be performed as normal by
+concatenating multiple expressions into a single expression.
+
+\subsection{Variation of Precisions}
+
+We extend the Pareto frontier by allowing mantissa widths of expression
+evaluation to vary. Initially, we compute equivalent expressions using the
+methods outlined above, using single-precision floating point computations,
+since we expect the Pareto frontier to be of similar shape under any mantissa
+widths. Then each mantissa width ranging from 10 to 113 bits provides a context
+in which derived expressions are evaluated for accuracy and area. Finally all
+expressions with different mantissa widths are provided to form a single Pareto
+frontier. In this process we calculate ranges of all intermediate variables
+and results of the expressions, and use them to assign a minimum exponent
+width necessary for the expressions. The widths are incorporated in the
+estimation of area usage.

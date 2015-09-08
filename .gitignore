@@ -1,3 +1,11 @@
+## Mac
+
+.DS_Store
+
+## Scons
+
+.sconsign.dblite
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

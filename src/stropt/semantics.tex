@@ -1,0 +1,472 @@
+\section{Novel Semantics}
+\label{sec:semantics}
+
+\subsection{Accuracy Analysis}
+
+We first introduce the concepts of the floating-point
+representation~\cite{ieee754}. Any values $v$ representable in floating-point
+with standard exponent offset can be expressed with the format given by the
+following equation:
+\begin{equation}
+    v = s \times 2^{e + 2^{k - 1} - 1} \times 1.{m_1 m_2 m_3 \ldots m_p}
+    \label{eq:floating_point}
+\end{equation}
+In \eqref{eq:floating_point}, the bit $s$ is the sign bit, the $k$-bit unsigned
+integer $e$ is known as the exponent bits, and the $p$-bits $m_1 m_2 m_3
+\ldots m_p$ are the mantissa bits, here we use $1.{m_1 m_2 m_3 \ldots m_p}$ to
+indicate a fixed-point number represented in unsigned binary format.
+
+Because of the finite characteristic of IEEE 754 floating-point format, it
+is not always possible to represent exact values with it. Computations in
+floating-point arithmetic often induces roundoff errors. Therefore, following
+Martel~\cite{martel07}, we bound with ranges the values of floating-point
+calculations, as well as their roundoff errors. Our accuracy analysis
+determines the bounds of all possible outputs and their associated range
+of roundoff errors for expressions. For example, assume that $a \in [0.2,
+0.3]$, $b \in [2.3, 2.4]$, it is possible to derive that in single precision
+floating-point computation with rounding to the nearest, ${(a + b)}^2 \in
+[6.24999857, 7.29000187]$ and the error caused by this computation is bounded
+by $[-1.60634534\times10^{-6}, 1.60634534\times10^{-6}]$.
+
+We employ abstract error semantics for the calculation of errors described
+in~\cite{ioualalen, martel07}. First we define the domain $\errorset
+= \floatintervalset\times\intervalset$, where $\intervalset$ and
+$\floatintervalset$ respectively represent the set of real intervals, and
+the set of floating-point intervals (intervals exactly representable in
+floating-point arithmetic). The value $(x^\sharp, \mu^\sharp) \in \errorset$
+represents a safe bound on floating-point values and the accumulated error
+represented as a range of real values. Then addition and multiplication can be
+defined for the semantics as in \eqref{eq:error_semantics}:
+\begin{equation}
+    \begin{aligned}
+        (x^\sharp_1, \mu^\sharp_1) + (x^\sharp_2, \mu^\sharp_2)
+    &=  (\roundup(x^\sharp_1 + x^\sharp_2),
+         \mu^\sharp_1 + \mu^\sharp_2 +
+         \rounddown(x^\sharp_1 + x^\sharp_2)) \\
+        (x^\sharp_1, \mu^\sharp_1) - (x^\sharp_2, \mu^\sharp_2)
+    &=  (\roundup(x^\sharp_1 - x^\sharp_2),
+         \mu^\sharp_1 - \mu^\sharp_2 +
+         \rounddown(x^\sharp_1 - x^\sharp_2)) \\
+        (x^\sharp_1, \mu^\sharp_1) \times (x^\sharp_2, \mu^\sharp_2)
+    &=  (\roundup(x^\sharp_1 \times x^\sharp_2), \\
+    \noalign{\quad $
+        x^\sharp_1 \times \mu^\sharp_2 + x^\sharp_2 \times \mu^\sharp_1 +
+        \mu^\sharp_1 \times \mu^\sharp_2 +
+        \rounddown(x^\sharp_1 \times x^\sharp_2))$}
+    &\qquad\text{~for~} (x^\sharp_1, \mu^\sharp_1) \in \errorset,
+                        (x^\sharp_2, \mu^\sharp_2) \in \errorset
+    \end{aligned}
+    \label{eq:error_semantics}
+\end{equation}
+
+The addition, subtraction and multiplication of intervals follow the standard
+rules of interval arithmetic defined earlier in \eqref{eq:interval_operations}.
+In \eqref{eq:error_semantics}, the function $\rounddown: \intervalset \to
+\intervalset$ determines the range of roundoff error due to the floating-point
+computation under one of the rounding modes $\circ \in \{ -\infty, \infty, 0,
+\neg0, \sim \}$ which are round towards negative infinity, towards infinity,
+towards zero, away from zero and towards nearest floating-point value
+respectively. For instance, $\downarrow^\sharp_\sim([a, b]) = [-z, z]$, where
+$z = \max(ulp(a), ulp(b)) / 2$, which denotes the maximum rounding error that
+can occur for values within the range $[a, b]$, and the unit of the last place
+(ulp) function $ulp(x)$~\cite{muller} characterizes the distance between two
+adjacent floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
+f_2$~\cite{goldberg}. In our analysis, the function $ulp$ is defined as:
+\begin{equation}
+    ulp(x) = 2^{e(x) + 2^{k - 1} - 1} \times 2^{-p}
+\end{equation}
+where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
+floating-point format as defined in \eqref{eq:floating_point}. The function
+$\roundup: \intervalset \to \floatintervalset$ computes the floating-point
+bound from a real bound, by rounding the infimum $a$ and supremum $b$ of the
+input interval $[a, b]$.
+
+Expressions can be evaluated for their accuracy by the method as follows.
+Initially the expression is parsed into a data flow graph (DFG). By way of
+illustration, the sample expression ${(a + b)}^2$ has the tree structure
+in Fig.~\ref{fig:sample_tree}. Then the exact ranges of values of $a$ and
+$b$ are converted into the abstract semantics using a cast operation as in
+\eqref{eq:cast}:
+\begin{equation}
+    cast(x^\sharp) = (\roundup(x^\sharp), \rounddown(x^\sharp))
+    \label{eq:cast}
+\end{equation}
+
+For example, for the variable $a \in [0.2, 0.3]$ under single precision
+with rounding to nearest, $cast([0.2, 0.3]) = ([0.200000003, 0.300000012],
+[-1/67108864, 1/67108864])$.
+
+After this, the propagation of bounds in the data flow graph is carried out as
+described in Section~\ref{sec:abstract_interpretation}, where the difference is
+the abstract error semantics defined in \eqref{eq:error_semantics} is used in
+lieu of the interval semantics. At the root of the tree (\ie~the exit of the
+DFG) we find the value of the accuracy analysis result for the expression.
+
+In this paper, the function $\error: \exprset\to\errorset$ is used to represent
+the analysis of evaluation accuracy, where $\exprset$ denotes the set of all
+expressions.
+
+\subsection{Resource Usage Analysis}
+
+Here we define similar formal semantics which calculate an approximation to the
+FPGA resource usage of an expression, taking into account common subexpression
+elimination. This is important as, for example, rewriting $a \times b + a
+\times c$ as $a \times (b + c)$ in the larger expression $(a \times b + a
+\times c) + {(a \times b)}^2$ causes the common subexpression $a \times b$ to
+be no longer present in both terms. Our analysis must capture this.
+
+The analysis proceeds by labelling subexpressions. Intuitively, the set of
+labels $\labelset$, is used to assign unique labels to unique expressions,
+so it is possible to easily identify and reuse them. For convenience, let
+the function $\fresh: \exprset\to\labelset$ assign a distinct label to each
+expression or variable, where $\exprset$ is the set of all expressions. Before
+we introduce the labeling semantics, we define the environment $\lambda:
+\labelset\to\exprset\cup\{\bot\}$, which is a function that maps labels to
+expressions, and $\env{}$ denotes the set of such environments. A label $l$ in
+the domain of $\lambda\in\env{}$ that maps to $\bot$ indicates that $l$ does
+not map to an expression. An element $(l, \lambda)\in\labelset\times\env{}$
+stands for the labeling scheme of an expression. Initially, we map all labels
+to $\bot$, then in the mapping $\lambda$, each leaf of an expression is
+assigned a unique label, and the unique label $l$ is used to identify the leaf.
+That is for the leaf variable or constant $x$:
+\begin{equation}
+    (l, \lambda) = (\fresh(x), [\fresh(x)\mapsto{x}])
+\end{equation}
+This equation uses $[\fresh(x)\mapsto{x}]$ to indicate an environment that
+maps the label $\fresh(x)$ to the expression $x$ and all other labels map
+to $\bot$, in other words, if $l = \fresh(x)$ and $l^\prime \neq l$, then
+$\lambda(l) = x$ and $\lambda(l^\prime) = \bot$. For example, for the DFG in
+Fig.~\ref{fig:sample_tree}, we have for the variables $a$ and $b$:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        (l_a, \lambda_a) &=& (\fresh(a), [\fresh(a)\mapsto{a}])
+                   = (l_1, [l_1 \mapsto a]) \\
+        (l_b, \lambda_b) &=& (l_2, [l_2 \mapsto b])
+    \end{IEEEeqnarraybox}
+    \label{eq:variable_env}
+\end{equation}
+Then the environments are propagated in the flow direction of the DFG, using
+the following formulation of the labeling semantics:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        (l_x, \lambda_x) \circ (l_y, \lambda_y)
+            &=& (l, (\lambda_x\odot\lambda_y)
+                      [l\mapsto{l_x \circ l_y}]) \\
+            \text{where~} l &=& \fresh(l_x \circ l_y),
+                          \circ\in\{+, -, \times\}
+    \end{IEEEeqnarraybox}
+    \label{eq:labeling_semantics}
+\end{equation}
+Specifically, $\lambda=\lambda_x\odot\lambda_y$ signifies that $\lambda_y$
+is used to update the mapping in $\lambda_x$, if the mapping does not
+exist in $\lambda_x$, and result in a new environment $\lambda$; and
+$\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.
+As an example, with the expression in Fig.~\ref{fig:sample_tree}, using
+\eqref{eq:variable_env}, recall to mind that $l_1 = l_a$, $l_2 = l_b$, we
+derive for the subexpression $a + b$:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        (l_{a + b}, \lambda_{a + b})
+            &=& (l_a, \lambda_a) + (l_b, \lambda_b) \\
+            &=& (l_3, (\lambda_a \odot \lambda_b) [l_3\mapsto{l_a + l_b}]) \\
+            & & \text{where~} l_3 = \fresh(l_a + l_b) \\
+            &=& (l_3, [l_1\mapsto{a}]\odot
+                      [l_2\mapsto{b}]\odot
+                      [l_3\mapsto{l_1 + l_2}]) \\
+            &=& (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
+    \end{IEEEeqnarraybox}
+\end{equation}
+Finally, for the full expression $(a + b) \times (a + b)$:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        (l, \lambda)
+            &=& (l_{a + b}, \lambda_{a + b}) \times
+                (l_{a + b}, \lambda_{a + b}) \\
+            &=& (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
+                      l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}])
+    \end{IEEEeqnarraybox}
+\end{equation}
+From the above derivation, it is clear that the semantics capture the reuse
+of subexpressions. The estimation of area is performed by counting, for an
+expression, the numbers of additions, subtractions and multiplications in
+the final labeling environment, then calculating the number of LUTs used to
+synthesize the expression. If the number of operators is $n_\circ$ where
+$\circ\in\{+,-,\times\}$, then the number of LUTs in total for the expressions
+is estimated as $\sum_{\circ\in\{+,-,\times\}} A_\circ n_\circ$, where the
+value $A_\circ$ denotes the number of LUTs per $\circ$ operator, which is
+dependent on the type of the operator and the floating-point format used to
+generate the operator.
+
+In the following sections, we use the function $\area: \exprset\to\naturalset$
+to denote our resource usage analysis.
+
+\subsection{Equivalent Expressions Analysis}
+\label{sub:equivalent_expressions_analysis}
+
+In earlier sections, we introduce semantics that define additions and
+multiplications on intervals, then gradually transition to error semantics that
+compute bounds of values and errors, as well as labelling environments that
+allows common subexpression elimination, by defining arithmetic operations on
+these structures. In this section, we now take the leap from not only analyzing
+an expression for its quality, to defining arithmetic operations on sets of
+equivalent expressions, and use these rules to discover equivalent expressions.
+Before this, it is necessary to formally define equivalent expressions and
+functions to discover them.
+
+\subsubsection{Discovering Equivalent Expressions}
+
+From an expression, a set of equivalent expressions can be discovered by
+the following inference system of equivalence relations $\eqrel \subset
+\exprset\times\exprset$. Let's define $e_1, e_2, e_3 \in \exprset$, $v_1, v_2,
+v_3 \in \realset$, and $\circ \in \{+, \times\}$. First, the arithmetic rules
+are:
+\begin{equation*}
+    \begin{IEEEeqnarraybox}{rCl}
+        \text{Associativity}(\circ)
+            &:& (e_1 \circ e_2) \circ e_3 \eqrel e_1 \circ (e_2 \circ e_3) \\
+        \text{Commutativity}(\circ)
+            &:& e_1 \circ e_2 \eqrel e_2 \circ e_1 \\
+        \text{Distributivity}
+            &:& e_1 \times (e_2 + e_3) \eqrel e_1 \times e_2 + e_1 \times e_3 \\
+        \text{Distributivity}^\prime
+            &:& e_1 \times e_2 + e_1 \times e_3 \eqrel e_1 \times (e_2 + e_3)
+    \end{IEEEeqnarraybox}
+\end{equation*}
+Secondly, the reduction rules are:
+\begin{equation*}
+    \begin{IEEEeqnarraybox}{rClCrCl}
+        \text{Identity($\times$)}
+            &:& e_1 \times 1 \eqrel e_1 & \quad &
+        \text{ZeroProp}
+            &:& e_1 \times 0 \eqrel 0 \\
+        \text{Identity($+$)}
+            &:& e_1 + 0 \eqrel e_1 & &
+        \text{ConstProp}(\circ)
+            &:& \inference{v_3 = v_1 \circ v_2}{v_1 \circ v_2 \eqrel v_3}
+    \end{IEEEeqnarraybox}
+\end{equation*}
+The ConstProp rule states that if an expression is a summation/multiplication
+of two values, then it can be simply evaluated to produce the result. Finally,
+the following one allows structural induction on expression trees, \ie~it is
+possible to derive that $a + (b + c) \eqrel a + (c + b)$ from $b + c \eqrel c +
+b$:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        \text{Tree}(\circ)
+            &:& \inference{e_1 \eqrel e_2}{e_3 \circ e_1 \eqrel e_3 \circ e_2}
+    \end{IEEEeqnarraybox}
+    \label{eq:equivalence_inference}
+\end{equation}
+It is possible to transform the structure of expressions using these
+above-mentioned inference rules. We define the function $\eqstep:
+\powersetof\exprset\to\powersetof\exprset$, where $\powersetof\exprset$
+denotes the power set of $\exprset$, which generates a (possibly larger)
+set of equivalent expressions from an initial set of equivalent expressions
+by one step of (\ref{eq:equivalence_inference}), \ie~$\eqstep(\epsilon) =
+\{e^\prime\in\exprset \mid e \eqrel e^\prime \wedge e\in\epsilon\}$, where
+$\epsilon$ is a set of equivalent expressions. From this, we may note that
+the set of equivalent expressions generated by taking the union of any
+number of steps of \eqref{eq:equivalence_inference} of $\epsilon$ is the
+transitive closure $\eqstep^\star(\epsilon)$, as given by the following
+formula, where $\eqstep^i(\epsilon) = \eqstep(\eqstep^{i - 1}(\epsilon))$ and
+$\eqstep^0(\epsilon) = \epsilon$:
+\begin{equation}
+    \eqstep^\star(\epsilon) = \bigcup_{i = 0}^\infty \eqstep^i(\epsilon)
+    \label{eq:transitive_closure}
+\end{equation}
+We say that $e_1$ is equivalent to $e_2$ if and only if $e_1 \in
+\eqstep^\star(\{e\})$ and $e_2 \in \eqstep^\star(\{e\})$ for some expression
+$e$. In general because of combinatorial explosion, it is not possible to
+derive the full set of equivalent expressions by rules of equivalence, which
+motivates us to develop scalable methods that executes fast enough even with
+large expressions.
+
+\subsubsection{Scalable Methods}
+
+The complexity of equivalent expression finding is reduced by fixing the
+structure of subexpressions at a certain depth $k$ in the original expression.
+The definition of depth is given as follows: first the root of the parse
+tree of an expression is assigned depth $d = 1$; then we recursively define
+the depth of a node as one more than the depth of its greatest-depth parent.
+If the depth of the node is greater than $k$, then we fix the structure of
+its child nodes by disallowing any equivalence transformation beyond this
+node. We let $\eqstep_k$ denote this ``depth limited'' equivalence finding
+function, where $k$ is the depth limit used, and $\eqstep^\star_k$ denotes
+its transitive closure. This approach is similar to Martel's depth limited
+equivalent expression transform~\cite{martel07}, however Martel's method
+eventually allows transformation of subexpressions beyond the depth limit,
+because rules of equivalence would transform these to have a smaller depth.
+This contributes to a time complexity at least exponential in terms of the
+expression size. In contrast, our technique has a time complexity that does not
+depend on the size of the input expression, but grows with respect to the depth
+limit $k$. Note that the full equivalence closure using the inference system we
+defined earlier in \eqref{eq:transitive_closure} is at least $O({2n - 1}!!)$
+where $n$ is the number of terms in an expression, as we discussed earlier.
+
+\subsubsection{Pareto Frontier}
+
+Because we optimize expressions in two quality metrics, \ie~the accuracy of
+computation and the estimate of FPGA resource utilization. We desire the
+largest subset of all equivalent expressions $E$ discovered such that in this
+subset, no expression dominates any other expression, in terms of having both
+better area and better accuracy. This subset is known as the Pareto frontier.
+Fig.~\ref{alg:pareto} shows a na\"ive algorithm for calculating the Pareto
+frontier for a set of equivalent expressions $\epsilon$.
+\begin{figure}[ht]
+    \centering
+    \begin{algorithmic}
+        \Function{Frontier}{$\epsilon$}
+            \State{$e_1, e_2, \ldots, e_n
+                \gets \mathtt{sort\_by\_accuracy}(\epsilon)$}
+            \State{$e \gets e_1$; $\mathit{frontier} \gets \{e\}$}
+            \For{$i \in \{1, 2, \ldots, n\}$}
+                \If{$\area(e_i) < \area(e)$}
+                    \State{$\mathit{frontier}
+                        \gets \mathit{frontier} \cup \{e_i\}$; $e \gets e_i$}
+                \EndIf%
+            \EndFor%
+            \State{\Return{$\mathit{frontier}$}}
+        \EndFunction%
+    \end{algorithmic}
+    \caption{The Pareto frontier from a set of equivalent expressions.
+    }\label{alg:pareto}
+\end{figure} \\
+The function $\mathtt{sort\_by\_accuracy}$ sorts a set of expressions by their
+analyzed bounds of errors in increasing order, where the magnitudes of error
+bounds are used to perform the ordering~\cite{martel07}:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        \abserr(e) &=& \max(\abs(\mu^\sharp_{\min}),
+                            \abs(\mu^\sharp_{\max})) \\
+                   & & \text{where~}
+                       (x^\sharp, [\mu^\sharp_{\min}, \mu^\sharp_{\max}])
+                     = \error(e)
+    \end{IEEEeqnarraybox}
+\end{equation}
+
+\subsubsection{Equivalent Expressions Semantics}
+
+Similar to the analysis of accuracy and resource usage, a set of equivalent
+expressions can be computed with semantics. That is, we define structures,
+\ie~sets of equivalent expressions, that can be manipulated with arithmetic
+operators. In our equivalent expressions semantics, an element of
+$\powersetof\exprset$ is used to assign a set of expressions to each node
+in an expression parse tree. To begin with, at each leaf of the tree, the
+variable or constant is assigned a set containing itself, as for $x$, the set
+$\epsilon_x$ of equivalent expressions is $\epsilon_x = \{x\}$. After this, we
+propagate the equivalence expressions in the parse tree's direction of flow,
+using \eqref{eq:equivalence_semantics}, where $E_\circ(\epsilon_x, \epsilon_y)
+= \{ e_x \circ e_y \mid e_x \in \epsilon_x \wedge e_y \in \epsilon_y \}$, and
+$\circ\in\{+, -, \times\}$:
+\begin{equation}
+      \epsilon_x \circ \epsilon_y
+    = \frontier\left(
+        \eqstep^\star_k \left(
+             E_\circ(\epsilon_x, \epsilon_y)
+        \right)
+      \right)
+    \label{eq:equivalence_semantics}
+\end{equation}
+The equation implies that in the propagation procedure, it recursively
+constructs a set of equivalent subexpressions for the parent node from
+two child expressions, and uses the depth limited equivalence function
+$\eqstep^\star_k$ to work out a larger set of equivalent expressions. To reduce
+computation effort, we select only those expressions on the Pareto frontier
+for the propagation in the DFG\@. Although in worst case the complexity of
+this process is exponential, the selection by Pareto optimality accelerates
+the algorithm significantly. For example, for the subexpression $a + b$ of our
+sample expression:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+        \epsilon_a + \epsilon_b
+            &=& \frontier\left(
+                    \eqstep^\star_k \left(
+                        E_\circ(\epsilon_a, \epsilon_b)
+                    \right)
+                \right) \\
+            &=& \frontier\left(
+                    \eqstep^\star_k \left(
+                        E_\circ(\{a\}, \{b\})
+                    \right)
+                \right) \\
+            &=& \frontier\left(
+                    \{ a + b, b + a \}
+                \right)
+    \end{IEEEeqnarraybox}
+\end{equation}
+Alternatively, we could view the semantics in terms of DFGs representing
+the algorithm for finding equivalent expressions. The parsing of an
+expression directly determines the structure of its DFG\@. For instance,
+the expression $(a + b) \times (a + b)$ generates the DFG illustrated in
+Fig.~\ref{fig:tree_expr_flow}. The circles labeled $3$ and $7$ in this diagram
+are shorthands for the operation $E_+$ and $E_\times$ respectively, where $E_+$
+and $E_\times$ is defined in \eqref{eq:equivalence_semantics}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.4, trim=0 20pt 0 20pt]{tree_expr_flow}
+    \caption{The DFG for finding equivalent expressions of
+    $(a + b) \times (a + b)$.}\label{fig:tree_expr_flow}
+\end{figure}
+
+For our example in Fig.~\ref{fig:tree_expr_flow}, similar to the construction
+of data flow equations in Section~\ref{sec:abstract_interpretation}, we can
+produce a set of equations from the data flow of the DFG, which now produces
+equivalent expressions:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rClCrCl}
+        \enter{1} &=& \enter{1} \cup \{a\} &~&
+        \enter{2} &=& \enter{2} \cup \{b\} \\
+        \enter{3} &=& E_+(\enter{1}, \enter{2}) &~&
+        \enter{4} &=& \enter{3} \cup \enter{5} \\
+        \enter{5} &=& \eqstep_k(\enter{4}) &~&
+        \enter{6} &=& \frontier(\enter{5}) \\
+        \enter{7} &=& E_\times(\enter{6}, \enter{6}) &~&
+        \enter{8} &=& \enter{7} \cup \enter{9} \\
+        \enter{9} &=& \eqstep_k(\enter{8}) &~&
+        \enter{10} &=& \frontier(\enter{9})
+    \end{IEEEeqnarraybox}
+    \label{eq:tree_expr_flow}
+\end{equation}
+Because of loops in the DFG, it is no longer trivial to find the solution.
+In general, the analysis equations are solved iteratively. We can
+regard the set of equations as a single transfer function $F$ as in
+\eqref{eq:transfer_function}, where the function $F$ takes as input the
+variables $A(1), \ldots, A(10)$ appearing in the right-hand sides of
+\eqref{eq:tree_expr_flow} and outputs the values $A(1), \ldots, A(10)$
+appearing in the left-hand sides. Our aim is then to find an input $\vec{x}$ to
+$F$ such that $F(\vec{x}) = \vec{x}$, \ie~a fixpoint of $F$.
+\begin{equation}
+      F((\enter{1}, \ldots, \enter{10}))
+    = (\enter{1} \cup \{a\}, \ldots, \frontier(\enter{9}))
+    \label{eq:transfer_function}
+\end{equation}
+Initially we assign $\enter{i} = \varnothing$ for $i\in\{1,2,\ldots,10\}$,
+and we denote $\vec\varnothing = (\varnothing, \cdots, \varnothing)$.
+Then we compute iteratively $F(\vec\varnothing)$, $F^2(\vec\varnothing)
+= F(F(\vec\varnothing))$, and so forth, until the fixpoint
+solution $F^n(\vec\varnothing)$ is reached for some iteration
+$n$, \ie~$F^n(\vec\varnothing) = F(F^n(\vec\varnothing)) = F^{n +
+1}(\vec\varnothing)$. The fixpoint solution $F^n(\vec\varnothing)$ gives
+a set of equivalent expressions derived using our method, which is found
+at $\enter{10}$. In essence, the depth limit acts as a sliding window.
+The semantics allow hierarchical transformation of subexpressions using a
+depth-limited search and the propagation of a set of subexpressions that are
+locally Pareto optimal to the parent expressions in a bottom-up hierarchy.
+
+The problem with the semantics above is that the time complexity of
+$\eqstep^\star_k$ scales poorly, since the worst case number of subexpressions
+needed to explore increases exponentially with $k$. Therefore an alternative
+method is to optimize it by changing the structure of the DFG slightly, as
+shown in Fig.~\ref{fig:tree_expr_flow_greedy}. The difference is that at each
+iteration, the Pareto frontier filters the results to decrease the number of
+expressions to process for the next iteration.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.4, trim=0 20pt 0 20pt]{tree_expr_flow_greedy}
+    \caption{The alternative DFG for $(a + b) \times (a + b)$.
+    }\label{fig:tree_expr_flow_greedy}
+\end{figure}
+
+In the rest of this paper, we use \frontiertrace{} to indicate our equivalent
+expression finding semantics, and \greedytrace{} to represent the alternative
+method.

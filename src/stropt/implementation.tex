@@ -1,0 +1,27 @@
+\section{Implementation}
+\label{sec:implementation}
+
+The majority of our tool, SOAP, is implemented in Python. For computing
+errors in real arithmetic, we use exact arithmetic based on rational numbers
+within the GNU Multiple Precision Arithmetic Library (GMP)~\cite{gmp}. We
+also use the multi-precision floating-point library MPFR~\cite{mpfr} for
+access to floating-point rounding modes and arbitrary precision floating-point
+computation.
+
+Because of the workload of equivalent expression finding, the underlying
+algorithm is optimized in many ways. First, for each iteration, the relation
+finding function $\eqstep_k$ is only applied to newly discovered expressions
+in the previous iteration. Secondly, results of functions such as $\eqstep_k$,
+$\area$ and $\error$ are cached, since there is a large chance that these
+results from subexpressions are reused several times, subexpressions are also
+maximally shared to eliminate duplication in memory. Thirdly, the computation
+of $\eqstep_k$ is fully multithreaded.
+
+The resource statistics of operators are provided using FloPoCo~\cite{flopoco}
+and Xilinx Synthesis Technology (XST)~\cite{xst}. Initially, For each
+combination of an operator, an exponent width between 5 and 16, and a mantissa
+width ranging from 10 to 113, 2496 distinct implementations are generated
+using FloPoCo. All of them are optimized to use DSP blocks. They are then
+synthesized using XST, targeting a Virtex-6 FPGA device (XC6VLX760). Because
+LUTs are generally more contrained resources than DSP blocks in floating-point
+computations, we provide synthesis statistics in LUTs only.

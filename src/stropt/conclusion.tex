@@ -1,0 +1,34 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We provide a formal approach to the optimization of arithmetic expressions
+for both accuracy and resource usage in high-level synthesis. Our method and
+the associated tool, SOAP, encompass three kind of semantics that describe
+the accumulated roundoff errors, count operators in expressions considering
+common subexpression elimination, and derive equivalent expressions. For a
+set of input expressions, the proposed approach works out the respective
+sets of equivalent expressions in a hierarchical bottom-up fashion, with a
+windowing depth limit and Pareto selection to help reduce the complexity of
+equivalent expression discovery. Using our tool, we improve either the accuracy
+of our sample expressions or the resource utilization by up to 60\%, over the
+originals under single precision. Our tool enables a high-level synthesis tool
+to optimize the structure as well as the precision of arithmetic expressions,
+then to automatically choose an implementation that satisfies accuracy and
+resource usage constraints.
+
+We believe that it is possible to extend our tool for the multi-objective
+optimization of arithmetic expressions in the following ways. First,
+because of the semantics nature of our approach, it provides the necessary
+foundation which permits us to extend the method for general numerical program
+transformation in high-level synthesis. Secondly, it would be useful to further
+allow transformations of expressions while allowing different mantissa widths
+in the subexpressions, this further increases the number options in the Pareto
+frontier, as well as leads to more optimized expressions. Thirdly, as an
+alternative for interval analysis, we could employ more sophisticated abstract
+domains that capture the correlations between variables, and produce tighter
+bounds for results. Finally, there could be a lot of interest in the HLS
+community on how our tool can be incorporated with Martin Langhammer's work on
+fused floating-point datapath synthesis~\cite{langhammer}.
+
+In the future, after we extend our method and SOAP with general numerical
+program transform, we will make the tool available to the HLS community.

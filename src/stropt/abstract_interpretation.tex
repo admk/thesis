@@ -1,0 +1,72 @@
+\section{Abstract Interpretation}
+\label{sec:abstract_interpretation}
+
+This section introduces the basic concepts of formal semantics and abstract
+interpretation used in this paper. We illustrate these concepts by putting the
+familiar idea of interval arithmetic~\cite{moore} in the framework of abstract
+interpretation. This is then further extended later in the paper to define a
+scalable analysis capturing ranges, errors and resource utilization. As an
+illustration, consider the following expression and its DFG\@:
+\begin{equation}
+    (a + b) \times (a + b)
+    \label{eq:absint_sample}
+\end{equation}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.4, trim=0pt 20pt 0pt 25pt]{sample_tree}
+    \caption{The DFG for the sample program.}\label{fig:sample_tree}
+\end{figure}%
+We may wish to ask: if initially $a$ and $b$ are real numbers in the range of
+$[0.2, 0.3]$ and $[2, 3]$ respectively, what would be the outcome of evaluating
+this expression with real arithmetic? A straightforward approach is simulation.
+Evaluating the expression for a large quantity of inputs will produce a set
+of possible outputs of the expression. However the simulation approach is
+unsafe, since there are infinite number of real-valued inputs possible and
+it is infeasible to simulate for all. A better method might be to represent
+the possible values of $a$ and $b$ using ranges. To compute the ranges of its
+output values, we could operate on ranges rather than values (note that the
+superscript $\sharp$ denotes ranges). Assume that $a^\sharp_{init} = [0.2,
+0.3]$, $b^\sharp_{init} = [2, 3]$, which are the input ranges of $a$ and $b$,
+and $\enter{l}$ where $l \in \{1, 2, 3, 4\}$ are the intervals of the outputs
+of the boxes labelled with $l$ in the DFG\@. We extract the data flow from the
+DFG to produce the following set of equations:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rClCrCl}
+        \enter{1} &=& a^\sharp_{init} &\quad&
+        \enter{2} &=& b^\sharp_{init} \\
+        \enter{3} &=& \enter{1} + \enter{2} &\quad&
+        \enter{4} &=& \enter{3} \times \enter{3}
+    \end{IEEEeqnarraybox}
+    \label{eq:absint_sample_analysis}
+\end{equation}
+
+For the equations above to make sense, addition and multiplication need to be
+defined on intervals. We may define the following interval operations:
+\begin{equation}
+    \begin{IEEEeqnarraybox}{rCl}
+             \interval{a}{b} + \interval{c}{d}
+         &=& \interval{a + c}{b + d} \quad
+             \interval{a}{b} - \interval{c}{d}
+          =  \interval{a - d}{b - c} \\
+             \interval{a}{b} \times \interval{c}{d}
+         &=& \interval{\min(s)}{\max(s)} \\
+         & & \text{where~} s
+          =  \{ a \times c, a \times d, b \times c, b \times d \}
+    \end{IEEEeqnarraybox}
+    \label{eq:interval_operations}
+\end{equation}
+
+The solution to the set of \eqref{eq:absint_sample_analysis} for $\enter{4}$
+is $[4.84, 10.89]$, which represents a safe bound on the output at the end of
+program execution. Note that in actual execution of the program, the semantics
+represent the values of intermediate variables, which are real values. In our
+case, a set of real values forms the set of all possible values produced by
+our code. However computing this set precisely is not, in general, a possible
+task. Instead, we use abstract interpretation based on intervals, which gives
+the abstract semantics of this program. Here, we have achieved a classical
+interval analysis by \emph{defining} the meaning of addition and multiplication
+on abstract mathematical structures (in this case intervals) which capture
+a safe approximation of the original semantics of the program. Later in
+Section~\ref{sec:semantics}, we further generalize the idea by defining the
+meaning of these operations on more complex abstract structures which allow us
+to scalably reason about the range, error, and area of FPGA implementations.
