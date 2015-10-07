@@ -1,0 +1,108 @@
+\documentclass[%
+    paper=A4,                   % paper size --> A4 is default in Germany
+    twoside=true,               % onesite or twoside printing
+    openright,                  % doublepage cleaning ends up right side
+    parskip=full,               % spacing value / method for paragraphs
+    chapterprefix=true,         % prefix for chapter marks
+    11pt,                       % font size
+    headings=normal,            % size of headings
+    bibliography=totoc,         % include bib in toc
+    listof=totoc,               % include listof entries in toc
+    titlepage=on,               % own page for each title page
+    captions=tableabove,        % display table captions above the float env
+    draft=true,                 % value for draft version
+]{scrreprt}%
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[%
+    figuresep=colon,%
+    sansserif=false,%
+    hangfigurecaption=false,%
+    hangsection=true,%
+    hangsubsection=true,%
+    colorize=full,%
+    colortheme=bluemagenta,%
+    bibsys=bibtex,%
+    bibfile=references,%
+    bibstyle=alphabetic,%
+]{cleanthesis}
+\usepackage{subfiles}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[inference]{semantic}
+\usepackage{galois}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{IEEEtrantools}
+
+%\listfiles  % Debug LaTeX Information
+
+\newcommand{\thesisTitle}{Structural Optimization of Numerical Programs}
+\newcommand{\thesisName}{Xitong Gao}
+\newcommand{\thesisDate}{\today}
+\newcommand{\thesisVersion}{0.0.1}
+
+\newcommand{\thesisFirstSupervisor}{George A. Constantinides}
+% \newcommand{\thesisSecondSupervisor}{John Smith}
+
+\newcommand{\thesisUniversity}{\protect{Imperial College London}}
+\newcommand{\thesisUniversityDepartment}{%
+    Department of Electrical and Electronic Engineering}
+% \newcommand{\thesisUniversityInstitute}{Institut for Clean Thesis Dev}
+\newcommand{\thesisUniversityGroup}{Circuits and Systems Research Group}
+\newcommand{\thesisUniversityCity}{London}
+\newcommand{\thesisUniversityStreetAddress}{South Kensington Campus}
+\newcommand{\thesisUniversityPostalCode}{SW7 2AZ}
+
+\hypersetup{%
+    pdftitle={\thesisTitle},    %   - title (PDF meta)
+    pdfauthor={\thesisName},    %   - author (PDF meta)
+    plainpages=false,           %   -
+    colorlinks=false,           %   - colorize links?
+    pdfborder={0 0 0},          %   -
+    breaklinks=true,            %   - allow line break inside links
+    bookmarksnumbered=true,     %
+    bookmarksopen=true          %
+}
+
+\newcommand{\todo}[1]{\{\{\textbf{TODO:} {#1}\}\}\typeout{TODO: {#1}}}
+
+\newcommand{\eg}{\textit{e.g.}}
+\newcommand{\etc}{\textit{etc.}}
+\newcommand{\etal}{\textit{et~al.}}
+\newcommand{\ie}{\textit{i.e.}}
+
+\DeclareMathOperator{\roundup}{\uparrow^\sharp_\circ}
+\DeclareMathOperator{\rounddown}{\downarrow^\sharp_\circ}
+\DeclareMathOperator{\fresh}{\mathit{fresh}}
+\DeclareMathOperator{\eqstep}{\blacktriangleright}
+\DeclareMathOperator{\dom}{\mathrm{Dom}}
+\DeclareMathOperator{\area}{\mathrm{Area}}
+\DeclareMathOperator{\error}{\mathrm{Error}}
+\DeclareMathOperator{\abserr}{\mathrm{AbsError}}
+\DeclareMathOperator{\abs}{\mathrm{abs}}
+\DeclareMathOperator{\frontier}{\textsc{Frontier}}
+
+\newcommand{\naturalset}{\ensuremath\mathbb{N}}
+\newcommand{\realset}{\ensuremath\mathbb{R}}
+\newcommand{\floatset}{\ensuremath\mathbb{F}}
+\newcommand{\powersetof}[1]{\ensuremath\mathcal{P}\left({#1}\right)}
+\newcommand{\intervalset}{\ensuremath\mathbf{Interval}}
+\newcommand{\floatintervalset}{\ensuremath\intervalset_\floatset}
+\newcommand{\errorset}{\ensuremath\mathbb{E}^\sharp}
+\newcommand{\labelset}{\ensuremath\mathbf{Label}}
+\newcommand{\exprset}{\ensuremath\mathbf{Expr}}
+\newcommand{\varset}{\ensuremath\mathbf{Var}}
+\newcommand{\env}[1]{\ensuremath\mathbf{Env}_{#1}}
+\newcommand{\eqrel}{\ensuremath\mathbin{\rhd}}
+\newcommand{\enter}[1]{\ensuremath{A({#1})}}
+\newcommand{\interval}[2]{\ensuremath\left[{#1}, {#2}\right]}
+\newcommand{\lattice}[2]{\ensuremath\left<{#1}, {#2}\right>}
+\newcommand{\join}{\ensuremath\sqcup}
+\newcommand{\meet}{\ensuremath\sqcap}
+
+\newcommand{\marteltrace}{\texttt{martel\_trace}}
+\newcommand{\frontiertrace}{\texttt{frontier\_trace}}
+\newcommand{\greedytrace}{\texttt{greedy\_trace}}

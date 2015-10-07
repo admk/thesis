@@ -11,7 +11,7 @@ following equation:
     v = s \times 2^{e + 2^{k - 1} - 1} \times 1.{m_1 m_2 m_3 \ldots m_p}
     \label{eq:floating_point}
 \end{equation}
-In \eqref{eq:floating_point}, the bit $s$ is the sign bit, the $k$-bit unsigned
+In~\eqref{eq:floating_point}, the bit $s$ is the sign bit, the $k$-bit unsigned
 integer $e$ is known as the exponent bits, and the $p$-bits $m_1 m_2 m_3
 \ldots m_p$ are the mantissa bits, here we use $1.{m_1 m_2 m_3 \ldots m_p}$ to
 indicate a fixed-point number represented in unsigned binary format.
@@ -36,7 +36,7 @@ the set of floating-point intervals (intervals exactly representable in
 floating-point arithmetic). The value $(x^\sharp, \mu^\sharp) \in \errorset$
 represents a safe bound on floating-point values and the accumulated error
 represented as a range of real values. Then addition and multiplication can be
-defined for the semantics as in \eqref{eq:error_semantics}:
+defined for the semantics as in~\eqref{eq:error_semantics}:
 \begin{equation}
     \begin{aligned}
         (x^\sharp_1, \mu^\sharp_1) + (x^\sharp_2, \mu^\sharp_2)
@@ -48,35 +48,47 @@ defined for the semantics as in \eqref{eq:error_semantics}:
          \mu^\sharp_1 - \mu^\sharp_2 +
          \rounddown(x^\sharp_1 - x^\sharp_2)) \\
         (x^\sharp_1, \mu^\sharp_1) \times (x^\sharp_2, \mu^\sharp_2)
-    &=  (\roundup(x^\sharp_1 \times x^\sharp_2), \\
-    \noalign{\quad $
-        x^\sharp_1 \times \mu^\sharp_2 + x^\sharp_2 \times \mu^\sharp_1 +
-        \mu^\sharp_1 \times \mu^\sharp_2 +
-        \rounddown(x^\sharp_1 \times x^\sharp_2))$}
-    &\qquad\text{~for~} (x^\sharp_1, \mu^\sharp_1) \in \errorset,
-                        (x^\sharp_2, \mu^\sharp_2) \in \errorset
+    &=  (\roundup(x^\sharp_1 \times x^\sharp_2),
+            x^\sharp_1 \times \mu^\sharp_2 + x^\sharp_2 \times \mu^\sharp_1 +
+            \mu^\sharp_1 \times \mu^\sharp_2 +
+            \rounddown(x^\sharp_1 \times x^\sharp_2)) \\
+    &\qquad\qquad\qquad\qquad\qquad\qquad\text{~for~}
+        (x^\sharp_1, \mu^\sharp_1) \in \errorset,
+        (x^\sharp_2, \mu^\sharp_2) \in \errorset
     \end{aligned}
     \label{eq:error_semantics}
 \end{equation}
-
 The addition, subtraction and multiplication of intervals follow the standard
-rules of interval arithmetic defined earlier in \eqref{eq:interval_operations}.
-In \eqref{eq:error_semantics}, the function $\rounddown: \intervalset \to
+rules of interval arithmetic defined earlier in~\eqref{eq:interval_operations}.
+In~\eqref{eq:error_semantics}, the function $\rounddown: \intervalset \to
 \intervalset$ determines the range of roundoff error due to the floating-point
 computation under one of the rounding modes $\circ \in \{ -\infty, \infty, 0,
 \neg0, \sim \}$ which are round towards negative infinity, towards infinity,
 towards zero, away from zero and towards nearest floating-point value
-respectively. For instance, $\downarrow^\sharp_\sim([a, b]) = [-z, z]$, where
-$z = \max(ulp(a), ulp(b)) / 2$, which denotes the maximum rounding error that
-can occur for values within the range $[a, b]$, and the unit of the last place
-(ulp) function $ulp(x)$~\cite{muller} characterizes the distance between two
-adjacent floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
+respectively. It is defined as:
+\begin{equation}
+    \begin{aligned}
+        & \downarrow^\sharp_\circ([a, b]) = \left\{
+            \begin{aligned}
+                & \left[ -\frac{z}{2}, \frac{z}{2}\right]
+                    & \quad \circ & \text{~is~}\sim \\
+                & \left[ -z, z\right]
+                    & \quad \circ & \in \{ -\infty, \infty, 0, \neg0 \}
+            \end{aligned}
+        \right. \\
+        & \qquad\qquad\qquad\qquad \text{where~} z = \max(ulp(a), ulp(b))
+    \end{aligned}
+\end{equation}
+Here $z$ denotes the maximum rounding error that can occur for values
+within the range $[a, b]$, and the unit of the last place (ulp) function
+$ulp(x)$~\cite{muller} characterizes the distance between two adjacent
+floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
 f_2$~\cite{goldberg}. In our analysis, the function $ulp$ is defined as:
 \begin{equation}
     ulp(x) = 2^{e(x) + 2^{k - 1} - 1} \times 2^{-p}
 \end{equation}
 where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
-floating-point format as defined in \eqref{eq:floating_point}. The function
+floating-point format as defined in~\eqref{eq:floating_point}. The function
 $\roundup: \intervalset \to \floatintervalset$ computes the floating-point
 bound from a real bound, by rounding the infimum $a$ and supremum $b$ of the
 input interval $[a, b]$.
@@ -91,20 +103,20 @@ $b$ are converted into the abstract semantics using a cast operation as in
     cast(x^\sharp) = (\roundup(x^\sharp), \rounddown(x^\sharp))
     \label{eq:cast}
 \end{equation}
-
 For example, for the variable $a \in [0.2, 0.3]$ under single precision
-with rounding to nearest, $cast([0.2, 0.3]) = ([0.200000003, 0.300000012],
-[-1/67108864, 1/67108864])$.
-
+with rounding to nearest,
+\begin{equation}
+    cast([0.2, 0.3]) = ([0.200000003, 0.300000012], [-1/67108864, 1/67108864])
+\end{equation}
 After this, the propagation of bounds in the data flow graph is carried out as
 described in Section~\ref{sec:abstract_interpretation}, where the difference is
-the abstract error semantics defined in \eqref{eq:error_semantics} is used in
+the abstract error semantics defined in~\eqref{eq:error_semantics} is used in
 lieu of the interval semantics. At the root of the tree (\ie~the exit of the
 DFG) we find the value of the accuracy analysis result for the expression.
 
-In this paper, the function $\error: \exprset\to\errorset$ is used to represent
-the analysis of evaluation accuracy, where $\exprset$ denotes the set of all
-expressions.
+We use the function $\error: \exprset\to\errorset$ throughout this chapter to
+represent the analysis of evaluation accuracy, where $\exprset$ denotes the set
+of all expressions.
 
 \subsection{Resource Usage Analysis}
 
@@ -262,11 +274,15 @@ above-mentioned inference rules. We define the function $\eqstep:
 \powersetof\exprset\to\powersetof\exprset$, where $\powersetof\exprset$
 denotes the power set of $\exprset$, which generates a (possibly larger)
 set of equivalent expressions from an initial set of equivalent expressions
-by one step of (\ref{eq:equivalence_inference}), \ie~$\eqstep(\epsilon) =
-\{e^\prime\in\exprset \mid e \eqrel e^\prime \wedge e\in\epsilon\}$, where
-$\epsilon$ is a set of equivalent expressions. From this, we may note that
-the set of equivalent expressions generated by taking the union of any
-number of steps of \eqref{eq:equivalence_inference} of $\epsilon$ is the
+by one step of (\ref{eq:equivalence_inference}), that is:
+\begin{equation}
+    \eqstep(\epsilon) = \left\{
+        e^\prime\in\exprset \mid
+        e \eqrel e^\prime \wedge e\in\epsilon\right\}
+\end{equation}
+where $\epsilon$ is a set of equivalent expressions. From this, we may note
+that the set of equivalent expressions generated by taking the union of any
+number of steps of~\eqref{eq:equivalence_inference} of $\epsilon$ is the
 transitive closure $\eqstep^\star(\epsilon)$, as given by the following
 formula, where $\eqstep^i(\epsilon) = \eqstep(\eqstep^{i - 1}(\epsilon))$ and
 $\eqstep^0(\epsilon) = \epsilon$:
@@ -467,6 +483,6 @@ expressions to process for the next iteration.
     }\label{fig:tree_expr_flow_greedy}
 \end{figure}
 
-In the rest of this paper, we use \frontiertrace{} to indicate our equivalent
+In the rest of this chapter, we use \frontiertrace{} to indicate our equivalent
 expression finding semantics, and \greedytrace{} to represent the alternative
 method.

@@ -13,7 +13,7 @@ illustration, consider the following expression and its DFG\@:
 \end{equation}
 \begin{figure}[ht]
     \centering
-    \includegraphics[scale=0.4, trim=0pt 20pt 0pt 25pt]{sample_tree}
+    \includegraphics[scale=0.6]{sample_tree}
     \caption{The DFG for the sample program.}\label{fig:sample_tree}
 \end{figure}%
 We may wish to ask: if initially $a$ and $b$ are real numbers in the range of
@@ -31,32 +31,27 @@ and $\enter{l}$ where $l \in \{1, 2, 3, 4\}$ are the intervals of the outputs
 of the boxes labelled with $l$ in the DFG\@. We extract the data flow from the
 DFG to produce the following set of equations:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rClCrCl}
-        \enter{1} &=& a^\sharp_{init} &\quad&
-        \enter{2} &=& b^\sharp_{init} \\
-        \enter{3} &=& \enter{1} + \enter{2} &\quad&
-        \enter{4} &=& \enter{3} \times \enter{3}
-    \end{IEEEeqnarraybox}
+    \begin{aligned}
+        \enter{1} &= a^\sharp_{init} \\
+        \enter{2} &= b^\sharp_{init} \\
+        \enter{3} &= \enter{1} + \enter{2} \\
+        \enter{4} &= \enter{3} \times \enter{3}
+    \end{aligned}
     \label{eq:absint_sample_analysis}
 \end{equation}
-
 For the equations above to make sense, addition and multiplication need to be
 defined on intervals. We may define the following interval operations:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
-             \interval{a}{b} + \interval{c}{d}
-         &=& \interval{a + c}{b + d} \quad
-             \interval{a}{b} - \interval{c}{d}
-          =  \interval{a - d}{b - c} \\
-             \interval{a}{b} \times \interval{c}{d}
-         &=& \interval{\min(s)}{\max(s)} \\
-         & & \text{where~} s
-          =  \{ a \times c, a \times d, b \times c, b \times d \}
-    \end{IEEEeqnarraybox}
+    \begin{aligned}
+        \interval{a}{b} + \interval{c}{d} &= \interval{a + c}{b + d} \\
+        \interval{a}{b} - \interval{c}{d} &=  \interval{a - d}{b - c} \\
+        \interval{a}{b} \times \interval{c}{d} &=
+            \interval{\min(s)}{\max(s)} \\
+        \text{where~} s &= \{ a \times c, a \times d, b \times c, b \times d \}
+    \end{aligned}
     \label{eq:interval_operations}
 \end{equation}
-
-The solution to the set of \eqref{eq:absint_sample_analysis} for $\enter{4}$
+The solution to the set of~\eqref{eq:absint_sample_analysis} for $\enter{4}$
 is $[4.84, 10.89]$, which represents a safe bound on the output at the end of
 program execution. Note that in actual execution of the program, the semantics
 represent the values of intermediate variables, which are real values. In our
