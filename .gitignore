@@ -5,6 +5,7 @@
 ## Scons
 
 .sconsign.dblite
+build/
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
