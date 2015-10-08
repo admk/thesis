@@ -28,11 +28,11 @@ simultaneous optimization of multiple large expressions. The expressions $e_x$
 and $e_y$, with input ranges $a \in [1, 2], b \in [10, 20], c \in [10, 200]$
 are used as our example:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
-    e_x &=& (a + a + b) \times (a + b + b) \times (b + b + c) \times {} \\
-       & & (b + c + c) \times (c + c + a) \times (c + a + a) \\
-    e_y &=&  (1 + b + c) \times (a + 1 + c) \times (a + b + 1)
-    \end{IEEEeqnarraybox}
+    \begin{aligned}
+    e_x =& (a + a + b) \times (a + b + b) \times (b + b + c) \times {} \\
+         & (b + c + c) \times (c + c + a) \times (c + a + a) \\
+    e_y =& (1 + b + c) \times (a + 1 + c) \times (a + b + 1)
+    \end{aligned}
 \end{equation}
 
 We generated and optimized RTL implementations of $e_x$ and $e_y$
@@ -86,35 +86,37 @@ estimation for that particular implementation is accurate. The solid black line
 represents the linear regression line of all scatter points. On average, our
 area estimation is a 6.1\% over-approximation of the actual number of LUTs, and
 the worst case over-approximation is 7.7\%.
-\newcommand{\subfigsize}{0.32}
-\begin{figure*}[!ht]
+\newcommand{\figsize}{0.6}
+\begin{figure}[ht]
     \centering
-    \subfigure[Optimization of ${(a + b)}^2$]{
-        \includegraphics[scale=\subfigsize, trim=20pt 0pt 5pt 0pt]{martel}
-        \label{fig:martel}
-    }%
-    \subfigure[Simultaneous optimization of both $e_x$ and $e_y$]{
-        \includegraphics[scale=\subfigsize, trim=20pt 0pt 5pt 0pt]%
-            {multi_expr_32}
-        \label{fig:multi_expr_32}
-    }%
-    \subfigure[Varying the mantissa width of (b)]{
-        \includegraphics[scale=\subfigsize, trim=20pt 0pt 5pt 0pt]%
-            {multi_expr_vary_width}
-        \label{fig:multi_expr_vary_width}
-    }
-    \subfigure[The Taylor expansion of $\sin(x + y)$]{
-        \includegraphics[scale=\subfigsize, trim=20pt 0pt 5pt 0pt]{taylor_sin}
-        \label{fig:taylor_sin}
-    }%
-    \subfigure[The Motzkin polynomial $e_m$]{
-        \includegraphics[scale=\subfigsize, trim=20pt 0pt 5pt 0pt]{motzkin}
-        \label{fig:motzkin}
-    }%
-    \subfigure[Accuracy of Area Estimation]{
-        \includegraphics[scale=\subfigsize, trim=20pt 0pt 5pt 0pt]{area}
-        \label{fig:area}
-    }%
-    \caption{Optimization Results.}
-    \vspace*{-10pt}
-\end{figure*}
+    \includegraphics[scale=\figsize]{martel}
+    \caption{Optimization of ${(a + b)}^2$}\label{fig:martel}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=\figsize]{multi_expr_32}
+    \caption{Simultaneous optimization of both $e_x$ and $e_y$}
+    {}\label{fig:multi_expr_32}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=\figsize]{multi_expr_vary_width}
+    \caption{Varying the mantissa width of Figure~\ref{fig:multi_expr_32}}
+    {}\label{fig:multi_expr_vary_width}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=\figsize]{taylor_sin}
+    \caption{The Taylor expansion of $\sin(x + y)$}
+    {}\label{fig:taylor_sin}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=\figsize]{motzkin}
+    \caption{The Motzkin polynomial $e_m$}\label{fig:motzkin}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=\figsize]{area}
+    \caption{Accuracy of Area Estimation}\label{fig:area}
+\end{figure}
