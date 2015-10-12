@@ -22,8 +22,73 @@
 \pagenumbering{arabic}          % arabic page numbering
 \setcounter{page}{1}            % set page counter
 \pagestyle{maincontentstyle}    % fancy header and footer
-\subfile{stropt/chapter}
+
+\doublespacing
+
+% Main text
+\chapter{Introduction}
+
+\chapter{Background}
+
+\chapter{Structural Optimization of Arithmetic Expressions}
+\label{chp:stropt}
+
+% \begin{abstract}
+    % This paper introduces SOAP, a new tool to automatically optimize the
+% structure of arithmetic expressions for FPGA implementation as part of a
+% high level synthesis flow, taking into account axiomatic rules derived
+% from real arithmetic, such as distributivity, associativity and others. We
+% explicitly target an optimized area/accuracy trade-off, allowing arithmetic
+% expressions to be automatically re-written for this purpose. For the first
+% time, we bring rigorous approaches from software static analysis, specifically
+% formal semantics and abstract interpretation, to bear on source-to-source
+% transformation for high-level synthesis. New abstract semantics are developed
+% to generate a computable subset of equivalent expressions from an original
+% expression. Using formal semantics, we calculate two objectives, the accuracy
+% of computation and an estimate of resource utilization in FPGA\@. The
+% optimization of these objectives produces a Pareto frontier consisting of a
+% set of expressions. This gives the synthesis tool the flexibility to choose
+% an implementation satisfying constraints on both accuracy and resource
+% usage. We thus go beyond existing literature by not only optimizing the
+% precision requirements of an implementation, but changing the structure of the
+% implementation itself. Using our tool to optimize the structure of a variety of
+% real world and artificially generated examples in single precision, we improve
+% either their accuracy or the resource utilization by up to 60\%.
+% \end{abstract}
+
+\input{stropt/introduction}
+\include{stropt/related_work}
+\include{stropt/abstract_interpretation}
+\include{stropt/semantics}
+\include{stropt/implementation}
+\include{stropt/results}
+\include{stropt/conclusion}
+
+\chapter{Numerical Program Optimization}
+\label{chp:progopt}
+
+\chapter{Latency}
+
+
+\chapter{Conclusion}
+
+\chapter{Future Work}
+
+We believe that it is possible to extend our tool for the multi-objective
+optimization of arithmetic expressions in the following ways. First, Secondly,
+it would be useful to further allow transformations of expressions while
+allowing different mantissa widths in the subexpressions, this further
+increases the number options in the Pareto frontier, as well as leads to more
+optimized expressions. Thirdly, as an alternative for interval analysis, we
+could employ more sophisticated abstract domains that capture the correlations
+between variables, and produce tighter bounds for results. Finally, there
+could be a lot of interest in the HLS community on how our tool can be
+incorporated with Martin Langhammer's work on fused floating-point datapath
+synthesis~\cite{langhammer}.
+
+
 \cleardoublepage
+
 
 % Back matter
 {%

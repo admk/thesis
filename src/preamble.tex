@@ -15,17 +15,18 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
-\usepackage[%
-    figuresep=colon,%
-    sansserif=false,%
-    hangfigurecaption=false,%
-    hangsection=true,%
-    hangsubsection=true,%
-    colorize=full,%
-    colortheme=bluemagenta,%
-    bibsys=bibtex,%
-    bibfile=references,%
-    bibstyle=alphabetic,%
+\usepackage[
+    figuresep=quad,
+    sansserif=false,
+    hangfigurecaption=false,
+    hangsection=true,
+    hangsubsection=true,
+    colorize=full,
+    colortheme=bluemagenta,
+    bibsys=bibtex,
+    bibfile=references,
+    bibstyle=alphabetic,
+    wrapfooter=true,
 ]{cleanthesis}
 \usepackage{subfiles}
 \usepackage{amsmath}
@@ -35,7 +36,9 @@
 \usepackage{algpseudocode}
 \usepackage{graphicx}
 \usepackage{url}
-\usepackage{IEEEtrantools}
+
+\graphicspath{{stropt/fig/}}
+\DeclareGraphicsExtensions{.pdf}
 
 %\listfiles  % Debug LaTeX Information
 

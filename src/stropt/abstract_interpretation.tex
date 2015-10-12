@@ -2,11 +2,12 @@
 \label{sec:abstract_interpretation}
 
 This section introduces the basic concepts of formal semantics and abstract
-interpretation used in this paper. We illustrate these concepts by putting the
-familiar idea of interval arithmetic~\cite{moore} in the framework of abstract
-interpretation. This is then further extended later in the paper to define a
-scalable analysis capturing ranges, errors and resource utilization. As an
-illustration, consider the following expression and its DFG\@:
+interpretation used in this chapter. We illustrate these concepts by putting
+the familiar idea of interval arithmetic~\cite{moore} in the framework
+of abstract interpretation. This is then further extended later in the
+chapter to define a scalable analysis capturing ranges, errors and resource
+utilization. As an illustration, consider the following expression and its DFG
+in Figure~\ref{fig:sample_tree}\@:
 \begin{equation}
     (a + b) \times (a + b)
     \label{eq:absint_sample}
@@ -15,21 +16,23 @@ illustration, consider the following expression and its DFG\@:
     \centering
     \includegraphics[scale=0.6]{sample_tree}
     \caption{The DFG for the sample program.}\label{fig:sample_tree}
-\end{figure}%
+\end{figure}
+
 We may wish to ask: if initially $a$ and $b$ are real numbers in the range of
 $[0.2, 0.3]$ and $[2, 3]$ respectively, what would be the outcome of evaluating
 this expression with real arithmetic? A straightforward approach is simulation.
 Evaluating the expression for a large quantity of inputs will produce a set
 of possible outputs of the expression. However the simulation approach is
-unsafe, since there are infinite number of real-valued inputs possible and
-it is infeasible to simulate for all. A better method might be to represent
-the possible values of $a$ and $b$ using ranges. To compute the ranges of its
-output values, we could operate on ranges rather than values (note that the
-superscript $\sharp$ denotes ranges). Assume that $a^\sharp_{init} = [0.2,
-0.3]$, $b^\sharp_{init} = [2, 3]$, which are the input ranges of $a$ and $b$,
-and $\enter{l}$ where $l \in \{1, 2, 3, 4\}$ are the intervals of the outputs
-of the boxes labelled with $l$ in the DFG\@. We extract the data flow from the
-DFG to produce the following set of equations:
+unsafe, since there are infinite number of real-valued inputs possible and it
+is infeasible to simulate for all.
+
+A better method might be to represent the possible values of $a$ and $b$ using
+ranges. To compute the ranges of its output values, we could operate on ranges
+rather than values (note that the superscript $\sharp$ denotes ranges). Assume
+that $a^\sharp_{init} = [0.2, 0.3]$, $b^\sharp_{init} = [2, 3]$, which are the
+input ranges of $a$ and $b$, and $\enter{l}$ where $l \in \{1, 2, 3, 4\}$ are
+the intervals of the outputs of the boxes labelled with $l$ in the DFG\@. We
+extract the data flow from the DFG to produce the following set of equations:
 \begin{equation}
     \begin{aligned}
         \enter{1} &= a^\sharp_{init} \\

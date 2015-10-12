@@ -16,19 +16,9 @@ to optimize the structure as well as the precision of arithmetic expressions,
 then to automatically choose an implementation that satisfies accuracy and
 resource usage constraints.
 
-We believe that it is possible to extend our tool for the multi-objective
-optimization of arithmetic expressions in the following ways. First,
-because of the semantics nature of our approach, it provides the necessary
+Because of the semantics nature of our approach, it provides the necessary
 foundation which permits us to extend the method for general numerical program
-transformation in high-level synthesis. Secondly, it would be useful to further
-allow transformations of expressions while allowing different mantissa widths
-in the subexpressions, this further increases the number options in the Pareto
-frontier, as well as leads to more optimized expressions. Thirdly, as an
-alternative for interval analysis, we could employ more sophisticated abstract
-domains that capture the correlations between variables, and produce tighter
-bounds for results. Finally, there could be a lot of interest in the HLS
-community on how our tool can be incorporated with Martin Langhammer's work on
-fused floating-point datapath synthesis~\cite{langhammer}.
-
-In the future, after we extend our method and SOAP with general numerical
-program transform, we will make the tool available to the HLS community.
+transformation in high-level synthesis. Therefore in Chapter~\ref{chp:progopt},
+we base ourselves on the methodologies developed in this chapter, and propose
+a structural approach to program optimization by safely rewriting equivalent
+structures in numerical programs.

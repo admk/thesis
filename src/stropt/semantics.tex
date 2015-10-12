@@ -96,7 +96,7 @@ input interval $[a, b]$.
 Expressions can be evaluated for their accuracy by the method as follows.
 Initially the expression is parsed into a data flow graph (DFG). By way of
 illustration, the sample expression ${(a + b)}^2$ has the tree structure
-in Fig.~\ref{fig:sample_tree}. Then the exact ranges of values of $a$ and
+in Figure~\ref{fig:sample_tree}. Then the exact ranges of values of $a$ and
 $b$ are converted into the abstract semantics using a cast operation as in
 \eqref{eq:cast}:
 \begin{equation}
@@ -148,55 +148,55 @@ This equation uses $[\fresh(x)\mapsto{x}]$ to indicate an environment that
 maps the label $\fresh(x)$ to the expression $x$ and all other labels map
 to $\bot$, in other words, if $l = \fresh(x)$ and $l^\prime \neq l$, then
 $\lambda(l) = x$ and $\lambda(l^\prime) = \bot$. For example, for the DFG in
-Fig.~\ref{fig:sample_tree}, we have for the variables $a$ and $b$:
+Figure~\ref{fig:sample_tree}, we have for the variables $a$ and $b$:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
-        (l_a, \lambda_a) &=& (\fresh(a), [\fresh(a)\mapsto{a}])
+    \begin{aligned}
+        (l_a, \lambda_a) &= (\fresh(a), [\fresh(a)\mapsto{a}])
                    = (l_1, [l_1 \mapsto a]) \\
-        (l_b, \lambda_b) &=& (l_2, [l_2 \mapsto b])
-    \end{IEEEeqnarraybox}
+        (l_b, \lambda_b) &= (l_2, [l_2 \mapsto b])
+    \end{aligned}
     \label{eq:variable_env}
 \end{equation}
 Then the environments are propagated in the flow direction of the DFG, using
 the following formulation of the labeling semantics:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
+    \begin{aligned}
         (l_x, \lambda_x) \circ (l_y, \lambda_y)
-            &=& (l, (\lambda_x\odot\lambda_y)
+            &= (l, (\lambda_x\odot\lambda_y)
                       [l\mapsto{l_x \circ l_y}]) \\
-            \text{where~} l &=& \fresh(l_x \circ l_y),
+            \text{where~} l &= \fresh(l_x \circ l_y),
                           \circ\in\{+, -, \times\}
-    \end{IEEEeqnarraybox}
+    \end{aligned}
     \label{eq:labeling_semantics}
 \end{equation}
 Specifically, $\lambda=\lambda_x\odot\lambda_y$ signifies that $\lambda_y$
 is used to update the mapping in $\lambda_x$, if the mapping does not
 exist in $\lambda_x$, and result in a new environment $\lambda$; and
 $\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.
-As an example, with the expression in Fig.~\ref{fig:sample_tree}, using
+As an example, with the expression in Figure~\ref{fig:sample_tree}, using
 \eqref{eq:variable_env}, recall to mind that $l_1 = l_a$, $l_2 = l_b$, we
 derive for the subexpression $a + b$:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
+    \begin{aligned}
         (l_{a + b}, \lambda_{a + b})
-            &=& (l_a, \lambda_a) + (l_b, \lambda_b) \\
-            &=& (l_3, (\lambda_a \odot \lambda_b) [l_3\mapsto{l_a + l_b}]) \\
-            & & \text{where~} l_3 = \fresh(l_a + l_b) \\
-            &=& (l_3, [l_1\mapsto{a}]\odot
-                      [l_2\mapsto{b}]\odot
-                      [l_3\mapsto{l_1 + l_2}]) \\
-            &=& (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
-    \end{IEEEeqnarraybox}
+            &= (l_a, \lambda_a) + (l_b, \lambda_b) \\
+            &= (l_3, (\lambda_a \odot \lambda_b) [l_3\mapsto{l_a + l_b}]) \\
+            &  \text{where~} l_3 = \fresh(l_a + l_b) \\
+            &= (l_3, [l_1\mapsto{a}]\odot
+                     [l_2\mapsto{b}]\odot
+                     [l_3\mapsto{l_1 + l_2}]) \\
+            &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
+    \end{aligned}
 \end{equation}
 Finally, for the full expression $(a + b) \times (a + b)$:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
+    \begin{aligned}
         (l, \lambda)
-            &=& (l_{a + b}, \lambda_{a + b}) \times
-                (l_{a + b}, \lambda_{a + b}) \\
-            &=& (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
+            &= (l_{a + b}, \lambda_{a + b}) \times
+               (l_{a + b}, \lambda_{a + b}) \\
+            &= (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
                       l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}])
-    \end{IEEEeqnarraybox}
+    \end{aligned}
 \end{equation}
 From the above derivation, it is clear that the semantics capture the reuse
 of subexpressions. The estimation of area is performed by counting, for an
@@ -233,29 +233,29 @@ the following inference system of equivalence relations $\eqrel \subset
 v_3 \in \realset$, and $\circ \in \{+, \times\}$. First, the arithmetic rules
 are:
 \begin{equation*}
-    \begin{IEEEeqnarraybox}{rCl}
+    \begin{aligned}
         \text{Associativity}(\circ)
-            &:& (e_1 \circ e_2) \circ e_3 \eqrel e_1 \circ (e_2 \circ e_3) \\
+            &: (e_1 \circ e_2) \circ e_3 \eqrel e_1 \circ (e_2 \circ e_3) \\
         \text{Commutativity}(\circ)
-            &:& e_1 \circ e_2 \eqrel e_2 \circ e_1 \\
+            &: e_1 \circ e_2 \eqrel e_2 \circ e_1 \\
         \text{Distributivity}
-            &:& e_1 \times (e_2 + e_3) \eqrel e_1 \times e_2 + e_1 \times e_3 \\
+            &: e_1 \times (e_2 + e_3) \eqrel e_1 \times e_2 + e_1 \times e_3 \\
         \text{Distributivity}^\prime
-            &:& e_1 \times e_2 + e_1 \times e_3 \eqrel e_1 \times (e_2 + e_3)
-    \end{IEEEeqnarraybox}
+            &: e_1 \times e_2 + e_1 \times e_3 \eqrel e_1 \times (e_2 + e_3)
+    \end{aligned}
 \end{equation*}
 Secondly, the reduction rules are:
 \begin{equation*}
-    \begin{IEEEeqnarraybox}{rClCrCl}
+    \begin{aligned}
         \text{Identity($\times$)}
-            &:& e_1 \times 1 \eqrel e_1 & \quad &
+            &: e_1 \times 1 \eqrel e_1 \quad &
         \text{ZeroProp}
-            &:& e_1 \times 0 \eqrel 0 \\
+            &: e_1 \times 0 \eqrel 0 \\
         \text{Identity($+$)}
-            &:& e_1 + 0 \eqrel e_1 & &
+            &: e_1 + 0 \eqrel e_1 &
         \text{ConstProp}(\circ)
-            &:& \inference{v_3 = v_1 \circ v_2}{v_1 \circ v_2 \eqrel v_3}
-    \end{IEEEeqnarraybox}
+            &: \inference{v_3 = v_1 \circ v_2}{v_1 \circ v_2 \eqrel v_3}
+    \end{aligned}
 \end{equation*}
 The ConstProp rule states that if an expression is a summation/multiplication
 of two values, then it can be simply evaluated to produce the result. Finally,
@@ -263,10 +263,8 @@ the following one allows structural induction on expression trees, \ie~it is
 possible to derive that $a + (b + c) \eqrel a + (c + b)$ from $b + c \eqrel c +
 b$:
 \begin{equation}
-    \begin{IEEEeqnarraybox}{rCl}
-        \text{Tree}(\circ)
-            &:& \inference{e_1 \eqrel e_2}{e_3 \circ e_1 \eqrel e_3 \circ e_2}
-    \end{IEEEeqnarraybox}
+    \text{Tree}(\circ)
+        : \inference{e_1 \eqrel e_2}{e_3 \circ e_1 \eqrel e_3 \circ e_2}
     \label{eq:equivalence_inference}
 \end{equation}
 It is possible to transform the structure of expressions using these
@@ -334,7 +332,7 @@ computation and the estimate of FPGA resource utilization. We desire the
 largest subset of all equivalent expressions $E$ discovered such that in this
 subset, no expression dominates any other expression, in terms of having both
 better area and better accuracy. This subset is known as the Pareto frontier.
-Fig.~\ref{alg:pareto} shows a na{\"\i}ve algorithm for calculating the Pareto
+Figure~\ref{alg:pareto} shows a na{\"\i}ve algorithm for calculating the Pareto
 frontier for a set of equivalent expressions $\epsilon$.
 \begin{figure}[ht]
     \centering
@@ -431,9 +429,9 @@ Alternatively, we could view the semantics in terms of DFGs representing
 the algorithm for finding equivalent expressions. The parsing of an
 expression directly determines the structure of its DFG\@. For instance,
 the expression $(a + b) \times (a + b)$ generates the DFG illustrated in
-Fig.~\ref{fig:tree_expr_flow}. The circles labeled $3$ and $7$ in this diagram
-are shorthands for the operation $E_+$ and $E_\times$ respectively, where $E_+$
-and $E_\times$ is defined in~\eqref{eq:equivalence_semantics}.
+Figure~\ref{fig:tree_expr_flow}. The circles labeled $3$ and $7$ in this
+diagram are shorthands for the operation $E_+$ and $E_\times$ respectively,
+where $E_+$ and $E_\times$ is defined in~\eqref{eq:equivalence_semantics}.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.6]{tree_expr_flow}
@@ -441,7 +439,7 @@ and $E_\times$ is defined in~\eqref{eq:equivalence_semantics}.
     $(a + b) \times (a + b)$.}\label{fig:tree_expr_flow}
 \end{figure}
 
-For our example in Fig.~\ref{fig:tree_expr_flow}, similar to the construction
+For our example in Figure~\ref{fig:tree_expr_flow}, similar to the construction
 of data flow equations in Section~\ref{sec:abstract_interpretation}, we can
 produce a set of equations from the data flow of the DFG, which now produces
 equivalent expressions:
@@ -493,7 +491,7 @@ The problem with the semantics above is that the time complexity of
 $\eqstep^\star_k$ scales poorly, since the worst case number of subexpressions
 needed to explore increases exponentially with $k$. Therefore an alternative
 method is to optimize it by changing the structure of the DFG slightly, as
-shown in Fig.~\ref{fig:tree_expr_flow_greedy}. The difference is that at each
+shown in Figure~\ref{fig:tree_expr_flow_greedy}. The difference is that at each
 iteration, the Pareto frontier filters the results to decrease the number of
 expressions to process for the next iteration.
 \begin{figure}[ht]
