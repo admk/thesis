@@ -64,15 +64,42 @@
 \include{stropt/results}
 \include{stropt/conclusion}
 
+
 \chapter{Numerical Program Optimization}
 \label{chp:progopt}
+
+% This paper introduces a new technique, and its associated open source tool to
+% automatically perform source-to-source optimization of numerical programs,
+% specifically targeting the trade-off between numerical accuracy and resource
+% usage as a high-level synthesis flow for FPGA implementations.  We introduce
+% a new intermediate representation, which we call metasemantic intermediate
+% representation (MIR), to empower the abstraction and optimization of
+% numerical programs.  We efficiently discover equivalent structures in
+% MIRs by exploiting the rules of real arithmetic, such as associativity
+% and distributivity, and rules that enable control flow restructuring, and
+% produce Pareto frontiers of equivalent programs that trades off LUTs, DSPs
+% and accuracy.  Additionally, we further broaden the Pareto frontier in our
+% optimization flow to automatically explore the numerical implications of
+% partial loop unrolling and loop splitting.  In real applications, our tool
+% discovers a wide range of Pareto optimal options, and the most accurate one
+% improves the accuracy of numerical programs by up to 65\%.
+
+\input{progopt/introduction}
+\include{progopt/related_work}
+\include{progopt/syntax}
+\include{progopt/metasemantics}
+\include{progopt/transformations}
+\include{progopt/code_generation}
+\include{progopt/results}
+\include{progopt/conclusion}
+
 
 \chapter{Latency}
 
 
 \chapter{Conclusion}
 
-\chapter{Future Work}
+\chapter{(Scratch)}
 
 We believe that it is possible to extend our tool for the multi-objective
 optimization of arithmetic expressions in the following ways. First, Secondly,
@@ -85,6 +112,17 @@ between variables, and produce tighter bounds for results. Finally, there
 could be a lot of interest in the HLS community on how our tool can be
 incorporated with Martin Langhammer's work on fused floating-point datapath
 synthesis~\cite{langhammer}.
+
+We are convinced that with the foundation and framework that we developed,
+our tool can be extended in the following ways.  First, it can be trivially
+extended to support additional numerical data structure such as arrays and
+matrices.  Secondly, the Pareto optimization can be extended to optimize the
+latencies of equivalent programs, as restructuring programs and partially
+unrolling loops could have a notable impact on the ability to pipeline
+program loops, especially when arrays are incorporated.  Finally, fixed point
+representations, along with the interaction between our structural optimization
+and multiple wordlength optimization~\cite{constantinides} could also generate
+a lot of interest from the HLS community.
 
 
 \cleardoublepage

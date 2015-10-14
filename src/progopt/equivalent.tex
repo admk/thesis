@@ -1,0 +1,206 @@
+\subsection{Equivalent Structure Analysis}
+\label{sub:equivalence_analysis}
+
+In this section, we start by taking one step further from simple arithmetic
+equivalence relations such as associativity, commutativity and distributivity
+describe in~\cite{soap}.  We define additional equivalent relations for
+substitution, conditional and fixpoint expressions to fully enable the
+equivalence transformations of MIRs.  Then we go on to improve the methods
+described in \soap~to explore more equivalent structures, but still in an
+efficient and scalable way.
+
+\subsubsection{Equivalence Relations}
+
+The \soap~framework formally defines a set of equivalent relations
+\begin{equation}
+    \eqrel \subset \aexprset \times \aexprset \subset M \times M
+\end{equation}
+where $M = \sexprset \cup \mirset$, for discovering equivalent arithmetic
+expressions, which consists of associativity, commutativity and distributivity,
+as well as reduction rules that propagates constants and simplifies
+expressions.  We now expand it by defining additional relations for $\eqrel$.
+For the following rules, we assume $b, b_1, b_2 \in \bexprset$, $e, e_1, e_2
+\in \sexprset$, $\mu \in \mirset$, and $\odot \in \{+, -, \times, /\}$, and
+each rule has its inversed version.
+
+For the conditional operator, we have the distributivity rules, and the
+substitution operator can be also distributed across expressions:
+\begin{equation}
+    \begin{aligned}
+        \left(\select{b}{e_1}{e_2}\right) \odot e
+        & \quad \eqrel \quad
+        \select{b}{e_1 \odot e}{e_2 \odot e} \\
+        \select{b_1}{\left(\select{b_2}{e_1}{e_2}\right)}{e}
+        & \quad \eqrel \quad
+        \select{b_2}{%
+            \left(\select{b_1}{e_1}{e}\right)}{%
+            \left(\select{b_1}{e_2}{e}\right)} \\
+        \left( e_1 \odot e_2 \right) \expand \mu
+        & \quad \eqrel \quad
+        \left( e_1 \expand \mu \right) \odot \left( e_2 \expand \mu \right) \\
+        \left( \select{b}{e_1}{e_2} \right) \expand \mu
+        & \quad \eqrel \quad
+        \select{%
+            \left( b \expand \mu \right)}{%
+            \left( e_1 \expand \mu \right)}{%
+            \left( e_2 \expand \mu \right)}
+    \end{aligned}
+\end{equation}
+
+The fixpoint operator denotes loops, and loops can be partially unrolled,
+similarly, we can define a set of equivalence relations to perform partial
+unrolling on fixpoint expressions:
+\begin{equation}
+    \fixpoint{b, \mu, x}
+    \quad \eqrel \quad
+    \fixpoint{b, p_\mu^k(\mu), x} \quad \text{for $k \in \naturalset$}
+    \label{eq:unroll}
+\end{equation}
+Here $x \in \varset$, $p_\mu$ is a function that computes the unrolling
+of the loop MIR $\mu$, where
+\begin{align}
+    p_\mu^0(\mu^\prime) &= \mu^\prime \\
+    p_\mu^k(\mu^\prime) &= p_\mu(p_\mu^{k - 1}(\mu^\prime))
+\end{align}
+and 
+\begin{equation}
+    p_\mu(\mu^\prime) = {\left[
+        x \mapsto ( b \expand \mu ) \qop
+            ( \mu^\prime(x) \expand \mu ) \colonop \mu(x)
+    \right]}_{x \in \varset}
+\end{equation}
+This set of rules formally defines the partial unrolling of loops with
+a certain number of steps $k$.  Using the rules to unroll the loop
+$\whilestmt{b}{s}$ where $b \in \bexprset$, $s \in \stmtset$ is equivalent to
+unrolling the loop syntactically as follows, as an example, we consider cases
+when $k = 0, 1, 2$:
+\begin{equation}
+    \begin{aligned}
+        k = 0: & \quad
+        \whilestmt{b}{s} \\
+        k = 1: & \quad
+        \whilestmt{b}{s \semicolon \ifelsestmt{b}{s}{\skipstmt}} \\
+        k = 2: & \quad
+        \begin{aligned}
+            & \whilelit~(b)~\dolit~(
+                s \semicolon \iflit~(b)~\thenlit~( \\
+            & \quad s \semicolon \ifelsestmt{b}{s}{\skipstmt} \\
+            & )~\elselit~(\skipstmt))
+        \end{aligned}
+    \end{aligned}
+\end{equation}
+
+The next set of rules in~\eqref{eq:tree} allows us to inductively discover
+equivalent structures in child expressions.  In these rules, the formulae above
+the line are the premises, whereas the ones below the line are conclusions,
+this means that in such a rule, if the premise is true, then the conclusion
+must be true.  For instance, in a conditional expression $\select{x < y}{(x
++ y) + z}{x}$, because the subexpression $(x + y) + z$ is equivalent to $x
++ (y + z)$, it also has an equivalent expression $\select{x < y}{x + (y +
+z)}{x}$.  We define similar rules respectively for the conditional, fixpoint
+and substitution operators.  Finally we also have an analogous rule for MIRs,
+which formalizes that if any subexpressions $\mu(x)$ of an MIR $\mu$ has
+an equivalent expression $e_x$, then the MIR also has an equivalent MIR by
+replacing the expression $\mu(x)$ with $e_x$.
+\begin{equation}
+    \begin{aligned}
+        \inference{%
+            b \eqrel b^\prime \quad
+            e_1 \eqrel e^\prime_1 \quad
+            e_2 \eqrel e^\prime_2
+        }{%
+            \select{b}{e_1}{e_2} \eqrel
+            \select{b^\prime}{e^\prime_1}{e^\prime_2}
+        }
+        & \quad
+        \inference{%
+            b \eqrel b^\prime \quad
+            \mu \eqrel \mu^\prime
+        }{%
+            \fixpoint{b, \mu, x} \eqrel \fixpoint{b^\prime, \mu^\prime, x}
+        }
+    \end{aligned}
+    \nonumber
+\end{equation}
+\vspace{-10pt}
+\begin{equation}
+    \begin{aligned}
+        \inference{%
+            e \eqrel e^\prime \quad
+            \mu \eqrel \mu^\prime
+        }{%
+            e \expand \mu \eqrel e^\prime \expand \mu^\prime
+        }
+        & \quad
+        \inference{%
+            \forall x \in \varset: \\
+            \exists e_x \in \sexprset:
+            \left( \mu(x) \eqrel e_x \right)
+        }{%
+            \mu \eqrel [x \mapsto e_x]_{x \in \varset}
+        }
+    \end{aligned}
+    \label{eq:tree}
+\end{equation}
+
+\subsubsection{Discovering Equivalent Structures Efficiently}
+
+As we discussed earlier, discovering the full set of equivalent expressions
+by finding the transitive closure of the relations is infeasible because of
+combinatorial explosion.  An important aspect of \soap{} is that they proposed
+a new method to drastically reduce the space and time complexity of discovering
+equivalent expressions, while achieving high quality optimizations~\cite{soap}.
+We base our equivalent expression discovery on this method, but extend it
+to support additional program transform features.  We start by giving an
+overview of this method.  Equivalent expression discovery starts from the leaf
+nodes (these are constants and variables) of expressions, which equivalent
+expressions are the nodes themselves, \ie~for a variable or a constant $x$
+its set of equivalent expressions is simply $\{x\}$.  After this, these
+equivalent expressions from the child nodes are propagated to the parent
+node, to form a set of equivalent parent expressions.  Then a function, which
+we name $\closure(\sigma^\sharp)$, is used to perform optimizing transforms
+to this set, where $(\sigma^\sharp)$ indicates that this function optimizes
+specifically for a program state $\sigma^\sharp \in \errordom$.  It consists
+of interleaving iterations of two steps.  The first step is to apply the
+transitive relations described in the previous section to discover more
+equivalent expressions, however transformations of expressions more than
+$k$ nodes deep are disallowed to limit the number of equivalent expressions
+discovered.  The constant $k$ is called the \emph{depth limit}.  The next step
+is to determine the accuracy and resource usage of all discovered expressions,
+and find the Pareto frontier of them to keep only the optimal implementations,
+which significantly reduces the computational requirements.  These two steps
+are repeated iteratively until no more expressions can be discovered.  After
+this, the Pareto frontier of equivalent structures of the current node is
+propagated to its parent node to repeat the above process, until the root
+node is reached and we arrive at a set of equivalent expressions of the
+original expression under optimization.
+
+We extend optimizations to support not only simple arithmetic expressions
+but also conditional, substitution and fixpoint expressions, and MIRs.  This
+enables full program transformations.  For conditional expressions of the form
+$\select{b}{e_1}{e_2}$, we first optimize the Boolean expression $b$.  Then
+we use each equivalent expression of $b$ to constraint the program state for
+the optimization of $e_1$ and $e_2$.  Finally, after optimizing child nodes,
+we combine the equivalent expressions of these three child nodes to form a
+set of equivalent conditional expressions.  Substitution expressions, $e
+\expand \mu$, are optimized by first finding equivalences of $\mu$, and then
+for each of them discovered, we compute a new program state $\sigma^\sharp_0
+= \mirerrorfunc{\mu} \sigma^\sharp$, and use it to optimize $e$.  Fixpoint
+expressions are optimized in three steps.  Initially, partially unrolled
+versions are discovered using the rules defined in~\eqref{eq:unroll}.  Then
+for each unrolled version, we obtain its loop invariant using the algorithm
+illustrated in Figure~\ref{alg:fix}, and the loop invariant is then used to
+optimize its child nodes, which are the Boolean expression and the loop MIR\@.
+Finally, a set of equivalent fixpoint expressions can be derived by combining
+equivalent child nodes together, and $\closure(\sigma^\sharp)$ is again used to
+optimize the fixpoint expressions.
+
+MIRs can be optimized by optimizing their expressions.  However, because
+an MIR consists of multiple expressions and each has its own accuracy,
+we need a strategy to quantify the accuracy of an MIR\@.  As discussed
+in~\cite{martel09}, programs can have multiple return variables, there are many
+strategies to measure the accuracy of such a program and it could depend on
+preferences and requirements of the program under optimization.  In~\newsoap,
+we allow different strategies to optimize MIRs, optimization can be tuned to
+minimize, such as, error bounds, mean squared errors, average errors, as well
+as the geometric mean values of errors.

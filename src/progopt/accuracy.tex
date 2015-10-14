@@ -1,0 +1,268 @@
+\subsection{Accuracy Analysis}
+\label{sub:accuracy_analysis}
+
+In a typical program execution, values of variables, typically integers
+$\integerset$ and floating-point values $\floatset$, are modified according
+to the effect of the program statements, and they are propagated through
+arithmetic operators from the beginning to the end of the program.  By
+comparison, the static analysis approach~\cite{soap,martel07} analyzes
+round-off errors in floating-point numerical programs by following the same
+procedure, but instead of propagating actual values of numerical types,
+value-error ranges are used.  A value-error range $(v^\sharp, e^\sharp) \in
+\errorset$ consists of a floating-point interval that bounds the value,
+$v^\sharp \in \intervalset_\floatset$, and its associated round-off errors
+caused by arithmetic operations, which is represented as an interval of real
+values, $e^\sharp \in \intervalset_\realset$.  Here $\intervalset_\floatset$
+and $\intervalset_\realset$ are the sets of floating-point and real value
+intervals respectively, and we define $\errorset = \intervalset_\floatset
+\times \intervalset_\realset$ to be the set of value-error ranges.
+
+Generally, arithmetic operators work on numerical data types, such as
+\inttype{} and \floattype, and they define how these numerical values can be
+used to compute another numerical value.  In contrast, by \emph{overriding}
+the meaning of arithmetic operators, the accuracy analysis extends each of
+these operators to allow value-error ranges as inputs, and compute as an
+output a value-error range.  For instance, we assume an abstract input state
+$\sigma^\sharp_0 \in \errordom$, where:
+\begin{equation}
+        \sigma^\sharp_0 = \left[
+            a \mapsto ([0, 1], e^\sharp_0),
+            b \mapsto ([1, 2], e^\sharp_0) \right]
+\end{equation}
+which means that initially
+$a$ and $b$ are floating-point values bounded by $[0, 1]$ and $[1, 2]$
+respectively, and the interval $e^\sharp_0 = [0, 0]$ denotes the absence of
+round-off errors, then in single-precision, the floating-point computation $a
++ b$ produces the result $\left( v^\sharp, e^\sharp \right)$:
+\begin{equation}
+    \left( v^\sharp, e^\sharp \right) = \left(
+        [1, 3], [-1.19209304 \times 10^{-7}, 1.19209304 \times 10^{-7}]
+    \right)
+\end{equation}
+This means that the result of this computation is in the range of $v^\sharp =
+[1, 3]$, and the round-off error induced by this computation is bounded by the
+interval $e^\sharp$.  Here $\errordom$ denotes the set of all abstract states,
+where an abstract state $\sigma^\sharp \in \errordom$ is a mapping from a
+variable to its associated value-error range; we can use $\sigma^\sharp(x)$ to
+query the value-error range of a variable $x \in \varset$ in $\sigma^\sharp$.
+The formula $\exprerrorfunc{e}{\sigma^\sharp}$, where $e \in \sexprset$ and
+$\sigma^\sharp \in \errordom$, is used to indicate the accuracy analysis of
+the expression $e$ with the input state $\sigma^\sharp$.  Therefore the above
+example can be expressed concisely by $\exprerrorfunc{a + b}{\sigma^\sharp_0} =
+(v^\sharp, e^\sharp)$.
+
+We build on top of the above method outlined in~\cite{soap} to analyze the
+accuracy of arithmetic expressions, which supported only addition, subtraction,
+multiplication and division.  In this section, we explain in detail how it is
+extended to support MIRs, and our additional operators in semantic expressions,
+that is, the substitution operator, the ternary conditional operator and the
+fixpoint operator.
+
+\subsubsection{MIR}
+
+In the same way that an expression can be analyzed for its accuracy, an MIR,
+which is a mapping of variables to semantic expressions, can be analyzed by
+computing the round-off error for each of its expressions.  For instance, the
+accuracy of an MIR\@:
+\begin{align}
+    \mu_0 &= [a \mapsto a + b, b \mapsto a \times 0.5] \\
+    \intertext{with an input state}
+    \sigma^\sharp_0 &= [a \mapsto ([0, 1], [0, 0]), b \mapsto ([1, 2], [0, 0])]
+\end{align}
+can be analyzed as follows.  First we analyze the individual expressions
+$\mu_0(a) = a + b$ and $\mu_0(b) = a \times 0.5$, which produce respectively
+the results below:
+\begin{align}
+    (v^\sharp_a, e^\sharp_a) &= (
+        [1, 3], [-1.19209304 \times 10^{-7}, 1.19209304 \times 10^{-7}]) \\
+    (v^\sharp_b, e^\sharp_b) &= (
+        [0, 0.5], [-2.98023259 \times 10^{-8}, 2.98023259 \times 10^{-8}])
+\end{align}
+then the analyzed results are collected into an abstract state assigning the
+value-error bounds to their corresponding variables, that is:
+\begin{equation}
+    [a \mapsto (v^\sharp_a, e^\sharp_a), b \mapsto (v^\sharp_b, e^\sharp_b)].
+\end{equation}
+
+We define a function, $\mirerrorfunc{\mu}{\sigma^\sharp}$, to perform the
+above analysis, which takes as an input the MIR $\mu \in \mirset$, and an
+abstract input state $\sigma^\sharp \in \errordom$.  It computes a new
+state ${\sigma^\sharp}^\prime$, where for each variable $x \in \varset$,
+${\sigma^\sharp}^\prime(x)$ is the analyzed value-error range of the expression
+$\mu(x)$.  Formally,
+\begin{equation}
+    \mirerrorfunc{\mu}{\sigma^\sharp} = {\left[
+        x \mapsto \exprerrorfunc{\mu(x)}{\sigma^\sharp}
+    \right]}_{x \in \varfunc{\mu}}.
+    \label{eq:mir_accuracy}
+\end{equation}
+The notation ${[x \mapsto \exprerrorfunc{\mu(x)}{\sigma^\sharp}]}_{x \in
+\varfunc{\mu}}$ means that the mapping is constructed by collecting for
+each variable $x$ in the mapping $\mu$, the pairing of $x$ with the analyzed
+value-error bound of the semantic expression $\mu(x)$.
+
+\subsubsection{Substitution Operator}
+
+The analysis of an expression $e \expand \mu$, where $e \in \sexprset$ and $\mu
+\in \mirset$ is carried out in two steps.  Initially, given an input state
+$\sigma^\sharp$, $\mu$ is analyzed using~\eqref{eq:mir_accuracy}, and we write
+${\sigma^\sharp}^\prime$ as the analyzed state.  Then the expression $e$ is
+analyzed for its accuracy as usual, using ${\sigma^\sharp}^\prime$ as the input
+state.  Equivalently, this procedure can be defined as:
+\begin{equation}
+    \exprerrorfunc{e \expand \mu}{\sigma^\sharp}
+    = \exprerrorfunc{e}{\left( \mirerrorfunc{\mu}{\sigma^\sharp} \right)}
+\end{equation}
+
+\subsubsection{Ternary Conditional Operator}
+
+A conditional expression is written as $\select{b}{e_1}{e_2}$, where $b
+\in \bexprset$ and $e_1, e_2 \in \sexprset$.  The truth value of Boolean
+expression $b$ determines whether $e_1$ or $e_2$ is evaluated to be the
+resulting value of the expression.  Correspondingly, in our accuracy analysis,
+we impose a constraint defined by the Boolean expression $b$ on the value
+ranges of input variables, such that $e_1$ is evaluated with the ranges of
+values satisfying the constraint, while $e_2$ is computed with ranges that
+violate the constraint.  For example, we analyze an expression $\select{(x
+< 0)}{(x + 0.1)}{x}$ in single-precision.  Initially, we assume the program
+state consists of a variable $x$, which is a floating-point value that has no
+associated round-off error and is bounded by $[-1, 10]$, that is:
+\begin{equation}
+    \left[ x \mapsto \left( [-1, 10], [0, 0] \right) \right]
+\end{equation}
+We consider two cases, when the condition $x < 0$ is respectively true and
+false.  For $x < 0$ to be true, $x$ must be in the range of $v^\sharp_b = [-1,
+0^{-}]$, where $0^{-}$ is the greatest single-precision floating-point value
+less than 0, because $x$ must be strictly smaller than $0$.  Then we restrict
+the range of $x$ to $v^\sharp_b$, so $x + 0.1$ is analyzed to be $(v^\sharp_1,
+e^\sharp_1)$, where:
+\begin{equation}
+    ( v^\sharp_1, e^\sharp_1 ) = (
+        [-0.899999976, 0.100000001],
+        [-3.12924406 \times 10^{-8}, 2.83122095 \times 10^{-8}]
+    )
+\end{equation}
+Similarly, when $x < 0$ is false, we restrict the bound on $x$ with
+$v^\sharp_{\neg b} = [0, 10]$ and analysis of the expression $x$ simply gives
+$v^\sharp_2 = [0, 10]$ and no round-off error, $e^\sharp_2 = [0, 0]$.  Finally,
+the analyzed result for the expression can be obtained by joining these two
+cases together, by respectively taking the union of the value intervals
+$v^\sharp_1$ and $v^\sharp_2$, which produces $v^\sharp = [-0.899999976, 10]$,
+and the error bounds $e^\sharp_1$ and $e^\sharp_2$, which is $e^\sharp =
+e^\sharp_1$.  The final result is therefore $(v^\sharp, e^\sharp)$:
+\begin{equation}
+    ( v^\sharp, e^\sharp ) = (
+        [-0.899999976, 10],
+        [-3.12924406 \times 10^{-8}, 2.83122095 \times 10^{-8}]
+    )
+\end{equation}
+
+We now provide a formal definition of the above example analysis.  First, we
+define the meaning of taking the union of two intervals:
+\begin{equation}
+    [a, b] \join [c, d] = [\min(a, c), \max(b, d)]
+\end{equation}
+Then the formula
+\begin{equation}
+    (v^\sharp_1, e^\sharp_1) \join (v^\sharp_2, e^\sharp_2) =
+    (v^\sharp_1 \join v^\sharp_2, e^\sharp_1 \join e^\sharp_2) 
+\end{equation}
+is used to take the union of both $(v^\sharp_1, e^\sharp_1), (v^\sharp_2,
+e^\sharp_2) \in \errorset$.  We then use the notation $\sigma^\sharp|_b$ and
+$\sigma^\sharp|_{\neg b}$, where $\sigma^\sharp \in \errordom$ is the program
+state, and $b \in \bexprset$ is the Boolean expression, to respectively mean
+the program state $\sigma^\sharp$ is constrained by when $b$ is evaluated to be
+either true or false.  Therefore, the following formula is used to perform the
+accuracy analysis on a conditional expression:
+\begin{equation}
+    \exprerrorfunc{%
+        \begin{aligned}
+            \includegraphics[scale=\mirfigscale]{cond_expr}
+            \vspace{-5pt}
+        \end{aligned}
+    }{\sigma^\sharp}
+    =
+    \left(\exprerrorfunc{e_1}{\sigma^\sharp|_b}\right) \join
+    \left(\exprerrorfunc{e_2}{\sigma^\sharp|_{\neg b}}\right).
+\end{equation}
+
+\subsubsection{Fixpoint Operator}
+
+An expression with a fixpoint operator, $\fixpoint{b, \mu_s, x}$, has
+three child nodes, the Boolean expression $b \in \bexprset$, the loop body
+represented with an MIR $\mu_s \in \mirset$, and the return variable $x \in
+\varset$.  Similar to executing a \whilelit~loop, evaluating the expression is
+to iteratively evaluate $b$ for its truth value, if $b$ is true, then the loop
+MIR $\mu_s$ is used to update the program state for the next iteration and we
+repeat the process and iterate until $b$ is evaluated to false.
+
+Before we explain how a fixpoint expression can be analyzed for its accuracy,
+we introduce the concept of \emph{loop invariants} (LI).  In our context, an LI
+of a \whilelit~loop is a set of bounds on loop variables that holds invariantly
+on entry to each loop iteration.  For example, in~\eqref{eq:syntax_example},
+if our input is $n = 10$, then the LI on the variable $x$ is that its value is
+an integer, and is bounded by $[0, 9]$ on loop entry, whereas on loop exit,
+$x$ is always equal to $10$.  The reason for inferring the LI is that, because
+we optimize the fixpoint expression's child nodes in a bottom-up hierarchy,
+the child $\mu_s$ is optimized before the expression $\fixpoint{b, \mu_s, x}$
+itself, we are using the LI as the input state to optimize $\mu_s$, because the
+LI encompasses all possible program states the loop body $\mu_s$ will encounter
+when executed.
+
+Our accuracy analysis follows a similar pattern.  Initially, we start
+with an input state $\sigma^\sharp_0$.  In the first iteration $k = 0$,
+$\sigma^\sharp_k = \sigma^\sharp_0$ is split into two disjoint parts,
+namely, $\sigma^\sharp_0|_b$ and $\sigma^\sharp_0|_{\neg b}$, they
+respectively satisfies and violates the Boolean constraint $b$.  The state
+$\sigma^\sharp_0|_b$ represents all possible program states that enters the
+loop $\mu_s$, so $\sigma^\sharp_1 = \mirerrorfunc{\mu_s}{\sigma^\sharp_0|_b}$
+captures all possible program states after the loop body.  This procedure
+is repeated for iterations $k = 1, 2, 3, \ldots$, until a certain iteration
+$n$, where $\sigma^\sharp_n = \sigma^\sharp_{n-1}$.  Hence, we can obtain the
+LI by computing $\sigma^\sharp_0|_b \join \sigma^\sharp_1|_b \join \cdots
+\join \sigma^\sharp_n|_b$, and the loop exit states with its counterpart,
+\ie~$\sigma^\sharp_0|_{\neg b} \join \sigma^\sharp_1|_{\neg b} \join \cdots
+\join \sigma^\sharp_n|_{\neg b}$.  The meaning of $\join$ operator on states
+is similar to joining intervals and value-error bounds, which is defined
+to join the two value-error bounds in respective states for each variable, which is defined as follows, where $\sigma^\sharp_a, \sigma^\sharp_b \in \errordom$:
+\begin{equation}
+    \sigma^\sharp_a \join \sigma^\sharp_b =
+        {%
+            [ x \mapsto \sigma^\sharp_a(x) \join \sigma^\sharp_b(x) ]
+        }_{x \in \varset}.
+\end{equation}
+
+The process above is achieved with the algorithm in Figure~\ref{alg:fix}.
+The value $\bot$ indicates an empty or unreachable state, and for any
+state $\sigma^\sharp \in \errordom$, we have $\bot \join \sigma^\sharp =
+\sigma^\sharp$.  The return values $li$ and $le$ are respectively the LI and
+the loop exit state.
+\newcommand{\statett}{\ensuremath\sigma^\sharp_{\mathrm{tt}}}
+\newcommand{\stateff}{\ensuremath\sigma^\sharp_{\mathrm{ff}}}
+
+\begin{figure}[ht]
+    \centering
+    \begin{algorithmic}
+        \Function{Fixpoint-Analysis}{$\fixpoint{b, \mu_s, x}, \sigma^\sharp$}
+            \State{%
+                $\sigma^\sharp_0 \gets \sigma^\sharp$;
+                $li \gets \bot$; $le \gets \bot$; $k \gets 0$
+            }
+            \Loop%
+                \State{$\statett \gets \sigma^\sharp_k|_b$;}
+                \State{$\stateff \gets \sigma^\sharp_k|_{\neg b}$}
+                \State{$li \gets li \join \statett$;}
+                \State{$le \gets le \join \stateff$}
+                \State{%
+                    $\sigma^\sharp_{k + 1} \gets
+                    \mirerrorfunc{\mu_s}{\sigma^\sharp_{tt}}$}
+                \If{$\sigma^\sharp_{k + 1} = \sigma^\sharp_{k}$}
+                    \State{\Return{$li$, $le$}}
+                \EndIf%
+                \State{$k \gets k + 1$}
+            \EndLoop%
+        \EndFunction%
+    \end{algorithmic}
+    \caption{%
+        The accuracy analysis of a fixpoint expression.}\label{alg:fix}
+\end{figure}

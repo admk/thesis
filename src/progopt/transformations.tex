@@ -1,0 +1,18 @@
+\section{Transformations}
+\label{sec:transformations}
+
+The next step is to use the analyses of accuracy and resource usage of
+equivalent structures in MIRs to efficiently discover optimized equivalent
+MIRs.  We start by providing an overview of how the accuracy of simple
+arithmetic expressions are analyzed with the \soap{} framework, and since it
+only allows arithmetic expressions with simple operators $\{+, -, \times\}$, we
+explain how it can be extend fully to analyze MIRs and semantic expressions.
+Then this section is followed by a detailed explanation of how resources
+in MIRs can be shared and how to analyze the resource utilization of MIRs.
+Finally, equivalent relations are defined for the discovery of equivalent
+structures, and we guide this process efficiently with our analyses of accuracy
+and resource usage.
+
+\input{progopt/accuracy}
+\input{progopt/resource}
+\input{progopt/equivalent}

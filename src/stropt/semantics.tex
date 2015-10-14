@@ -40,18 +40,18 @@ defined for the semantics as in~\eqref{eq:error_semantics}:
 \begin{equation}
     \begin{aligned}
         (x^\sharp_1, \mu^\sharp_1) + (x^\sharp_2, \mu^\sharp_2)
-    &=  (\roundup(x^\sharp_1 + x^\sharp_2),
+    &=  (\roundup{x^\sharp_1 + x^\sharp_2},
          \mu^\sharp_1 + \mu^\sharp_2 +
-         \rounddown(x^\sharp_1 + x^\sharp_2)) \\
+         \rounddown{x^\sharp_1 + x^\sharp_2}) \\
         (x^\sharp_1, \mu^\sharp_1) - (x^\sharp_2, \mu^\sharp_2)
-    &=  (\roundup(x^\sharp_1 - x^\sharp_2),
+    &=  (\roundup{x^\sharp_1 - x^\sharp_2},
          \mu^\sharp_1 - \mu^\sharp_2 +
-         \rounddown(x^\sharp_1 - x^\sharp_2)) \\
+         \rounddown{x^\sharp_1 - x^\sharp_2}) \\
         (x^\sharp_1, \mu^\sharp_1) \times (x^\sharp_2, \mu^\sharp_2)
-    &=  (\roundup(x^\sharp_1 \times x^\sharp_2),
+    &=  (\roundup{x^\sharp_1 \times x^\sharp_2},
             x^\sharp_1 \times \mu^\sharp_2 + x^\sharp_2 \times \mu^\sharp_1 +
             \mu^\sharp_1 \times \mu^\sharp_2 +
-            \rounddown(x^\sharp_1 \times x^\sharp_2)) \\
+            \rounddown{x^\sharp_1 \times x^\sharp_2}) \\
     &\qquad\qquad\qquad\qquad\qquad\qquad\text{~for~}
         (x^\sharp_1, \mu^\sharp_1) \in \errorset,
         (x^\sharp_2, \mu^\sharp_2) \in \errorset
@@ -60,7 +60,7 @@ defined for the semantics as in~\eqref{eq:error_semantics}:
 \end{equation}
 The addition, subtraction and multiplication of intervals follow the standard
 rules of interval arithmetic defined earlier in~\eqref{eq:interval_operations}.
-In~\eqref{eq:error_semantics}, the function $\rounddown: \intervalset \to
+In~\eqref{eq:error_semantics}, the function $\rounddownop: \intervalset \to
 \intervalset$ determines the range of roundoff error due to the floating-point
 computation under one of the rounding modes $\circ \in \{ -\infty, \infty, 0,
 \neg0, \sim \}$ which are round towards negative infinity, towards infinity,
@@ -89,7 +89,7 @@ f_2$~\cite{goldberg}. In our analysis, the function $ulp$ is defined as:
 \end{equation}
 where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
 floating-point format as defined in~\eqref{eq:floating_point}. The function
-$\roundup: \intervalset \to \floatintervalset$ computes the floating-point
+$\roundupop: \intervalset \to \floatintervalset$ computes the floating-point
 bound from a real bound, by rounding the infimum $a$ and supremum $b$ of the
 input interval $[a, b]$.
 
@@ -100,7 +100,7 @@ in Figure~\ref{fig:sample_tree}. Then the exact ranges of values of $a$ and
 $b$ are converted into the abstract semantics using a cast operation as in
 \eqref{eq:cast}:
 \begin{equation}
-    cast(x^\sharp) = (\roundup(x^\sharp), \rounddown(x^\sharp))
+    cast(x^\sharp) = (\roundup{x^\sharp}, \rounddown{x^\sharp})
     \label{eq:cast}
 \end{equation}
 For example, for the variable $a \in [0.2, 0.3]$ under single precision

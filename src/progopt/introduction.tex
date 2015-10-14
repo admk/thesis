@@ -1,0 +1,112 @@
+\section{Introduction}
+
+% floating-point arithmetic has round-off errors, exploit equivalence
+
+As we have explained earlier, due to a finite number of values that
+can be represented in floating-point arithmetic, numerical algorithms
+generally always have round-off errors.  Therefore, equivalence rules
+such as \emph{associativity} $(a + b) + c \equiv a + (b + c)$, and
+\emph{distributivity} $(a + b) \times c \equiv a \times c + b \times c$
+for real arithmetic no longer hold under floating-point arithmetic.  This
+allows us to exploit these equivalence relations, to automatically generate
+different equivalent expressions from the same arithmetic expression.  For the
+optimization of FPGA implementations, these equivalent expressions can then
+be selected for the optimal trade-off between resource usage when synthesized
+into circuits, that is, the number of look-up tables (LUTs) and digital
+signal processing (DSP) elements utilized, and accuracy when evaluated using
+floating-point computations.  For example, with single precision floating-point
+format, our tool found that give an input $x \in [0, 100]$ and $y \in [0, 2]$,
+then the program:
+\begin{equation}
+    \begin{aligned}
+        & \iflit~(x < 1)~\thenlit~( \\
+        & \quad \assignstmt{x}{(x + y) + 0.1} \\
+        & )~\elselit~( \\
+        & \quad \assignstmt{x}{x + (y + 0.1)} \\
+        & )
+    \end{aligned}
+\end{equation}
+is most accurate when the subexpression $(x + y) + 0.1$ is written as
+$(x + 0.1) + y$, because the subexpression is only evaluated when $x <
+1$, our tool infers a tighter bound on $x$, $[0, 1]$, to optimize it;
+and the original program uses fewest resources when subexpressions are
+shared and the \if~statement is eliminated, \ie~``$\assignstmt{x}{x + (y
++ 0.1)}$''.  This kind of optimization generates a Pareto optimal set of
+implementations.  A na{\"\i}ve strategy to search for the Pareto optimal
+implementations is to discover all possible equivalent expressions.  However,
+this would result in combinatorial explosion and become intractable even
+for very small expressions~\cite{soap,ioualalen,mouilleron}.  To remedy
+this, Gao~\etal~\cite{soap} proposed a novel approach, known as \soap, to
+significantly reduce the space and time complexity to produce a subset of the
+Pareto frontier.
+
+% program transformation why?
+
+In this chapter, we propose a new general \emph{program} optimization technique
+for numerical algorithms, which allows \texttt{if} statements as well as
+\texttt{while} loops, and developed its accompanied tool, \newsoap, to enable
+the joint optimization of accuracy and resource usage, as well as the trade-off
+between these performance metrics.  We develop a tool, which we call \newsoap,
+to perform source-to-source optimization of numerical programs targeting FPGAs,
+and generate implementations that trade off resource usage and numerical
+accuracy.
+
+Our program optimization flow is \emph{safe}, \emph{semantics-directed} and
+\emph{flexible}. \emph{Safety} means that because we make use of formal
+mathematics to optimize programs, our approach can be proved correct, in
+the sense that when executed using exact real arithmetic, the transformed
+version produces exactly the same output values as the original program.
+\emph{Semantics-directed} transformation means that not only do we use
+program syntax, but also the semantics to guide optimization and guarantee
+safety properties of the optimized program.  Our technique obtains when
+necessary, by analyzing the program, a bound and a round-off error bound on
+each variable in every program location.  These information are then used
+to guide program optimization.  By analyzing and manipulating not only the
+syntax, but also the semantics of programs.  The meaning of a \emph{flexible}
+program transformation is three-fold.  First, arithmetic computations can be
+optimized across assignments, \iflit~statements and \whilelit~loops.  Secondly,
+we automatically explore the numerical implications of partial loop unrolling
+and loop splitting, which can create more opportunity for minimizing round-off
+errors, hence further increases range of options in the Pareto frontier of
+trade-offs.  Finally, our method naturally subsumes constant propagation,
+redundant code elimination, and also branch and loop fusions.
+
+% Our tool fits in the familiar setting of the high-level synthesis tool flow, as a front-end that performs the source-to-source optimization of 
+
+Our main contributions in this chapter are as follows:
+\begin{enumerate}
+    \vspace{-6pt}
+    \item
+        A new intermediate representation of the behaviour of numerical
+        programs, its structure is designed to be manipulated and analyzed
+        with ease.  A new framework of numerical program transformations is
+        developed to enable the back and forth translation between the program
+        and a new intermediate representation (IR), which preserves the
+        semantics of the original program.
+    \vspace{-6pt}
+    \item
+        Semantics-based analyses that reason about not only the resource
+        utilization (number of LUTs and DSP elements), and safe ranges of
+        values and errors for programs, but also potential errors such as
+        overflows and non-termination.
+    \vspace{-6pt}
+    \item
+        A new tool, \newsoap, which trades off resource usage and accuracy
+        by providing a safe, semantics-directed and flexible optimization
+        targeting numerical programs for high-level synthesis.
+    \vspace{-6pt}
+\end{enumerate}
+
+Section~\ref{sec:related_work} provides an overview of the existing work
+related in both the software and high-level synthesis community.  We then
+proceed to define our program syntax in Section~\ref{sec:syntax_definition}.
+Using the syntax definition, we provide a detailed formal explanation
+of our numerical program transformation, which consists of three
+stages.  Section~\ref{sec:program_to_mir}, {}~\ref{sec:transformations},
+{}~\ref{sec:code_generation} describe in sequence how numerical programs
+can be translated into MIRs, how we infer bounds and error bounds on
+variables and analyze resource usage estimates for the efficient discovery
+of equivalent structures in the analyzed MIR, and finally, we explain how
+a chosen MIR can be translated into an optimized numerical program.  Then
+we present the optimization results in Section~\ref{sec:results} and
+Section~\ref{sec:conclusion} concludes this chapter.

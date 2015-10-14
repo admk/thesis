@@ -1,0 +1,55 @@
+\section{Related Work}
+\label{sec:related_work}
+
+There are many existing techniques that trade off resource usage and
+numerical accuracy in circuits.  Word-length optimization is a classical
+method for trading off precision and performance by minimizing data path
+word-lengths~\cite{constantinides}.  In the high-level synthesis (HLS)
+community, a technique is developed in~\cite{menard12} to automatically
+implement a floating-point program with fixed-point arithmetic.  However,
+these methods changes datapath size by varying \emph{precisions} of arithmetic
+operators, whereas there is currently little work on performing structural
+improvements to datapaths in HLS, except for \soap{}'s arithmetic expression
+optimization~\cite{soap}.
+
+With regard to the structural optimization of only arithmetic expressions
+without control structures, currently there are only a handful of tools that
+could optimize by \emph{truly restructuring}, \ie~they exploit any of the three
+equivalence relations in real arithmetic, namely associativity, commutativity
+and distributivity.  Many target either numerical accuracy~\cite{martel07,
+ioualalen}, or performance considerations such as resources, latency, or
+throughput~\cite{gcc, llvm, vivado_hls, mouilleron, hosangadi, peymandoust}.
+Currently, \soap{} is the only tool that could trade off area and accuracy in
+this category.
+
+For true numerical software transformation with control structures, a
+method has been developed in~\cite{martel09} to utilize abstract interpretation
+and natural semantics~\cite{kahn87}.  However, this technique can neither
+unroll loops partially, nor optimize across loop boundaries.  Furthermore,
+they optimizes specifically numerical accuracy, and found that frequently
+this technique produces much slower implementations, while we also consider
+performance, by improving both accuracy and the resource usage of programs.
+
+In software, \emph{equality saturation} is proposed in~\cite{tate09}.  It
+creates a new intermediate representation, PEG, similar to our MIR, to
+encode the effects of executing the program, and used to discover equivalent
+structures.  The differences between PEG and our MIR is that, instead of using
+graphs with cycles in them to represent \whilelit~loops, we use a directed
+acyclic graph to encode programs and use a \emph{fixpoint} operator to define
+recursive functions which can be used to represent loops.  Cycles in graphs
+require reanalyzing a large proportion of the IR whenever a structural
+modification is made, whereas a tree structure can be reasoned in a bottom-up
+hierarchy.  This has significant implications on program transformation.
+First, for the above reason, their approach does not use semantics to optimize
+for numerical accuracy, while our method reasons about semantics and utilize
+them to steer optimization routes.  Moreover, tree structure allows us to
+easily support partial loop unrolling by simply extending the equivalence
+relations while avoiding re-evaluation.  In contrast, like~\cite{martel09},
+equality saturation is unable to perform partial loop unrolling.
+
+As none of the above-mentioned looks at the multiple-objective optimization
+of numerical programs, we are the first to propose a tool that performs a
+semantics-directed and truly restructuring program transformation, which
+optimizes not only arithmetic expressions, but also numerical programs, for the
+trade-off between numerical accuracy and resource usage when synthesized to
+FPGAs.

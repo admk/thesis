@@ -1,0 +1,177 @@
+\section{Program to Metasemantic Intermediate Representation}
+\label{sec:program_to_mir}
+
+The first step of our approach is to analyze the program return value
+into a metasemantic intermediate representation (MIR).  This procedure is
+called \emph{metasemantic analysis} (MA).  The MA abstracts away irrelevant
+information, and preserves the essence of program execution.  Details such
+as temporary variables and the ordering of program statements are discarded,
+whereas the abstraction still retains dataflow dependencies and keeps only
+computations that contribute to the final results.
+
+We work with the MIR as an abstraction of the program because the discovery of
+equivalent structures can be much simplified.  For instance, the program ``$x
+\assign 1 \semicolon y \assign 2$'' is the same as ``$y \assign 2 \semicolon x
+\assign 1$'' because interleaving of non-dependent statements does not change
+program semantics.  If we were to base our transformations on the program
+syntax, we will need to enable this kind of equivalent relation even though
+it has zero impact on our optimization with respect to resource usage and
+accuracy.  A much simpler intermediate representation means that we can explore
+a much smaller search space.
+
+Our method analyzes a program by recursively dividing the program into
+smaller parts, where each part can be separately analyzed into an MIR and
+composed together to form a single MIR\@.  An MIR is a mathematical object
+that associates each program variable with a semantic expression.  A semantic
+expression is an arithmetic expression, but with additional syntactic features
+to support \iflit{} statements and \whilelit{} loops.  We represent semantic
+expressions with \emph{directed acyclic graphs} (DAGs) that share common
+structures and define $\sexprset$ as the set of semantic expressions, and
+$\mirset$ as the set of MIRs.  Because an MIR pairs a variable with an
+expression, we can view it as a function $\varset \to \sexprset$ that maps
+a variable into a semantic expression.  For instance, $\mu(x)$ returns the
+associated expression of the variable $x \in \varset$ for the MIR $\mu \in
+\mirset$.  For each variable, its semantic expression in itself provides a
+complete picture of how computations can lead to the resulting value of the
+variable.  In the rest of this section, we progressively explain how each type
+of program statement defined in~\eqref{eq:program_syntax} is analyzed into an
+MIR\@.
+
+\subsection{Skip}
+
+Because $\skipstmt$ has no effect on program states, the MIR of $\skipstmt$
+also does not alter the program state.  Its MIR is defined as $[x \mapsto
+x]_{x \in \varset}$, the subscript $x \in \varset$ denotes that the MIR is
+constructed by collecting for each program variable $x$, the mapping shown in
+the bracket, \ie~the paring of the variable $x$ with the expression $x$.  The
+subscript $x \in \varset$ means that for each $x$, the MIR pairs it with $x \in
+\sexprset$, which is a semantic expression containing just the variable $x$
+itself.  We will repeatedly make use of the notation of constructing an MIR,
+$[x \mapsto e(x)]_{p(x)}$ in the following sections, where $x$ is a variable
+and $p(x)$ is a predicate on $x$, the MIR is constructed by collecting for all
+$x$ the mapping from $x$ to the expression $e(x)$, when $p(x)$ is true.
+
+\subsection{Assignment}
+
+An assignment statement is in the form of ``$x \assign e$'', where $x \in Var$
+is a program variable and $e \in \aexprset$ is an arithmetic expression.  The
+metasemantic analysis of it produces an MIR as follows, where the operator
+$\join$ merges the two MIRs together:
+\begin{equation}
+    \left[
+        y \mapsto \left\{
+            \begin{aligned}
+                & e && \text{if~} y = x \\
+                & y && \text{if~} y \neq x
+            \end{aligned}
+        \right.
+    \right]_{y \in \varset}
+    \label{eq:mir_assign}
+\end{equation}
+The MIR in~\eqref{eq:mir_assign} signifies for a variable $y \in \varset$,
+if $y$ is $x$, then we assign the expression $e$ to the variable $x$, where
+$e$ is a semantic expression represented with a DAG\@.  The DAG shares all
+common subexpressions in $e$.  For instance, an expression written as $(x + 1)
+\times (x + 1)$ shares the subexpression node $x + 1$ by reusing the node in
+the DAG\@.  For each other program variable $y \in \varset$, where $y \neq x$,
+$y$ is associated with a semantic expression $y \in \sexprset$, representing
+that the MIR does not the value of all program variables except $x$, because
+only $x$ is updated in the statement.
+
+For example, for a program with two variables $x$ and $y$, analyzing the
+statement ``$y \assign x \times 2$'' produces the following MIR\@, note the
+variable $x$ is shared between two semantic expressions:
+\mirfig{mir_assign_2}
+
+\subsection{Sequential statements}
+\label{sub:sequential_statements}
+
+A sequential statement, ``$s_1 \semicolon s_2$'' is formed by joining together
+$s_1$ and $s_2$, where $s_1, s_2 \in \stmtset$ are statements.  It signifies
+that $s_1$ and $s_2$ are executed in sequence.  Therefore, it is necessary to
+\emph{append} the effect of executing $s_1$ to that of $s_2$, to arrive at
+the full MIR of ``$s_1 \semicolon s_2$''.  This concept can be realized by
+defining a new operator $\expand$, the substitution operator, such that the MIR
+of ``$s_1 \semicolon s_2$'' is equal to $\mu_2 \expand \mu_1$, where $\mu_1$
+and $\mu_2$ are the MIRs of $s_1$ and $s_2$ respectively.  The resulting MIR
+of $\mu_2 \expand \mu_1$ is constructed by substituting, for every expression
+$e \in \sexprset$ in $\mu_2$, each variable $x$ in $e$ with $\mu_1(x)$, which
+is the associated expression of $x$ in $\mu_1$.  Furthermore, the operator
+allows the format $e \expand \mu$, where $e \in \sexprset$ is called the target
+expression and $\mu \in \mirset$ is the source MIR, to mean the variables in
+$e$ is substituted with $\mu$ using the substitution strategy above.
+
+We illustrate this by using a simple example program $p = {}$``$x
+\assign x + 1 \semicolon y \assign x \times 2$''.  Using the MIR of
+assignments, the MIR of $p$ can be derived, as shown in the right-hand
+side of equation~\eqref{eq:mir_seq_1}.  By substituting the variables
+with corresponding expressions, we arrive at the left-hand side of
+\eqref{eq:mir_seq_1}:
+\mirfig{mir_seq_1}
+
+\subsection{Conditional Branches}
+
+Conditional branches, or \iflit~statements, are represented with ``$\iflit~
+b~ \thenlit~ s_1~ \elselit~ s_2$''.  Here $b \in \bexprset$ is a Boolean
+expression, and $s_1, s_2 \in \stmtset$ are respectively the true- and
+false-branches.  Our analysis of \iflit~statements is slightly more complex,
+as we start to consider control flows.  The analysis is carried out in two
+steps.  The first step is to compute recursively, the MIRs $\mu_1, \mu_2
+\in \mirset$ of the respective true- and false-branches, namely, $s_1$ and
+$s_2$.  We introduce the conditional node ``$?$'', which is derived from
+C syntax, to signify conditional branches in expressions.  The left-most,
+middle and right-most children of this node are respectively the Boolean
+expression, the true- and false-expressions.  Then the second step is to
+compute a new MIR, where each program variable $x \in \varset$ is associated
+with a conditional node with three children, the Boolean expression $b$,
+$\mu_1(x)$ and $\mu_2(x)$, that is, $[x \mapsto \select{b}{\mu_1}{\mu_2}]_{x
+\in \varset}$.  As an example we consider the program ``$\iflit~(x < 0)$
+$\thenlit~(y \assign x \times 2)$ $\elselit~\skipstmt$'', where the set of
+program variables is $\{x, y\}$.  Its MIR is shown in the left-hand side
+of~\eqref{eq:mir_if_2}.  Because both true- and false-expressions of $x$
+are the same, regardless of the truth value of $x < 0$, the two expressions
+will evaluated to the same value.  In our analysis we further simplify
+the expression of $x$, and the resulting MIR is in the right-hand side
+of~\eqref{eq:mir_if_2}. \mirfig{mir_if_2}
+
+The traditional approach of program abstraction uses control and data flow
+graphs (CDFGs)~\cite{namballa04}, which preserves the ordering of sequential
+statements, uses a one-to-one mapping from assignment statements to assignment
+nodes, storage nodes are used to store the result of assignments, \ie~it allows
+nodes to act as a memory to store values, and finally, uses cycles in graphs
+to represent program loops.  In contrast, our MIRs, from our analysis point of
+view, use no local storage, discard unnecessary intermediate statements, and
+most importantly, we treat control structures as operators in expressions, in
+the same way as arithmetic computations.  In comparison with CDFGs, these above
+facts make MIRs a more suitable candidate for program transformations.
+
+\subsection{``While'' Loops}
+
+For \whilelit~loops, ``$\whilelit\, b\, \dolit\, s$'', where $b \in \bexprset$
+and $s \in \stmtset$, we begin by proposing a new operator for semantic
+expressions, ``$\fix$'', which we call the \emph{fixpoint} operator.  It is
+used to stand for \whilelit~loop structures in semantic expressions.  It has
+three child nodes, the Boolean expression $b$, the loop body represented by an
+MIR, and the loop exit variable.  The loop body MIR can be obtained with our MA
+of the loop body, and the loop exit variable denotes which variable we use on
+loop exit as the evaluated value of the fixpoint expression.  We let $\mu_s$ to
+be the MIR of the loop body $s$, and derive the MIR of ``$\whilelit\, b\, s$'',
+by computing the fixpoint expression for each variable:
+\begin{equation}
+    \left[
+        x \mapsto \left\{
+            \begin{aligned}
+                & \begin{aligned}
+                    \includegraphics[scale=\mirfigscale]{fix_expr}
+                \end{aligned} && \text{if~} x \in \varfunc{\mu_s} \\
+                & \quad ~ ~ x && \text{otherwise}
+            \end{aligned}
+        \right.
+    \right]_{x \in \varset}
+    \label{eq:mir_while}
+\end{equation}
+Here, $\varfunc{\mu_s}$ computes the set of variables that is assigned in the
+loop body $\mu_s$.  If a program variable $x$ is in the set $\varfunc{\mu_s}$,
+it is paired with its fixpoint expression $\fixpoint{b, \mu_s, x}$; otherwise
+the variable $x$ is not updated in the loop, and the loop has no effect on its
+value, therefore it is paired with an expression $x$.
