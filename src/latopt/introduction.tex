@@ -1,0 +1,157 @@
+\section{Introduction}
+\label{sec:introduction}
+
+There are many reasons why FPGA implementations of numerical algorithms
+are best obtained via high-level synthesis (HLS) from C\@: less
+development effort, the abundance of software engineers compared to
+hardware designers, the relative ease of testing C code on an ordinary
+microprocessor, the opportunities for rapid design space exploration, and
+so on~\cite{meeus12}. Great advances have been made in this area recently,
+and the output from HLS tools is nowadays competitive with hand-crafted
+designs~\cite{bdti_xilinx}.
+
+Numerical C programs typically spend most of their time in loops.  For this
+reason, HLS tools adopt state-of-the-art \emph{polyhedral compilation}
+techniques~\cite{canis14} to synthesize loops to run as fast as possible.  This
+is achieved by pipelining them to maximally exploit parallelism across loop
+iterations.  Certain program transformations, such as conventional program
+equivalences (\eg~partial loop unrolling and array access pattern changes) are
+highly ubiquitous in their compilation process.
+
+However, their ability to perform pipelining, even with any combinations of
+these equivalences, is fundamentally constrained by data dependences that
+are carried across iterations, \ie~\emph{inter-iteration dependences}.  To
+relax these constraints, we must use equivalence rules in real arithmetic
+(\eg~associativity and distributivity), in tandem with the conventional rules
+above to enable much more efficiently pipelined RTL designs.  A simple example
+of this is the summation of all elements in an array:
+\begin{lstlisting}
+  float sum = 0;
+  for (int i = 0; i < N; i++)
+    sum += a[i];
+\end{lstlisting}
+This code can be partially unrolled and the sequence of additions can be
+rewritten using tree adders to reduce its latency, but we will see later in
+Sec.~\ref{sec:results} that more efficient implementations are possible.
+
+Unfortunately, in the presence of floating-point arithmetic, these program
+transformations could have an impact on numerical accuracy.  For instance,
+under single-precision floating-point arithmetic with rounding to the nearest,
+the result of $(2^{-24} + 2^{-24}) + 1 = 1.00000012\textellipsis$ is exact,
+but $(1 + 2^{-24}) + 2^{-24}$ is rounded to $1$.  The difference between
+the actual result in real arithmetic and the rounded result is known as the
+\emph{round-off error}.  Round-off errors, when accumulated, can have a
+devastating effect on numerical accuracy~\cite{higham02}.  Round-off errors in
+a numerical program are dependent on every arithmetic operation and every input
+value, and with the impact on floating-point accuracy being so esoteric, it is
+challenging for engineers to understand the repercussions of switching between
+``\verb|(a + b)| \verb|* c|'' and ``\verb|a * c +| \verb|b * c|'' in their
+programs.
+
+Experienced engineers apply expression rewriting intuitions in numerical
+programs.  For instance, when summing a sequence of floating-point values, one
+can sometimes reduce round-off error in the result by summing the inputs in
+ascending order.  On the other hand, one can often reduce latency by applying
+\emph{expression balancing}, \ie~rearranging operators in an expression to
+construct a balanced tree, so that more operators can work in parallel.  These
+heuristics cover a very limited number of possible transformations and may not
+always improve the original code.  Therefore a trivial process does not exist
+to apply steps of transformations using equivalence rules to \emph{optimally}
+trade off latency, resources and numerical accuracy.
+
+Existing HLS tools consider these rewrites to be unsafe, and thus make very
+limited use of them when restructuring floating-point data-paths.  For
+instance, Vivado HLS~\cite{vivado_hls} has only a very simple \emph{expression
+balancing} feature that uses associativity to improve latency, and only
+expressions with either additions or multiplications are optimized.  Moreover,
+it does not produce optimal loop pipelining, because it does not take
+into account the implications of these transformations on inter-iteration
+dependences and does not explore partial loop unrolling.  In addition, Vivado
+HLS cannot reason about how this feature affects numerical accuracy; there is
+no guarantee that this transformation will not result in a catastrophically
+inaccurate implementation.
+
+In response, we have developed a tool---a fully automatic source-to-source
+optimizer---that augments Vivado HLS, by optimizing a given program using these
+transformations.  Our optimizer discovers not only one, but a wide spectrum of
+program candidates.  When synthesized in Vivado HLS, these candidates trade
+off three performance metrics of great importance to engineers: run time,
+resource usage and round-off error.  Here, run time refers to the latency in
+clock cycles, resource usage refers to the number of look-up tables (LUTs)
+and digital signal processing (DSP) elements.  Some of these performance
+metrics could be in conflict.  For example, higher performance tends to
+require more circuitry, and how to resolve this trade-off depends on the
+user's requirements.  As a result, our tool produces a \emph{set} of optimized
+programs, known as the \emph{Pareto frontier}: those programs $P$ for which the
+tool has found no $P'$ that improves on $P$ in all three metrics.
+
+In contrast to the expression balancing optimization pass in Vivado HLS,
+our tool \emph{automatically} produces results that are significantly
+better than \emph{manually} tuning partial unrolling factors and expression
+balancing \verb|#pragma|s in Vivado HLS, because it is fully aware of how
+data dependences are carried across iterations, and uses this to steer the
+optimization process.  Our tool is also fully aware of the impact these
+transformations could have on round-off errors, and minimizes them in the
+optimization process, as we treat numerical accuracy as one of the three
+simultaneous objectives.  Furthermore, Vivado HLS only generates one result
+which does not necessarily improve over the original code.
+
+Generating candidate optimizations na{\"\i}vely would produce a combinatorial
+explosion, even for small input programs.  For instance, a simple summation of
+$n$ variables could have $(2n - 1)!! = 1 \times 3 \times 5 \times \textellipsis
+\times (2n - 1)$ equivalent expressions~\cite{mouilleron}.  Therefore, we
+base our optimizer on the open-source \SOAP{} framework~\cite{soap2}, which
+specifically tackles the efficient discovery of equivalent structures in
+numerical programs, by intelligently pruning the set of candidates as it
+progresses up the input program's abstract syntax tree.  We also exploit
+\SOAP{}'s ability to analyze the numerical accuracy of a given program.  To
+analyze the run time and resource utilization of a given program, we use a
+variant of the \emph{iterative modulo scheduling} algorithm~\cite{rau94} that
+computes fundamental lower bounds of these metrics.
+
+We evaluated our tool on a suite of 11 programs from the Livermore
+Loops~\cite{livermore} and PolyBench~\cite{polybench} benchmark suites.  Our
+tool obtained a wide selection of Pareto-optimized programs.  Programs with
+the best latency obtained speedups of up to $12\times$ ($7\times$ on average
+across the suite), and increases in accuracy of up to $7\times$ ($2.7\times$
+on average), while using up to $4\times$ ($2.5\times$ on average) more look-up
+tables (LUTs).  We were unable to decrease the resource utilization in any of
+the benchmarks, as they have no redundant computations.
+
+\begin{trivlist}\item{\bf Our contributions}
+
+\begin{itemize}
+
+    \item We are the first to describe how standard program equivalence
+    that do not affect program behavior, \eg~partial loop unrolling and
+    rules that removes extraneous array accesses, can give rise to the
+    freedom for non-standard transformation rules, \eg~arithmetic rules to
+    significantly impact latency, resource usage and accuracy in a loop
+    (Sec.~\ref{sub:transformation_rules}).
+
+    \item We significantly improve the performance of the efficient
+    discovery of equivalent through improved accuracy analysis
+    (Sec.~\ref{sub:accuracy_analysis}), graph partitioning and intelligent
+    pruning of optimization candidates (Sec.~\ref{sub:algorithm}).
+
+    \item We designed a new scheduling analysis that estimates
+    the latency and resource usage of a given optimized candidate
+    (Sec.~\ref{sec:performance_analysis}).
+
+    \item Incorporating the above-mentioned techniques, we have developed
+    the first optimizer to \emph{automatically} and \emph{safely} produce
+    optimized programs (and subsequent RTL implementations with Vivado HLS) on
+    the three-dimensional Pareto frontier of options that trade off run time,
+    accuracy, and area.  Our improvements on latency are notably better than
+    the only ones produced by Vivado HLS's \emph{unsafe} optimizations. We have
+    evaluated our tool on a suite of Livermore Loops and PolyBench benchmarks
+    (Sec.~\ref{sec:results}).
+
+\end{itemize}
+
+\end{trivlist}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

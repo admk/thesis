@@ -28,17 +28,51 @@
     bibstyle=alphabetic,
     wrapfooter=true,
 ]{cleanthesis}
-\usepackage{subfiles}
+% \usepackage[inference]{semantic}
+% \usepackage{flushend}   % balance end of page columns
+\usepackage[inference]{semantic}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage[inference]{semantic}
+\usepackage{booktabs}   % for \toprule and \bottomrule
+\usepackage{colortbl}   % for \rowcolor, \cellcolor, etc.
+\usepackage{color}
+\usepackage{courier}    % makes \tt font same size as \rm font
+\usepackage{fixltx2e}   % for \textsubscript and \textsuperscript
 \usepackage{galois}
-\usepackage{algpseudocode}
 \usepackage{graphicx}
-\usepackage{url}
+\usepackage{listings}   % source code
+\usepackage{multirow}   % for \multirow
+\usepackage{pgfplotstable}
+\usepackage{pgfplots}
+\usepackage{stmaryrd}   % double brackets
+\usepackage{subfig}
+\usepackage{textgreek}  % for \textmu
+\usepackage{tikz}       % graphs
+\usepackage{todonotes}
+\usepackage{verbatim}
 
-\graphicspath{{stropt/fig/}}
+\usetikzlibrary{positioning,fit,decorations.pathmorphing,shapes}
+\graphicspath{{stropt/fig/}{progopt/fig/}{latopt/fig/}}
 \DeclareGraphicsExtensions{.pdf}
+
+\pgfplotsset{select coords between index/.style 2 args={%
+    x filter/.code={%
+        \ifnum\coordindex<#1\def\pgfmathresult{}\fi
+        \ifnum\coordindex>#2\def\pgfmathresult{}\fi
+    },
+    filter discard warning=false
+}}
+
+\lstset{%
+  language=C,
+  basicstyle=\tt,
+  columns=fixed,
+  mathescape=true,
+  keywordstyle=\bfseries,
+  otherkeywords={\#pragma,\#define},
+}
 
 %\listfiles  % Debug LaTeX Information
 
@@ -60,9 +94,12 @@
 \newcommand{\thesisUniversityPostalCode}{SW7 2AZ}
 
 \hypersetup{%
+    final=true,
     pdftitle={\thesisTitle},    %   - title (PDF meta)
     pdfauthor={\thesisName},    %   - author (PDF meta)
+    bookmarks=true,
     plainpages=false,           %   -
+    linktoc=all,
     colorlinks=false,           %   - colorize links?
     pdfborder={0 0 0},          %   -
     breaklinks=true,            %   - allow line break inside links
@@ -70,15 +107,19 @@
     bookmarksopen=true          %
 }
 
-\newcommand{\todo}[1]{\{\{\textbf{TODO:} {#1}\}\}\typeout{TODO: {#1}}}
-
 \newcommand{\eg}{\textit{e.g.}}
 \newcommand{\etc}{\textit{etc.}}
 \newcommand{\etal}{\textit{et~al.}}
 \newcommand{\ie}{\textit{i.e.}}
 
-\DeclareMathOperator{\roundup}{\uparrow^\sharp_\circ}
-\DeclareMathOperator{\rounddown}{\downarrow^\sharp_\circ}
+% names of stuff
+\newcommand{\soap}{SOAP}
+\newcommand{\SOAP}{SOAP}
+\newcommand{\newsoap}{\textsf{SOAP2}}
+\newcommand{\numimp}{\textsf{NumImp}}
+
+\DeclareMathOperator{\roundupop}{\uparrow^\sharp_\circ}
+\DeclareMathOperator{\rounddownop}{\downarrow^\sharp_\circ}
 \DeclareMathOperator{\fresh}{\mathit{fresh}}
 \DeclareMathOperator{\eqstep}{\blacktriangleright}
 \DeclareMathOperator{\dom}{\mathrm{Dom}}
@@ -86,9 +127,9 @@
 \DeclareMathOperator{\error}{\mathrm{Error}}
 \DeclareMathOperator{\abserr}{\mathrm{AbsError}}
 \DeclareMathOperator{\abs}{\mathrm{abs}}
-\DeclareMathOperator{\fix}{\mathrm{fix}}
 \DeclareMathOperator{\frontier}{\textsc{Frontier}}
 
+\newcommand{\integerset}{\ensuremath\mathbb{Z}}
 \newcommand{\naturalset}{\ensuremath\mathbb{N}}
 \newcommand{\realset}{\ensuremath\mathbb{R}}
 \newcommand{\floatset}{\ensuremath\mathbb{F}}
@@ -96,11 +137,11 @@
 \newcommand{\intervalset}{\ensuremath\mathbf{Interval}}
 \newcommand{\floatintervalset}{\ensuremath\intervalset_\floatset}
 \newcommand{\errorset}{\ensuremath\mathbb{E}^\sharp}
+\newcommand{\errordom}{\ensuremath\mathbf{\Sigma}_{\errorset}}
 \newcommand{\labelset}{\ensuremath\mathbf{Label}}
 \newcommand{\exprset}{\ensuremath\mathbf{Expr}}
 \newcommand{\varset}{\ensuremath\mathbf{Var}}
 \newcommand{\env}[1]{\ensuremath\mathbf{Env}_{#1}}
-\newcommand{\eqrel}{\ensuremath\mathbin{\rhd}}
 \newcommand{\enter}[1]{\ensuremath{A({#1})}}
 \newcommand{\interval}[2]{\ensuremath\left[{#1}, {#2}\right]}
 \newcommand{\lattice}[2]{\ensuremath\left<{#1}, {#2}\right>}
@@ -110,3 +151,119 @@
 \newcommand{\marteltrace}{\texttt{martel\_trace}}
 \newcommand{\frontiertrace}{\texttt{frontier\_trace}}
 \newcommand{\greedytrace}{\texttt{greedy\_trace}}
+
+% program objects
+\newcommand{\inttype}{\texttt{int}}
+\newcommand{\floattype}{\texttt{float}}
+\newcommand{\aexprset}{\ensuremath\mathbf{ArithExpr}}
+\newcommand{\bexprset}{\ensuremath\mathbf{BoolExpr}}
+\newcommand{\stmtset}{\ensuremath\mathbf{Stmt}}
+
+% program syntax
+\DeclareMathOperator{\notop}{\mathtt{not}}
+\newcommand{\andop}{\ensuremath\mathbin\mathtt{and}}
+\newcommand{\orop}{\ensuremath\mathbin\mathtt{or}}
+\newcommand{\semicolon}{\ensuremath\mathbin{;}}
+\newcommand{\assign}{\ensuremath\mathbin{:=}}
+\newcommand{\iflit}{\texttt{if}}
+\newcommand{\thenlit}{\texttt{then}}
+\newcommand{\elselit}{\texttt{else}}
+\newcommand{\whilelit}{\texttt{while}}
+\newcommand{\forlit}{\texttt{for}}
+\newcommand{\dolit}{\texttt{do}}
+\newcommand{\tolit}{\texttt{to}}
+\newcommand{\assignstmt}[2]{\ensuremath{#1}\assign{#2}}
+\newcommand{\skipstmt}{\ensuremath\mathtt{skip}}
+\newcommand{\ifstmt}[2]{%
+\ensuremath\iflit \left(#1\right) \thenlit \left(#2\right)}
+\newcommand{\ifelsestmt}[3]{%
+    \ensuremath\iflit \left(#1\right) \thenlit \left(#2\right)
+    \elselit \left(#3\right)}
+\newcommand{\whilestmt}[2]{%
+    \ensuremath\whilelit \left(#1\right) \dolit \left(#2\right)}
+\newcommand{\forstmt}[2]{%
+    \ensuremath\forlit \left(#1\right) \dolit \left(#2\right)}
+
+% metasemantic syntax
+\newcommand{\qop}{\ensuremath\mathbin{?}}
+\newcommand{\colonop}{\ensuremath\mathbin{:}}
+\newcommand{\select}[3]{\ensuremath#1\qop#2\colonop#3}
+\newcommand{\expand}{\ensuremath\mathbin{\star}}
+\DeclareMathOperator{\fix}{\mathrm{fix}}
+\newcommand{\fixpoint}[1]{\ensuremath\fix\left({#1}\right)}
+\DeclareMathOperator{\accessop}{\mathrm{access}}
+\newcommand{\access}[2]{\ensuremath\accessop\left({#1}, {#2}\right)}
+\DeclareMathOperator{\updateop}{\mathrm{update}}
+\newcommand{\update}[3]{\ensuremath\updateop\left({#1}, {#2}, {#3}\right)}
+
+% metasemantic objects
+\newcommand{\sexprset}{\ensuremath\mathbf{SemExpr}}
+\newcommand{\mirset}{\ensuremath\mathbf{MIR}}
+
+% metasemantic functions
+\DeclareMathOperator{\metasemop}{\mathsf{M}}
+\DeclareMathOperator{\mirerrorop}{\mathsf{E}_\mathsf{m}}
+\DeclareMathOperator{\exprerrorop}{\mathsf{E}_\mathsf{s}}
+\DeclareMathOperator{\ulp}{\mathrm{ulp}}
+\newcommand{\varfunc}[1]{%
+    \ensuremath\mathrm{var}\left(#1\right)
+}
+\newcommand{\metasemfunc}[1]{%
+    \ensuremath\metasemop\left\llbracket{#1}\right\rrbracket}
+\newcommand{\exprerrorfunc}[1]{\ensuremath\exprerrorop\left[{#1}\right]}
+\newcommand{\mirerrorfunc}[1]{\ensuremath\mirerrorop\left[{#1}\right]}
+\newcommand{\roundup}[1]{\ensuremath\roundupop\left(#1\right)}
+\newcommand{\rounddown}[1]{\ensuremath\rounddownop\left(#1\right)}
+
+% equivalent relations
+\newcommand{\eqrel}{\ensuremath\mathbin{\rhd}}
+
+% optimization
+\DeclareMathOperator{\optimize}{\textsc{O}}
+\newcommand{\optfunc}[1]{\ensuremath\optimize\left[#1\right]}
+\DeclareMathOperator{\closure}{\textsc{C}}
+
+% misc
+\newcommand{\identity}{\mathrm{id}}
+\DeclareMathOperator{\labfunc}{\mathrm{Label}}
+
+% latency
+\newcommand\II{\mathit{II}}
+\newcommand\MII{\mathit{II}_{\rm min}}
+\newcommand\RecMII{\mathit{II}_{\rm min}^{\rm rec}}
+\newcommand\ResMII{\mathit{II}_{\rm min}^{\rm res}}
+
+\newcommand\opsymbol{\otimes}
+
+% mir figures
+\newcommand{\mirfigscale}{0.35}
+\newcommand{\mirfig}[1]{%
+    \begin{equation}
+        \begin{aligned}
+            \includegraphics[scale=\mirfigscale]{#1}
+            \label{eq:#1}
+        \end{aligned}
+    \end{equation}
+}
+
+% Add brackets around a given set of nodes
+\newcommand\brackets[1]{
+\newcommand\ticklength{1.5mm}
+\node[fit=#1, inner sep=0mm, outer sep=0.5mm] (bb) {};
+\draw ([xshift=\ticklength]bb.north west) -- (bb.north west) --
+(bb.south west) -- ([xshift=\ticklength]bb.south west);
+\draw ([xshift=-\ticklength]bb.north east) -- (bb.north east) --
+(bb.south east) -- ([xshift=-\ticklength]bb.south east);
+}
+
+\tikzset{%
+  mir/.style={%
+    node distance=3mm,
+    baseline=(current bounding box.center)
+  },
+  mirnode/.style={%
+    inner sep=0.7mm,
+    text height=1ex,
+    text depth=0ex
+  }
+}

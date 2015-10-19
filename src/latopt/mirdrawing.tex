@@ -1,0 +1,21 @@
+% Add brackets around a given set of nodes
+\newcommand\brackets[1]{
+\newcommand\ticklength{1.5mm}
+\node[fit=#1, inner sep=0mm, outer sep=0.5mm] (bb) {};
+\draw ([xshift=\ticklength]bb.north west) -- (bb.north west) --
+(bb.south west) -- ([xshift=\ticklength]bb.south west);
+\draw ([xshift=-\ticklength]bb.north east) -- (bb.north east) --
+(bb.south east) -- ([xshift=-\ticklength]bb.south east);
+}
+
+\tikzset{
+  mir/.style={
+    node distance=3mm, 
+    baseline=(current bounding box.center)
+  },
+  mirnode/.style={
+    inner sep=0.7mm, 
+    text height=1ex, 
+    text depth=0ex
+  }
+}

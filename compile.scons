@@ -1,5 +1,17 @@
 import os
-import glob
+
+
+def files_with_ext(extension):
+    filtered_files = []
+    src_prefix = '../src/'
+    for root, dirs, files in os.walk(src_prefix):
+        for file in files:
+            if not file.endswith(extension):
+                continue
+            file = os.path.join(root, file)
+            filtered_files.append(file[len(src_prefix):])
+    return filtered_files
+
 
 env = Environment(ENV=os.environ)
 
@@ -11,17 +23,12 @@ graffle_builder = Builder(
     suffix='.pdf', src_suffix='.graffle')
 env.Append(BUILDERS={'Graffle': graffle_builder})
 
-graffle_files = []
-src_prefix = '../src/'
-for graffle_file in glob.glob(src_prefix + 'fig/*.graffle'):
-    graffle_file = graffle_file[len(src_prefix):]
-    graffle_files.extend(env.Graffle(graffle_file))
-
+graffle_files = [env.Graffle(file) for file in files_with_ext('.graffle')]
 Depends(thesis, graffle_files)
 
-# PDF figures
-for pdf_file in glob.glob(src_prefix + 'fig/*.pdf'):
-    Depends(thesis, pdf_file[len(src_prefix):])
+# Other dependencies
+Depends(thesis, files_with_ext('.pdf'))
+Depends(thesis, files_with_ext('.tex'))
 
 env.Alias('graffle', graffle_files)
 env.Alias('thesis', thesis)

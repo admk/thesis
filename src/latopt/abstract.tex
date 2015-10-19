@@ -1,0 +1,25 @@
+\begin{abstract}
+
+Loops are pervasive in numerical programs, so state-of-the-art high-level
+synthesis (HLS) tools use pipelining to schedule them efficiently. Still, the
+run time performance of the resultant FPGA implementation is limited by data
+dependences between loop iterations. Some of these dependence constraints can
+be alleviated by rewriting the program according to arithmetic identities
+(\eg~associativity and distributivity), memory access reductions, and control
+flow optimizations (\eg~partial loop unrolling). HLS tools cannot safely enable
+such rewrites by default because they may spoil the accuracy of floating-point
+computations and increase area usage. In this paper, we introduce the first
+open-source program optimizer for automatically rewriting a given program to
+optimize latency while controlling for accuracy and area. Our tool reports a
+three-dimensional Pareto frontier that the programmer can use to resolve the
+trade-off according to their needs. When applied to a suite of PolyBench and
+Livermore Loops benchmarks, our tool has generated programs that enjoy up to a
+12$\times$ speedup, with a simultaneous 7$\times$ increase in accuracy, at a
+cost of up to 4$\times$ more LUTs.
+
+\end{abstract}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:
