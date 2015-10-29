@@ -99,15 +99,16 @@ which does not necessarily improve over the original code.
 Generating candidate optimizations na{\"\i}vely would produce a combinatorial
 explosion, even for small input programs.  For instance, a simple summation of
 $n$ variables could have $(2n - 1)!! = 1 \times 3 \times 5 \times \textellipsis
-\times (2n - 1)$ equivalent expressions~\cite{mouilleron}.  Therefore, we
-base our optimizer on the open-source \SOAP{} framework~\cite{soap2}, which
-specifically tackles the efficient discovery of equivalent structures in
-numerical programs, by intelligently pruning the set of candidates as it
-progresses up the input program's abstract syntax tree.  We also exploit
-\SOAP{}'s ability to analyze the numerical accuracy of a given program.  To
-analyze the run time and resource utilization of a given program, we use a
-variant of the \emph{iterative modulo scheduling} algorithm~\cite{rau94} that
-computes fundamental lower bounds of these metrics.
+\times (2n - 1)$ equivalent expressions~\cite{mouilleron}.  Therefore, we base
+our optimizer on the open-source \SOAP{} framework that we have developed in
+Chapters~\ref{chp:stropt}~\&~\ref{chp:progopt}, which specifically tackles
+the efficient discovery of equivalent structures in numerical programs,
+by intelligently pruning the set of candidates as it progresses up the
+input program's abstract syntax tree.  We also exploit \SOAP{}'s ability
+to analyze the numerical accuracy of a given program.  To analyze the run
+time and resource utilization of a given program, we use a variant of the
+\emph{iterative modulo scheduling} algorithm~\cite{rau94} that computes
+fundamental lower bounds of these metrics.
 
 We evaluated our tool on a suite of 11 programs from the Livermore
 Loops~\cite{livermore} and PolyBench~\cite{polybench} benchmark suites.  Our
@@ -125,8 +126,8 @@ the benchmarks, as they have no redundant computations.
     \item We are the first to describe how standard program equivalence
     that do not affect program behavior, \eg~partial loop unrolling and
     rules that removes extraneous array accesses, can give rise to the
-    freedom for non-standard transformation rules, \eg~arithmetic rules to
-    significantly impact latency, resource usage and accuracy in a loop
+    freedom for non-standard transformation rules, \eg~arithmetic rules,
+    to significantly impact latency, resource usage and accuracy in a loop
     (Sec.~\ref{sub:transformation_rules}).
 
     \item We significantly improve the performance of the efficient
@@ -150,8 +151,3 @@ the benchmarks, as they have no redundant computations.
 \end{itemize}
 
 \end{trivlist}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "paper"
-%%% End:

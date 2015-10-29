@@ -14,17 +14,7 @@ also have minimal round-off errors, albeit greater resource usage. We have
 demonstrated that our tool can optimize commonly used code fragments from
 PolyBench~\cite{polybench} and Livermore Loops~\cite{livermore} to have up to a
 $12\times$ increase in performance, and up to $7\times$ reduction of round-off
-errors, at the cost of up to $3.8\times$ more resource utilization.  Our tool
-is open-source and can be freely downloaded.\footnote{The URL will be available
-in the final version.} % JW: Not sure that's worth saying?
-
-Currently, our tool sees a diminishing performance return when loops are deeply
-unrolled, because of a memory bottleneck. We are exploring an extension to
-our tool that enables it to automatically partition arrays upon hitting such
-a memory bottleneck. Also, our tool currently supports only single-precision
-floating-point data types; we intend to extend this to multiple-precision
-types, and explore the impact on our three performance metrics: latency,
-resource utilization and numerical accuracy.
+errors, at the cost of up to $3.8\times$ more resource utilization.
 
 %%% Local Variables:
 %%% mode: latex

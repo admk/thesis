@@ -76,25 +76,25 @@ at a cost of less points on the Pareto frontier.
     \centering
     \begin{algorithmic}
 \Function{Optimize}{$op(e_1, e_2)$}
+    \State{$s_1 \gets$ \Call{Optimize}{$e_1$}}
+    \State{$s_2 \gets$ \Call{Optimize}{$e_2$}}
+    \State{$s^\prime \gets \varnothing$}
     \State{%
-        $s_1 \gets$ \Call{Optimize}{$e_1$},~{}
-        $s_2 \gets$ \Call{Optimize}{$e_2$}}
-    \State{%
-        $s^\prime \gets \varnothing$,~{}
         $s \gets \left\{
             op(e^\prime_1, e^\prime_2) \mid
             e^\prime_1 \in s_1 \wedge e^\prime_2 \in s_2
         \right\}$}
     \While{$s \neq s^\prime$}
-        \State{$s^\prime \gets s,~{} s^{\prime\prime} \gets \varnothing$}
+        \State{$s^\prime \gets s$}
+        \State{$s^{\prime\prime} \gets \varnothing$}
         \For{$r \in \mathrm{transformation\_rules}, e \in s$}
             \For{%
                 $e^\prime \text{~where~}
                     e \stackrel{r}{\rightsquigarrow} e^\prime$
             }
                 \State{%
-                    $s^{\prime\prime} \gets s^{\prime\prime} \cup
-                        \left\{ e^\prime \right\}$}
+                    $s^{\prime\prime} \gets
+                        s^{\prime\prime} \cup \left\{ e^\prime \right\}$}
             \EndFor
         \EndFor
         \State{$s \gets$ \Call{Prune}{$s^{\prime\prime}$}}
@@ -131,7 +131,7 @@ c)}
 \\\hline
 \emph{Commutativity} & {\tt a + b} $~\rightsquigarrow~$ {\tt b + a}
 \\\hline
-\emph{Distributivity} & {\tt (a + b) * c} $~\rightsquigarrow~$ {\tt a*c + b*c}
+\emph{Distributivity} & {\tt (a + b) * c} $~\rightsquigarrow~$ {\tt a * c + b * c}
 \\\hline
 \emph{Negation} & {\tt a - b} $~\rightsquigarrow~$ {\tt a + (-b)}
 \\\hline
@@ -143,29 +143,24 @@ c)}
 \\\hline\hline
 \multicolumn{2}{c}{\bf Control Flow Restructuring Rules}
 \\\hline
-\tstack{\emph{Partial loop} \\ \emph{unrolling}} & \tstack{{\tt for(i=0;i<1000;i++)\string{C\textsubscript{i};\string}} $~\rightsquigarrow~$ \\ {\tt for(i=0;i<1000;i+=2)\string{C\textsubscript{i}; C\textsubscript{i+1};\string}}}
+\emph{Partial loop unrolling} & \tstack{{\tt for(i=0;i<1000;i++)\string{C\textsubscript{i};\string}} $~\rightsquigarrow~$ \\ {\tt for(i=0;i<1000;i+=2)\string{C\textsubscript{i}; C\textsubscript{i+1};\string}}}
 \\\hline\hline
 \multicolumn{2}{c}{\bf Access Reduction Rules}
 \\\hline
-\emph{Multiple reads} & \tstack{{\tt x=A[i-{}-]; y=A[i+1];}
-$~\rightsquigarrow~$ \\ {\tt x=A[i-{}-]; y=x;}}
+\emph{Multiple reads} & {\tt x=A[i-{}-]; y=A[i+1];} $~\rightsquigarrow~$ {\tt x=A[i-{}-]; y=x;}
 \\\hline
-\emph{Multiple writes} & \tstack{{\tt A[i++]=x; A[i-1]=y;}
-$~\rightsquigarrow~$ \\ {\tt A[i++]=y;}}
+\emph{Multiple writes} & {\tt A[i++]=x; A[i-1]=y;} $~\rightsquigarrow~$ {\tt A[i++]=y;}
 \\\hline
-\emph{Read after write} & \tstack{{\tt A[i++]=x; y=A[i-1];}
-$~\rightsquigarrow~$ \\ {\tt A[i++]=x; y=x;}}
+\emph{Read after write} & {\tt A[i++]=x; y=A[i-1];} $~\rightsquigarrow~$ {\tt A[i++]=x; y=x;}
 \\\hline
-\tstack{\emph{Indep.\ accesses} \\
-(where $\texttt{i}\not\equiv\texttt{j}$)} & \tstack{{\tt A[i]=x; y=A[j];}
-$~\rightsquigarrow~$ \\ {\tt y=A[j]; A[i]=x;}}
+\emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) & {\tt A[i]=x; y=A[j];} $~\rightsquigarrow~$ {\tt y=A[j]; A[i]=x;}
 \\\hline
 \end{tabular}
 \caption{%
     Before-and-after examples to demonstrate the transformation rules
     we used. The arithmetic and control flow rules are inherited from
-    Gao~\etal~\cite{soap2}; the access reduction rules are introduced in this
-    work.} \label{tab:rules}
+    Chapter~\ref{chp:progopt}; the access reduction rules are introduced in
+    this work.}\label{tab:rules}
 \end{table}
 
 \SOAP{} provides a range of equivalence rules that are used in the
@@ -184,29 +179,30 @@ automatically.  However, they give the necessary freedom to arithmetic rules
 to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
 \bar{j}$ are subscripts, and $e, e^\prime$ are expressions:
 \begin{itemize}
-    \compresslist{}
 
     \item \emph{Multiple reads}, eliminates the second of two reads of the same
     location.  It arises naturally from the MIR, as common subexpressions are
     shared.
 
-    \item \emph{Multiple writes}, eliminates a write that is overwritten: $
+    \item \emph{Multiple writes}, eliminates a write that is overwritten:
+    \begin{equation}
         \update{\update{A}{\bar{i}}{e}}{\bar{i}}{e^\prime}
             \rightsquigarrow \update{A}{\bar{i}}{e^\prime}
-    $.
+    \end{equation}
 
     \item \emph{Read after write}, eliminates a read from a location
-    that has just been written: $
+    that has just been written:
+    \begin{equation}
         \access{\update{A}{\bar{i}}{e}}{\bar{i}} \rightsquigarrow e
-    $.
+    \end{equation}
 
     \item \emph{Independent accesses}, allows two array operations to be
     reordered if it can be proved that they never access the same location:
-    $
+    \begin{equation}
         \access{\update{A}{\bar{i}}{e}}{\bar{j}}
             \rightsquigarrow \access{A}{\bar{j}},
         \text{if~} \bar{i} \not\equiv \bar{j}
-    $.
+    \end{equation}
     We visualize this rule also in the following sample MIR transformation:
     \begin{equation}
         \label{eq:indep_reads_mir}
@@ -228,7 +224,9 @@ to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
             \draw[<-] (update) -- (i2);
             \draw[<-] (update) -- (a2);
             \brackets{(current bounding box)}
-        \end{tikzpicture} \rightsquigarrow \begin{tikzpicture}[mir]
+        \end{tikzpicture}
+        \rightsquigarrow
+        \begin{tikzpicture}[mir]
             \node[mirnode] (var_y) at (0,0) {{\tt y}};
             \node[mirnode] (access)[right=of var_y] {$\accessop$};
             \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {{\tt j}};
@@ -263,9 +261,15 @@ real numbers:
 \end{lstlisting}
 If we simply partially unroll this loop, we can see that because of the
 rigid array access pattern, associativity cannot be applied easily to the
-loop kernel.  By applying the above access reduction rules first, we give
-associativity the freedom to reduces latency by half and improves accuracy by
-50\%:
+loop kernel.
+\begin{lstlisting}
+    for (int i = 2; i < 1023; i++) {
+        A[i] = A[i - 1] + A[i - 2];
+        A[i + 1] = A[i] + A[i - 1];
+    }
+\end{lstlisting}
+By applying the above access reduction rules first, we give associativity the
+freedom to reduces latency by half and improves accuracy by 50\%:
 \begin{lstlisting}
     for (int i = 2; i < 1023; i += 2) {
         float t1 = A[i - 1], t2 = A[i - 2];
@@ -273,17 +277,10 @@ associativity the freedom to reduces latency by half and improves accuracy by
         A[i + 1] = 2 * t1 + t2;
     }
 \end{lstlisting}
-It is noteworthy that without the above access reduction rules, it is not
-possible to reach this optimized implementation.  Vivado HLS's expression
-balancing cannot optimize latency of this program with any levels of partial
-loop unrolling, because it cannot perform these access reduction rules.
-Conversely, it is not possible to relax scheduling constraints due to
-inter-iteration dependences without arithmetic equivalence rules, as these
-reduction rules are there to assist transformation rules that could really make
-a difference in latency.  Therefore all these rules in Table~\ref{tab:rules}
-are essential to the optimization of latency in numerical programs.
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "paper"
-%%% End:
+Therefore, without the above access reduction rules, it is not possible to
+reach this optimized implementation.  Conversely, it is not possible to relax
+scheduling constraints due to inter-iteration dependences without arithmetic
+equivalence rules, as these reduction rules are there to assist transformation
+rules that could really make a difference in latency.  Therefore all these
+rules in Table~\ref{tab:rules} are essential to the optimization of latency in
+numerical programs.

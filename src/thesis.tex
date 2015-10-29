@@ -23,7 +23,7 @@
 \setcounter{page}{1}            % set page counter
 \pagestyle{maincontentstyle}    % fancy header and footer
 
-\doublespacing
+% \doublespacing
 
 % Main text
 \chapter{Introduction}
@@ -114,15 +114,15 @@
 % 7$\times$ increase in accuracy, at a cost of up to 4$\times$ more LUTs.
 
 \input{latopt/introduction}
-\include{latopt/motivation}
-% \include{latopt/overview}
-% \include{latopt/intermediate}
-% \include{latopt/transform}
-% \include{latopt/analysis}
-% \include{latopt/usage}
-% \include{latopt/results}
-% \include{latopt/related_work}
-% \include{latopt/conclusion}
+\input{latopt/motivation}
+\input{latopt/overview}
+\input{latopt/intermediate}
+\input{latopt/transform}
+\input{latopt/analysis}
+\input{latopt/usage}
+\input{latopt/results}
+\input{latopt/related_work}
+\input{latopt/conclusion}
 
 
 \chapter{Conclusion}
@@ -151,6 +151,14 @@ program loops, especially when arrays are incorporated.  Finally, fixed point
 representations, along with the interaction between our structural optimization
 and multiple wordlength optimization~\cite{constantinides} could also generate
 a lot of interest from the HLS community.
+
+Currently, our tool sees a diminishing performance return when loops are deeply
+unrolled, because of a memory bottleneck. We are exploring an extension to
+our tool that enables it to automatically partition arrays upon hitting such
+a memory bottleneck. Also, our tool currently supports only single-precision
+floating-point data types; we intend to extend this to multiple-precision
+types, and explore the impact on our three performance metrics: latency,
+resource utilization and numerical accuracy.
 
 
 \cleardoublepage

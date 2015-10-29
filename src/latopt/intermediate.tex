@@ -9,45 +9,60 @@ these rewrites produce programs that have the same resource usage, accuracy
 and latency characteristics.  For instance, the following two programs
 are equivalent, but syntactically different, as they carry out the same
 computations.
-\begin{equation}
-    \begin{aligned}
-        & P_1: \texttt{x = x + 1; y = 2 * x; x = x + 3;} \\
-        & P_2: \texttt{y = x + 1; x = y; y = y * 2; x = x + 3;}
-    \end{aligned}
-\end{equation}
+\begin{figure}[ht]
+    \centering
+    \subfloat[$P_1$]{%
+        \shortstack[l]{%
+            \texttt{x = x + 1;} \\
+            \texttt{y = x = 2 * x;} \\
+            \texttt{x = x = x + 3;}
+        }
+    } \qquad \qquad
+    \subfloat[$P_2$]{%
+        \shortstack[l]{%
+            \texttt{y = x + 1;} \\
+            \texttt{x = y;} \\
+            \texttt{y = y * 2;} \\
+            \texttt{x = x + 3;}
+        }
+    }
+    \caption{Two programs that are equivalent but syntactically different.}
+    \label{fig:equiv_progs}
+\end{figure}
 
 In practice, it is desirable to eliminate as much as possible the need
 for these syntactic rewrites that do not affect our performance metrics.
-Therefore, following Gao~\etal, we perform transformations not on the
-program text directly, but on a DAG representation of the program called a
-MIR~\cite{soap2}.  It expresses how each program variable is updated, but
-abstracts away the order in which the updates occur, and ignores any temporary
-variables that are not marked as program outputs.  As an example, the two
-equivalent programs above can be automatically translated into an identical
-MIR\@:
-\begin{equation}
-    \label{eq:assign_example}
-    \begin{tikzpicture}[mir]
-        \node[mirnode] (var_x) at (0,0) {{\tt x}};
-        \node[mirnode] (plus1) [right=of var_x] {$+$};
-        \node[mirnode] (n3)    [below left=of plus1] {$3$};
-        \node[mirnode] (plus2) [below right=of plus1] {$+$};
-        \node[mirnode] (var_y) [right=of plus1] {{\tt y}};
-        \node[mirnode] (times) [right=of var_y] {$\times$};
-        \node[mirnode] (n2)    [below right=of times] {$2$};
-        \node[mirnode] (x)     [below left=of plus2] {{\tt x}};
-        \node[mirnode] (n1)    [below right=of plus2] {$1$};
-        \draw[|->] (var_x) -- (plus1);
-        \draw[<-] (plus1) -- (n3);
-        \draw[<-] (plus1) -- (plus2);
-        \draw[<-] (plus2) -- (x);
-        \draw[<-] (plus2) -- (n1);
-        \draw[|->] (var_y) -- (times);
-        \draw[<-] (times) -- (plus2);
-        \draw[<-] (times) -- (n2);
-        \brackets{(current bounding box)}
-    \end{tikzpicture}
-\end{equation}
+Therefore, following Chapter~\ref{chp:progopt}, we perform transformations not
+on the program text directly, but on a DAG representation of the program called
+a MIR\@.  It expresses how each program variable is updated, but abstracts away
+the order in which the updates occur, and ignores any temporary variables that
+are not marked as program outputs.
+
+% As an example, the two equivalent programs above can be automatically
+% translated into an identical MIR\@:
+% \begin{equation}
+    % \label{eq:assign_example}
+    % \begin{tikzpicture}[mir]
+        % \node[mirnode] (var_x) at (0,0) {{\tt x}};
+        % \node[mirnode] (plus1) [right=of var_x] {$+$};
+        % \node[mirnode] (n3)    [below left=of plus1] {$3$};
+        % \node[mirnode] (plus2) [below right=of plus1] {$+$};
+        % \node[mirnode] (var_y) [right=of plus1] {{\tt y}};
+        % \node[mirnode] (times) [right=of var_y] {$\times$};
+        % \node[mirnode] (n2)    [below right=of times] {$2$};
+        % \node[mirnode] (x)     [below left=of plus2] {{\tt x}};
+        % \node[mirnode] (n1)    [below right=of plus2] {$1$};
+        % \draw[|->] (var_x) -- (plus1);
+        % \draw[<-] (plus1) -- (n3);
+        % \draw[<-] (plus1) -- (plus2);
+        % \draw[<-] (plus2) -- (x);
+        % \draw[<-] (plus2) -- (n1);
+        % \draw[|->] (var_y) -- (times);
+        % \draw[<-] (times) -- (plus2);
+        % \draw[<-] (times) -- (n2);
+        % \brackets{(current bounding box)}
+    % \end{tikzpicture}
+% \end{equation}
 
 This representation is useful to us, because a single MIR is able to capture a
 class of syntactically-distinct programs, all of which have the same resource
@@ -57,50 +72,52 @@ expressions in the MIR can share common structures; this is useful for modeling
 the sharing of common subexpressions and makes the search for optimizations
 much more efficient.
 
-MIRs also abstract the control structure of a program, preserving only the
-computations that lead to the outputs. For instance, by using the ternary
-conditional operator ``$\qop$'' from C, programs with conditionals such as:
-\begin{lstlisting}
-  x = x + 1; if (b) x = 2 * x;
-\end{lstlisting}
-can be represented in MIR form as follows:
-\begin{equation}
-    \label{eq:if_example}
-    \begin{tikzpicture}[mir]
-        \node[mirnode] (var_x) at (0,0) {{\tt x}};
-        \node[mirnode] (qop)   [right=8mm of var_x] {$\qop$};
-        \node[mirnode] (b)     [below left=of qop] {{\tt b}};
-        \node[mirnode] (times) [below right=of qop, yshift=2mm] {$\times$};
-        \node[mirnode] (n2)    [below left=of times] {$2$};
-        \node[mirnode] (plus)  [below right=of times, yshift=2mm] {$+$};
-        \node[mirnode] (x)     [below left=of plus, yshift=2mm] {{\tt x}};
-        \node[mirnode] (n1)    [below right=of plus, yshift=2mm] {$1$};
+% MIRs also abstract the control structure of a program, preserving only the
+% computations that lead to the outputs. For instance, by using the ternary
+% conditional operator ``$\qop$'' from C, programs with conditionals such as:
+% \begin{lstlisting}
+  % x = x + 1;
+  % if (b)
+      % x = 2 * x;
+% \end{lstlisting}
+% can be represented in MIR form as follows:
+% \begin{equation}
+    % \label{eq:if_example}
+    % \begin{tikzpicture}[mir]
+        % \node[mirnode] (var_x) at (0,0) {{\tt x}};
+        % \node[mirnode] (qop)   [right=8mm of var_x] {$\qop$};
+        % \node[mirnode] (b)     [below left=of qop] {{\tt b}};
+        % \node[mirnode] (times) [below right=of qop, yshift=2mm] {$\times$};
+        % \node[mirnode] (n2)    [below left=of times] {$2$};
+        % \node[mirnode] (plus)  [below right=of times, yshift=2mm] {$+$};
+        % \node[mirnode] (x)     [below left=of plus, yshift=2mm] {{\tt x}};
+        % \node[mirnode] (n1)    [below right=of plus, yshift=2mm] {$1$};
 
-        \draw[|->] (var_x) -- (qop);
-        \draw[<-] (qop) -- (b);
-        \draw[<-] (qop) -- (times);
-        \draw[<-] (times) -- (n2);
-        \draw[<-] (times) -- (plus);
-        \draw[<-] (plus) -- (x);
-        \draw[<-] (plus) -- (n1);
-        \draw[<-] (qop) to[bend left] (plus);
-        \brackets{(current bounding box)}
-    \end{tikzpicture}
-\end{equation}
+        % \draw[|->] (var_x) -- (qop);
+        % \draw[<-] (qop) -- (b);
+        % \draw[<-] (qop) -- (times);
+        % \draw[<-] (times) -- (n2);
+        % \draw[<-] (times) -- (plus);
+        % \draw[<-] (plus) -- (x);
+        % \draw[<-] (plus) -- (n1);
+        % \draw[<-] (qop) to[bend left] (plus);
+        % \brackets{(current bounding box)}
+    % \end{tikzpicture}
+% \end{equation}
 
-MIRs are also capable of representing loops~\cite{soap2}, but we do not exploit
-that in this paper, despite the centrality of loops to our work.  When we
-optimize loop nests, we are specifically applying transformations to the
-kernels of the flattened loop nests.  Therefore, we find that when analyzing
-the latency and resource usage of a loop, we need only have the \emph{body} of
-the loop as a MIR\@.
+% MIRs are also capable of representing loops~\cite{soap2}, but we do not
+% exploit that in this paper, despite the centrality of loops to our work.
+% When we optimize loop nests, we are specifically applying transformations
+% to the kernels of the flattened loop nests.  Therefore, we find that when
+% analyzing the latency and resource usage of a loop, we need only have the
+% \emph{body} of the loop as a MIR\@.
 
 \subsection{Representing arrays}
 \label{sub:extending_the_translation_to_handle_arrays}
 
-Gao~\etal~\cite{soap2} did not include support for arrays in their original
+Chapter~\ref{chp:progopt} did not include support for arrays in their original
 description of the MIR format. However, the examples that motivate our work
-all include arrays, so in this paper, we extend MIRs to be able to represent
+all include arrays, so in this chapter, we extend MIRs to be able to represent
 programs that use single- or multi-dimensional arrays.
 
 In many imperative languages such as C, arrays are stateful objects, \ie~they
@@ -165,8 +182,3 @@ with $e$ and $e^\prime$ and return different arrays.  A C program cannot be
 generated from this MIR without duplicating $A$.  We solve this problem by
 partitioning the MIR at ``$\updateop$'' nodes using the method described in
 Sec.~\ref{sec:structural_optimization}.
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "paper"
-%%% End:

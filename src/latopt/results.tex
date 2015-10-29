@@ -8,7 +8,6 @@
 We have evaluated our tool on a suite of benchmark examples that consists of
 several applications that have recurring inter-iteration dependences:
 \begin{itemize}
-\compresslist{}
 
 \item A simple loop, \verb|sum|, that sums the elements in an array.
 
@@ -127,139 +126,127 @@ circuit to obtain exact statistics, which are shown in Table~\ref{tab:results}.
 
 
 \begin{figure}[ht]
-    \subfloat[LUT count estimates] {%
-        %\includegraphics[width=0.25\linewidth]{lut}
-
-\begin{tikzpicture}
-\begin{axis}[
-  ylabel={\small Estimated},
-  xlabel={\small Actual},
-  height=46mm, width=46mm, ylabel near ticks,
-  scaled ticks=base 10:-3,
-  ymax=4000,
-  xmax=4000,
-  ymin=0,
-  xmin=0,
-]
-
-\pgfplotstableread[col sep = comma]{csv/lut.csv}\mydata
-
-\addplot[draw=none, mark=*, draw opacity=0, fill opacity=0.5]
-table [y=Estimate, x=Actual] \mydata;
-
-\addplot[mark=none, draw=none] table [x=Actual, y={create col/linear
-regression={y=Estimate}}] \mydata;
-
-\xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-\xdef\intercept{\pgfplotstableregressionb} % save the intercept parameter
-
-\addplot [no markers, domain=0:4000] {\intercept+\slope*x};
-
-\end{axis}
-\end{tikzpicture}
-\label{fig:lut}
-    }\hfill
-    \subfloat[Latency estimates] {%
-        %\includegraphics[width=0.25\linewidth]{lat}
-\begin{tikzpicture}
-\begin{loglogaxis}[
-  ylabel={\small Estimated},
-  xlabel={\small Actual},
-  height=46mm, width=46mm, ylabel near ticks,
-  %scaled ticks=base 10:-9,
-  xmin=1000, ymin=1000,
-  xmax=100000000000,
-  ymax=100000000000
-]
-
-\pgfplotstableread[col sep = comma]{csv/lat.csv}\mydata
-
-\addplot[draw=none, mark=*, draw opacity=0, fill opacity=0.5]
-table [y=Estimate, x=Actual] \mydata;
-
-\addplot[mark=none, draw=none] table [x=Actual, y={create col/linear
-regression={y=Estimate}}] \mydata;
-
-\xdef\slope{\pgfplotstableregressiona} % save the slope parameter
-\xdef\intercept{\pgfplotstableregressionb} % save the intercept parameter
-
-\addplot [no markers, domain=1000:100000000000] {\intercept+\slope*x};
-
-\end{loglogaxis}
-\end{tikzpicture}
-\label{fig:lat}
-    }
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                ylabel={\small Estimated}, xlabel={\small Actual},
+                height=100mm, width=100mm, ylabel near ticks,
+                scaled ticks=base 10:-3,
+                ymax=4000, xmax=4000, ymin=0, xmin=0]
+            \pgfplotstableread[col sep = comma]{latopt/csv/lut.csv}\lutcsv
+            \addplot[draw=none, mark=*, draw opacity=0, fill opacity=0.5]
+                table [y=Estimate, x=Actual] \lutcsv;
+            \addplot[mark=none, draw=none]
+                table
+                [x=Actual, y={create col/linear regression={y=Estimate}}]
+                \lutcsv;
+            \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+            \xdef\intercept{\pgfplotstableregressionb} % save the intercept parameter
+            \addplot [no markers, domain=0:4000] {\intercept+\slope*x};
+        \end{axis}
+    \end{tikzpicture}
     \caption{%
-        Comparisons of our estimated resource and latency statistics against
+        Comparisons of our estimated LUT counts against actual LUT counts from
         Vivado HLS\@.}
+    \label{fig:lut}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \begin{loglogaxis}[
+                ylabel={\small Estimated}, xlabel={\small Actual},
+                height=100mm, width=100mm, ylabel near ticks,
+                %scaled ticks=base 10:-9,
+                xmin=1000, ymin=1000, xmax=100000000000, ymax=100000000000]
+            \pgfplotstableread[col sep = comma]{latopt/csv/lat.csv}\latcsv
+            \addplot[draw=none, mark=*, draw opacity=0, fill opacity=0.5]
+                table [y=Estimate, x=Actual] \latcsv;
+            \addplot[mark=none, draw=none]
+                table
+                [x=Actual, y={create col/linear regression={y=Estimate}}]
+                \latcsv;
+            \xdef\slope{\pgfplotstableregressiona} % save the slope parameter
+            \xdef\intercept{\pgfplotstableregressionb} % save the intercept parameter
+            \addplot
+                [no markers, domain=1000:100000000000] {\intercept+\slope*x};
+        \end{loglogaxis}
+    \end{tikzpicture}
+    \caption{%
+        Comparisons of our estimated latency statistics against actual latency
+        from Vivado HLS\@.}
+    \label{fig:lat}
 \end{figure}
 
 \begin{figure*}[t]
-\centering
-\tikzset{%
-  every axis/.style={height=60mm, width=60mm, ylabel near ticks, try min ticks=5},
-  every plot/.style={draw=none},
-  normal points/.style={mark=*, draw opacity=0, fill opacity=0.5},
-  origin point/.style={mark=x, mark size=3},
-  special point/.style={mark=o, color=red, mark size=3},
-}
-\pgfplotstableread[col sep=comma, row sep=newline]{csv/seidel.csv}\seidel
-\begin{tikzpicture}
-\begin{axis}[
-  ylabel={\small LUT count},
-  xlabel={\small Latency (cycles)},
-  scaled y ticks=base 10:-3,
-]
-\addplot[normal points, select coords between index={1}{24}]
-table [y=lut, x=latency]\seidel;
-\addplot[normal points,  select coords between index={26}{28}]
-table [y=lut, x=latency]\seidel;
-\addplot[origin point, select coords between index={0}{0}]
-table [y=lut, x=latency]\seidel;
-\addplot[special point, select coords between index={25}{25}]
-table [y=lut, x=latency]\seidel;
-\end{axis}
-\end{tikzpicture}%
-\hfill%
-\begin{tikzpicture}
-\begin{axis}[
-  ylabel={\small LUT count},
-  xlabel={\small Error},
-  scaled y ticks=base 10:-3,
-]
-\addplot[normal points, select coords between index={1}{24}]
-table [y=lut, x=error]\seidel;
-\addplot[normal points,  select coords between index={26}{28}]
-table [y=lut, x=error]\seidel;
-\addplot[origin point, select coords between index={0}{0}]
-table [y=lut, x=error]\seidel;
-\addplot[special point, select coords between index={25}{25}]
-table [y=lut, x=error]\seidel;
-\end{axis}
-\end{tikzpicture}%
-\hfill%
-\begin{tikzpicture}
-\begin{axis}[
-  ylabel={\small Latency (cycles)},
-  xlabel={\small Error},
-]
-\addplot[normal points, select coords between index={1}{24}]
-table [y=latency, x=error]\seidel;
-\addplot[normal points, select coords between index={26}{28}]
-table [y=latency, x=error]\seidel;
-\addplot[origin point, select coords between index={0}{0}]
-table [y=latency, x=error]\seidel;
-\addplot[special point, select coords between index={25}{25}]
-table [y=latency, x=error]\seidel;
-\end{axis}
-\end{tikzpicture}
-\caption{%
-    Pareto-optimal variants of the Seidel stencil program from
-    Fig.~\ref{fig:seidel_prog}. Each graph shows a 2D projection of the 3D
-    Pareto frontier. In each graph, the original program is marked $\times$,
-    and the lowest-latency variant obtained by arithmetic transformations alone
-    is marked \protect\redcircle. }
-\label{fig:seidel}
+    \centering
+    \tikzset{%
+        every axis/.style={%
+            height=70mm, width=70mm, ylabel near ticks, try min ticks=5},
+        every plot/.style={draw=none},
+        normal points/.style={mark=*, draw opacity=0, fill opacity=0.5},
+        origin point/.style={mark=x, mark size=3},
+        special point/.style={mark=o, color=red, mark size=3},
+    }
+    \pgfplotstableread[col sep=comma, row sep=newline]
+        {latopt/csv/seidel.csv}\seidel
+
+    \begin{tikzpicture}
+        \begin{axis}[
+                ylabel={\small LUT count},
+                xlabel={\small Latency (cycles)},
+                scaled y ticks=base 10:-3,
+            ]
+            \addplot[normal points, select coords between index={1}{24}]
+                table [y=lut, x=latency]\seidel;
+            \addplot[normal points,  select coords between index={26}{28}]
+                table [y=lut, x=latency]\seidel;
+            \addplot[origin point, select coords between index={0}{0}]
+                table [y=lut, x=latency]\seidel;
+            \addplot[special point, select coords between index={25}{25}]
+                table [y=lut, x=latency]\seidel;
+        \end{axis}
+    \end{tikzpicture}
+
+    \begin{tikzpicture}
+        \begin{axis}[
+                ylabel={\small LUT count},
+                xlabel={\small Error},
+                scaled y ticks=base 10:-3,
+            ]
+            \addplot[normal points, select coords between index={1}{24}]
+                table [y=lut, x=error]\seidel;
+            \addplot[normal points,  select coords between index={26}{28}]
+                table [y=lut, x=error]\seidel;
+            \addplot[origin point, select coords between index={0}{0}]
+                table [y=lut, x=error]\seidel;
+            \addplot[special point, select coords between index={25}{25}]
+                table [y=lut, x=error]\seidel;
+        \end{axis}
+    \end{tikzpicture}
+
+    \begin{tikzpicture}
+        \begin{axis}[
+                ylabel={\small Latency (cycles)},
+                xlabel={\small Error},
+            ]
+            \addplot[normal points, select coords between index={1}{24}]
+                table [y=latency, x=error]\seidel;
+            \addplot[normal points, select coords between index={26}{28}]
+                table [y=latency, x=error]\seidel;
+            \addplot[origin point, select coords between index={0}{0}]
+                table [y=latency, x=error]\seidel;
+            \addplot[special point, select coords between index={25}{25}]
+                table [y=latency, x=error]\seidel;
+        \end{axis}
+    \end{tikzpicture}
+    \caption{%
+        Pareto-optimal variants of the Seidel stencil program from
+        Fig.~\ref{fig:seidel_prog}. Each graph shows a 2D projection of the
+        3D Pareto frontier. In each graph, the original program is marked
+        $\times$, and the lowest-latency variant obtained by arithmetic
+        transformations alone is marked \protect\redcircle.}
+    \label{fig:seidel}
 \end{figure*}
 
 Fig.~\ref{fig:lut} compares our estimated LUT counts (vertical axis)

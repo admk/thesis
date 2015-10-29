@@ -5,7 +5,7 @@
 \newcommand\arr[3]{\texttt{#1[#2][#3]}}
 \newcommand\barr[3]{\texttt{\underline{#1[#2][#3]}}}
 
-Fig.~\ref{fig:seidel_prog} gives an implementation of the Seidel stencil
+Figure~\ref{fig:seidel_prog} gives an implementation of the Seidel stencil
 computation, extracted from PolyBench~\cite{polybench}, where initially all
 values in the array \verb|A| are single-precision floating-point values between
 0 and 1.  It resembles the typical code frequently used in fluid dynamic
@@ -18,9 +18,8 @@ equations.
   for (int t = 0; t < 20; t++)
     for (int i = 1; i < N-1; i++)
       for (int j = 1; j < N-1; j++)
-        $\barr{A}{i}{j}$ = 0.2 * ($\arr{A}{i-1}{j}$ +
-          $\barr{A}{i}{j-1}$ + $\arr{A}{i}{j}$ +
-          $\arr{A}{i}{j+1}$ + $\arr{A}{i+1}{j}$);
+        $\barr{A}{i}{j}$ = 0.2 * ($\arr{A}{i-1}{j}$ + $\barr{A}{i}{j-1}$ +
+            $\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$ + $\arr{A}{i+1}{j}$);
 \end{lstlisting}
     \caption{%
     An excerpt from the Seidel stencil~\cite{polybench}.  The inter-iteration
@@ -35,7 +34,7 @@ overlapping its iterations.  However, we can observe that this program has
 very limited opportunity for pipelining, because each iteration \verb|j| of
 the innermost loop ends by writing to \verb|A[i][j]|, and the next iteration
 \verb|j+1| begins by reading from \verb|A[i][j]|; this inter-iteration
-dependence is highlighted in Fig.~\ref{fig:seidel_prog}.  Hence, it serves as
+dependence is highlighted in Figure~\ref{fig:seidel_prog}.  Hence, it serves as
 our example to demonstrate the power of our tool.
 
 VHLS generates a schedule where each iteration requires $49$ cycles (the
@@ -61,22 +60,26 @@ These limitations pose great restrictions on VHLS's ability to produce a
 significantly faster implementation.  Most importantly, VHLS does not guarantee
 that this optimization will not result in catastrophic inaccuracies.
 
-We then use our tool to automatically discover equivalent programs from the
-program in Fig.~\ref{fig:seidel_prog}.  Because our tool explores a large
-number of paths that lead to a Pareto frontier of implementations, here we
-illustrate one of the many paths that could be taken by minimizing latency,
-while trying to optimize accuracy and resource usage.  By using just arithmetic
-equivalences, our tool specifically applies transformations to alleviate the
-constraints on the inter-iteration dependence, and discovers that the innermost
-loop can be rewritten to minimize latency in the following form:
-%
+We then use our tool to automatically discover equivalent programs from
+the program in Figure~\ref{fig:seidel_prog}.  Because our tool explores a
+large number of paths that lead to a Pareto frontier of implementations,
+here we illustrate one of the many paths that could be taken by minimizing
+latency, while trying to optimize accuracy and resource usage.  By using just
+arithmetic equivalences, our tool specifically applies transformations to
+alleviate the constraints on the inter-iteration dependence, and discovers
+that the innermost loop can be rewritten to minimize latency as shown in
+Figure~\ref{fig:seidel_prog_2}.
+
+\begin{figure}[ht]
 \begin{lstlisting}
   for (int j = 1; j < 1023; j++)
     $\arr{A}{i}{j}$ = 0.2 * ($\arr{A}{i}{j-1}$ +
-      (($\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$) +
-       ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$)));
+      (($\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$) + ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$)));
 \end{lstlisting}
-%
+    \caption{The optimized program using only arithmetic equivalences.}
+    \label{fig:seidel_prog_2}
+\end{figure}
+
 Although this loop still has a data dependence between consecutive iterations,
 this transformation greatly reduces latency because most of the loop iterations
 can now be overlapped.  We find that this simple transformation can reduce
@@ -85,35 +88,44 @@ the same number of LUTs and DSP elements as the original program.  At the same
 time, the sequence of additions are now reordered to minimize round-off errors,
 improving the accuracy by 18\%.
 
-Our tool also supports more complex control flow restructuring transformations,
+Our tool also supports more complex control-flow restructuring transformations,
 such as partial loop unrolling, in tandem with rules that optimize memory
 accesses and arithmetic calculations.  This can further reduce the loop's
 latency.  In this example, unrolling the loop by a factor of two (\ie~updating
-two matrix elements on every iteration and halving the trip count) and applying
-other rules, results in a program with $\II = 19, D = 152, N = 511$.  When
-implemented on a device it is 4.8$\times$ faster than the original, and almost
-twice as accurate, at a cost of 17\% more LUTs:
-%
+two matrix elements on every iteration and halving the trip count) and
+applying other rules, results in a program with $\II = 19, D = 152, N = 511$.
+When implemented on a device it is 4.8$\times$ faster than the original,
+and almost twice as accurate, at a cost of 17\% more LUTs, as shown in
+Figure~\ref{fig:seidel_prog_3}.
+
+\begin{figure}[ht]
 \begin{lstlisting}
- for (int j = 1; j < 1023; j += 2) {
-   float t0 = $\arr{A}{i}{j-1}$, t1 = $\arr{A}{i}{j+1}$;
-   float t2 = ($\arr{A}{i}{j}$ + t1) +
-       ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$);
-   float t3 = 0.04f * t2 + 0.2f *
-       ((t1 + $\arr{A}{i}{j+2}$) +
-        ($\arr{A}{i+1}{j+1}$ + $\arr{A}{i-1}{j+1}$));
-   $\arr{A}{i}{j}$ = 0.2f * (t0 + t2);
-   $\arr{A}{i}{j+1}$ = 0.04f * t0 + t3;
- }
+  for (int j = 1; j < 1023; j += 2) {
+    float t0 = $\arr{A}{i}{j-1}$, t1 = $\arr{A}{i}{j+1}$;
+    float t2 = ($\arr{A}{i}{j}$ + t1) + ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$);
+    float t3 = 0.04f * t2 + 0.2f *
+        ((t1 + $\arr{A}{i}{j+2}$) + ($\arr{A}{i+1}{j+1}$ + $\arr{A}{i-1}{j+1}$));
+    $\arr{A}{i}{j}$ = 0.2f * (t0 + t2);
+    $\arr{A}{i}{j+1}$ = 0.04f * t0 + t3;
+  }
 \end{lstlisting}
-%
+    \caption{The optimized program using arithmetic equivalences in tandem with
+    control-flow restructuring and memory access optimization.}
+    \label{fig:seidel_prog_3}
+\end{figure}
+
 Further increasing the optimization effort, which enables the loop to
 be deeper partially unrolled, leads to a program that is 7$\times$
 faster than the original, but uses 2.8$\times$ LUTs.  To summarize, in
 Table~\ref{tab:seidel_results}, we compare VHLS with EB, against one of the
 many implementations that we have explored using our tool with the increased
-optimization effort.  For exact statistics we performed place-and-route.
-%
+optimization effort.  The three columns respectively shows the original
+program with loop pipelining enabled, what Vivado HLS can achieve alone, and
+the capability of our tool.  It is important to note that the round-off error
+is unknown for Vivado HLS with EB, because it cannot predict the impact of
+its unsafe optimizations on accuracy.  We performed place-and-route for exact
+statistics.
+
 \begin{table}[ht]
     \centering
     \renewcommand\arraycolsep{1.0mm}
@@ -125,15 +137,17 @@ optimization effort.  For exact statistics we performed place-and-route.
     \newcommand\Mid[1]{\multirow{2}*{$#1$}}
     \newcommand\Shade{\cellcolor{black!10}}
     \newcommand\name[1]{\texttt{\scriptsize #1}}
-    $\begin{array}{r|r|r|r}
-        \multicolumn{1}{c|}{} &
+    \vspace{8pt}
+    $\begin{array}{r||r|r|r}
+        \hline
+        \multicolumn{1}{c||}{} &
         \multicolumn{1}{c|}{\text{VHLS}} &
         \multicolumn{1}{c|}{\text{VHLS}} &
         \multicolumn{1}{c}{\text{VHLS}} \\
 
         & &
         \multicolumn{1}{c|}{\text{with EB}} &
-        \multicolumn{1}{c}{\text{with our tool}} \\ \hline
+        \multicolumn{1}{c}{\text{with our tool}} \\ \hline\hline
 
         \text{Clock Period (ns)} &
         2.60 & 2.65 & 2.66 \\ \hline
@@ -155,18 +169,9 @@ optimization effort.  For exact statistics we performed place-and-route.
         \Shade \text{unknown} &
         \Shade 4.31\unitmu \\ \hline
     \end{array}$
+    \vspace{8pt}
     \caption{%
-        Comparison between the fastest implementations.  The three columns
-        respectively shows the original program with loop pipelining enabled,
-        what Vivado HLS can achieve alone, and the capability of our tool.  It
-        is important to note that the round-off error is unknown for Vivado
-        HLS with EB, because it cannot predict the impact of its unsafe
-        optimizations on accuracy.  We performed place-and-route for exact
-        statistics.}
+        Comparison among the optimized implementations generated by Vivado
+        HLS's expression balancing and our optimizer.}
     \label{tab:seidel_results}
 \end{table}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "paper"
-%%% End:
