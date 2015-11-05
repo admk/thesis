@@ -5,17 +5,18 @@ In a typical program execution, values of variables, typically integers
 $\integerset$ and floating-point values $\floatset$, are modified according
 to the effect of the program statements, and they are propagated through
 arithmetic operators from the beginning to the end of the program.  By
-comparison, the static analysis approach~\cite{soap,martel07} analyzes
-round-off errors in floating-point numerical programs by following the same
-procedure, but instead of propagating actual values of numerical types,
-value-error ranges are used.  A value-error range $(v^\sharp, e^\sharp) \in
-\errorset$ consists of a floating-point interval that bounds the value,
-$v^\sharp \in \intervalset_\floatset$, and its associated round-off errors
-caused by arithmetic operations, which is represented as an interval of real
-values, $e^\sharp \in \intervalset_\realset$.  Here $\intervalset_\floatset$
-and $\intervalset_\realset$ are the sets of floating-point and real value
-intervals respectively, and we define $\errorset = \intervalset_\floatset
-\times \intervalset_\realset$ to be the set of value-error ranges.
+comparison, the static analysis approach in Chapter~\ref{chp:strop} and
+\cite{martel07} analyzes round-off errors in floating-point numerical
+programs by following the same procedure, but instead of propagating actual
+values of numerical types, value-error ranges are used.  A value-error range
+$(v^\sharp, e^\sharp) \in \errorset$ consists of a floating-point interval that
+bounds the value, $v^\sharp \in \intervalset_\floatset$, and its associated
+round-off errors caused by arithmetic operations, which is represented as
+an interval of real values, $e^\sharp \in \intervalset_\realset$.  Here
+$\intervalset_\floatset$ and $\intervalset_\realset$ are the sets of
+floating-point and real value intervals respectively, and we define $\errorset
+= \intervalset_\floatset \times \intervalset_\realset$ to be the set of
+value-error ranges.
 
 Generally, arithmetic operators work on numerical data types, such as
 \inttype{} and \floattype, and they define how these numerical values can be
@@ -51,12 +52,12 @@ the expression $e$ with the input state $\sigma^\sharp$.  Therefore the above
 example can be expressed concisely by $\exprerrorfunc{a + b}{\sigma^\sharp_0} =
 (v^\sharp, e^\sharp)$.
 
-We build on top of the above method outlined in~\cite{soap} to analyze the
-accuracy of arithmetic expressions, which supported only addition, subtraction,
-multiplication and division.  In this section, we explain in detail how it is
-extended to support MIRs, and our additional operators in semantic expressions,
-that is, the substitution operator, the ternary conditional operator and the
-fixpoint operator.
+We build on top of the above method outlined in Chapter~\ref{chp:stropt} to
+analyze the accuracy of arithmetic expressions, which supported only addition,
+subtraction, multiplication and division.  In this section, we explain in
+detail how it is extended to support MIRs, and our additional operators
+in semantic expressions, that is, the substitution operator, the ternary
+conditional operator and the fixpoint operator.
 
 \subsubsection{MIR}
 

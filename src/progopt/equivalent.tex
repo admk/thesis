@@ -3,11 +3,11 @@
 
 In this section, we start by taking one step further from simple arithmetic
 equivalence relations such as associativity, commutativity and distributivity
-describe in~\cite{soap}.  We define additional equivalent relations for
-substitution, conditional and fixpoint expressions to fully enable the
-equivalence transformations of MIRs.  Then we go on to improve the methods
-described in \soap~to explore more equivalent structures, but still in an
-efficient and scalable way.
+describe in Chapter~\ref{chp:stropt}.  We define additional equivalent
+relations for substitution, conditional and fixpoint expressions to fully
+enable the equivalence transformations of MIRs.  Then we go on to improve the
+methods described in \soap~to explore more equivalent structures, but still in
+an efficient and scalable way.
 
 \subsubsection{Equivalence Relations}
 
@@ -149,14 +149,14 @@ As we discussed earlier, discovering the full set of equivalent expressions
 by finding the transitive closure of the relations is infeasible because of
 combinatorial explosion.  An important aspect of \soap{} is that they proposed
 a new method to drastically reduce the space and time complexity of discovering
-equivalent expressions, while achieving high quality optimizations~\cite{soap}.
-We base our equivalent expression discovery on this method, but extend it
-to support additional program transform features.  We start by giving an
-overview of this method.  Equivalent expression discovery starts from the leaf
-nodes (these are constants and variables) of expressions, which equivalent
-expressions are the nodes themselves, \ie~for a variable or a constant $x$
-its set of equivalent expressions is simply $\{x\}$.  After this, these
-equivalent expressions from the child nodes are propagated to the parent
+equivalent expressions, while achieving high quality optimizations explained in
+Chapter~\ref{chp:stropt}.  We base our equivalent expression discovery on this
+method, but extend it to support additional program transform features.  We
+start by giving an overview of this method.  Equivalent expression discovery
+starts from the leaf nodes (these are constants and variables) of expressions,
+which equivalent expressions are the nodes themselves, \ie~for a variable or a
+constant $x$ its set of equivalent expressions is simply $\{x\}$.  After this,
+these equivalent expressions from the child nodes are propagated to the parent
 node, to form a set of equivalent parent expressions.  Then a function, which
 we name $\closure(\sigma^\sharp)$, is used to perform optimizing transforms
 to this set, where $(\sigma^\sharp)$ indicates that this function optimizes
@@ -171,9 +171,9 @@ and find the Pareto frontier of them to keep only the optimal implementations,
 which significantly reduces the computational requirements.  These two steps
 are repeated iteratively until no more expressions can be discovered.  After
 this, the Pareto frontier of equivalent structures of the current node is
-propagated to its parent node to repeat the above process, until the root
-node is reached and we arrive at a set of equivalent expressions of the
-original expression under optimization.
+propagated to its parent node to repeat the above process, until the root node
+is reached and we arrive at a set of equivalent expressions of the original
+expression under optimization.
 
 We extend optimizations to support not only simple arithmetic expressions
 but also conditional, substitution and fixpoint expressions, and MIRs.  This

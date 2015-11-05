@@ -3,11 +3,11 @@
 
 Before we discuss program transform, we first look at the syntax definition
 used to write numerical programs.  Our program transformation optimizes
-\numimp{} programs.  In this section, we formally introduce \numimp, a
-simple imperative language that supports arithmetic and Boolean expressions,
-conditional branches, as well as \texttt{while} loops.  Our language allows
-numerical data types $\inttype$ and $\floattype$, respectively stand for
-integer and floating-point types.
+\numimp{} programs.  In this section, we formally introduce \numimp, a simple
+imperative language which is a subset of C that supports arithmetic and Boolean
+expressions, conditional branches, as well as \texttt{while} loops.  Our
+language allows numerical data types $\inttype$ and $\floattype$, respectively
+stand for integer and floating-point types.
 
 We define $\aexprset, \bexprset$ as the set of arithmetic and Boolean
 expressions respectively, and $\stmtset$ denotes the set of program statements.
@@ -23,12 +23,10 @@ programs, written in the Backus-Naur Form~\cite{knuth64}:
             a_1 \odot a_2,
         \quad b \syndef x < a, \\
         s \syndef {} &
-            \mathtt{skip} \synor
-            x \assign a \synor
+            x~\texttt{=}~a \synor
             s_1 \semicolon s_2 \synor
-            \iflit~b~\thenlit~s_1~\elselit~s_2 \\
-        {} \synor {} &
-            \whilelit~b~\dolit~s
+            \mathtt{if}~(b)~\{ s_1 \}~\mathtt{else}~\{ s_2 \} \synor
+            \whilelit~(b)~\{s\}
     \end{aligned}
     \label{eq:program_syntax}
 \end{equation}
@@ -36,32 +34,42 @@ We define $\odot \in \left\{ +, -, \times, / \right\}$ to be the arithmetic
 operators, $n$ is a numerical constant of type either \inttype{} or \floattype;
 $x \in \varset$ is a variable; $a, a_1, a_2 \in \aexprset$ are arithmetic
 expressions; $b$ ranges over Boolean expressions, $\bexprset$; and similarly,
-$s, s_1, s_2 \in \stmtset$ are program statements.  The statement $\skipstmt$
-is simply a placeholder, and has no effect on program states when executed.  In
-our formal definition, for the purpose of simplicity, we restrict the Boolean
-expressions to those of the form $x < a$, where $x$ is a variable and $a$ is
-an expression; more complex Boolean expressions are included trivially in our
-actual implementation.
+$s, s_1, s_2 \in \stmtset$ are program statements.  In our formal definition,
+for the purpose of simplicity, we restrict the Boolean expressions to those
+of the form $x < a$, where $x$ is a variable and $a$ is an expression;
+more complex Boolean expressions are included trivially in our actual
+implementation.  Although \forlit~loop is not explicitly defined in the above
+syntax definition, it can be trivially derived from a \whilelit~loop.
 
-As a simple example, the program in~\eqref{eq:syntax_example} computes an
+Furthermore, we introduce the ``\verb|#pragma| \verb|soap begin|'' and
+``\verb|#pragma| \verb|soap end|'' directives to delimit the code fragment
+to be optimized.  We can also use ``\verb|#pragma| \verb|soap in|'' and
+``\verb|#pragma| \verb|soap out|'' to provide input ranges and to declare
+output variables, respectively.
+
+As a simple example, the program in Figure~\ref{fig:syntax_example} computes an
 approximate value of ${\pi^2 a}/6$.  It has two inputs $a$, a floating point
 value between 0 and 1, and $n$, an integer value between 10 and 20, which
 determines the number of iterations for the loop, and a return variable $y$.
-\begin{equation}
-    \begin{aligned}
-        & \mathtt{input}~(a: [0.0, 1.0], n: [10, 20]) \semicolon~
-          \mathtt{output}~(y) \semicolon \\
-        & \assignstmt{x}{0} \semicolon~ \assignstmt{y}{0.0} \semicolon \\
-        & \whilelit~(x < n)~\dolit~( \\
-        & \quad \assignstmt{x}{x + 1} \semicolon \\
-        & \quad \assignstmt{y}{y + a / (x \times x)} \semicolon \\
-        & ) \semicolon
-    \end{aligned}
-    \label{eq:syntax_example}
-\end{equation}
 
-Despite the simplicity of \numimp{}, it includes all the features of a
-full programming language rather than an expression language used in prior
-work~\cite{soap}.  Additional language features, for example, array and matrix
-types, and also power, exponentiation and logarithm operators, can be added
-with little changes to our method.
+\begin{figure}[ht]
+    \begin{lstlisting}
+    #pragma soap in \
+        float a = [0.0, 1.0], int n = [10, 20]
+    #pragma soap out float y
+    x = 0;
+    y = 0.0;
+    while (x < n) {
+        x = x + 1;
+        y = y + a / (x * x);
+    }
+    \end{lstlisting}
+    \caption{A simple program written with our syntax definition.}
+    \label{fig:syntax_example}
+\end{figure}
+
+Despite the simplicity of our syntax, it includes all the features of
+a full programming language rather than an expression language used in
+Chapter~\ref{chp:stropt}.  We will add support for arrays and matrices in
+Chapter~\ref{chp:latopt}, and show that this can be added with little changes
+to our method.

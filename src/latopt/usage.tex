@@ -1,12 +1,10 @@
 \section{Tool Usage}
 \label{sec:usage}
 
+\todo{Place this somewhere else.}
+
 Our tool is a source-to-source optimizer that specifically targets numerical
-program statements written in a subset of standard C99. It introduces the
-``\verb|#pragma| \verb|opt begin|'' and ``\verb|#pragma| \verb|opt end|''
-directives to delimit the code fragment to be optimized. We can also use
-``\verb|#pragma| \verb|opt in|'' and ``\verb|#pragma| \verb|opt out|'' to
-provide input ranges and to declare output variables, respectively. Our tool
+program statements written in a subset of standard C99.  Our tool
 supports arithmetic and Boolean expressions, assignment statements, \iflit{}
 statements, \whilelit{} loops and \forlit{} loops.  The numerical data types we
 allow are $\inttype$ and $\floattype$, as well as single- and multi-dimensional

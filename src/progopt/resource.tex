@@ -162,13 +162,14 @@ deterministic and ensures the order of resource sharing.
 
 \subsubsection{Resource counting}
 
-Finally, after applying the resource sharing transformations outlined above,
-we count the number of LUTs and DSPs, by accumulating the statistics for
-each operator instance in the MIR, in the same as way as~\cite{soap}.  For
-this resource estimation, we gather statistics of individual operators by
-synthesizing each arithmetic operator (addition, subtraction, multiplication,
-division and comparison), for single and double precision floating-point,
-using Altera's floating-point megafunctions~\cite{altfp}.  Similarly, the
-resource usage of integer arithmetic, conditional and fixpoint operators are
-synthesized and estimated from multiplexers, and the substitution operator uses
-no resources because it does not perform computations.
+Finally, after applying the resource sharing transformations outlined
+above, we count the number of LUTs and DSPs, by accumulating the statistics
+for each operator instance in the MIR, in the same way we described
+in Chapter~\ref{chp:stropt}.  For this resource estimation, we gather
+statistics of individual operators by synthesizing each arithmetic operator
+(addition, subtraction, multiplication, division and comparison), for
+single and double precision floating-point, using Altera's floating-point
+megafunctions~\cite{altfp}.  Similarly, the resource usage of integer
+arithmetic, conditional and fixpoint operators are synthesized and estimated
+from multiplexers, and the substitution operator uses no resources because it
+does not perform computations.

@@ -161,7 +161,7 @@ inter-iteration dependences:
 \subsection{Resource Utilization Analysis}
 \label{sub:resource_utilization_analysis}
 
-The hardware resource usage analysis of Gao~\etal~\cite{soap2} captures the
+The hardware resource usage analysis of Chapter~\ref{chp:stropt} captures the
 sharing of common subexpressions, but cannot analyze resource binding, which
 allows common operations to be shared across clock cycles. For instance, in
 the floating-point expression $a + (b + c)$, the two additions can be computed
@@ -191,7 +191,7 @@ operators, which is the estimated resource utilization for the full program.
 \subsection{Accuracy Analysis}
 \label{sub:accuracy_analysis}
 
-We extend the accuracy analysis of Gao~\etal~\cite{soap2} to support
+We extend the accuracy analysis of Chapter~\ref{chp:progopt} to support
 arrays. Because our benchmark suite consists of programs with large arrays,
 we keep the analysis efficient by treating an \emph{entire} array as a pair
 of a floating-point interval and an interval of accumulated round-off errors.

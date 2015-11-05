@@ -1,48 +1,48 @@
 \section{Introduction}
 
-% floating-point arithmetic has round-off errors, exploit equivalence
+Our previous chapter introduced a new methodology to efficiently restructure
+arithmetic expressions for the optimized trade-off between two performance
+metrics, \ie~numerical accuracy when evaluated and area usage in synthesized
+FPGA implementations.  However, this method has a substantial limitation when
+applied to general numerical programs, that is, it can only be applied to
+straight-line codes without control structures such as branches and loops.
 
-As we have explained earlier, due to a finite number of values that
-can be represented in floating-point arithmetic, numerical algorithms
-generally always have round-off errors.  Therefore, equivalence rules
-such as \emph{associativity} $(a + b) + c \equiv a + (b + c)$, and
-\emph{distributivity} $(a + b) \times c \equiv a \times c + b \times c$
-for real arithmetic no longer hold under floating-point arithmetic.  This
-allows us to exploit these equivalence relations, to automatically generate
-different equivalent expressions from the same arithmetic expression.  For the
-optimization of FPGA implementations, these equivalent expressions can then
-be selected for the optimal trade-off between resource usage when synthesized
-into circuits, that is, the number of look-up tables (LUTs) and digital
-signal processing (DSP) elements utilized, and accuracy when evaluated using
-floating-point computations.  For example, with single precision floating-point
-format, our tool found that give an input $x \in [0, 100]$ and $y \in [0, 2]$,
-then the program:
-\begin{equation}
-    \begin{aligned}
-        & \iflit~(x < 1)~\thenlit~( \\
-        & \quad \assignstmt{x}{(x + y) + 0.1} \\
-        & )~\elselit~( \\
-        & \quad \assignstmt{x}{x + (y + 0.1)} \\
-        & )
-    \end{aligned}
-\end{equation}
-is most accurate when the subexpression $(x + y) + 0.1$ is written as
-$(x + 0.1) + y$, because the subexpression is only evaluated when $x <
-1$, our tool infers a tighter bound on $x$, $[0, 1]$, to optimize it;
-and the original program uses fewest resources when subexpressions are
-shared and the \if~statement is eliminated, \ie~``$\assignstmt{x}{x + (y
-+ 0.1)}$''.  This kind of optimization generates a Pareto optimal set of
-implementations.  A na{\"\i}ve strategy to search for the Pareto optimal
-implementations is to discover all possible equivalent expressions.  However,
-this would result in combinatorial explosion and become intractable even
-for very small expressions~\cite{soap,ioualalen,mouilleron}.  To remedy
-this, Gao~\etal~\cite{soap} proposed a novel approach, known as \soap, to
-significantly reduce the space and time complexity to produce a subset of the
-Pareto frontier.
+The structural optimization of general numerical programs is much more complex
+than that of arithmetic expressions.  The reasons are two-fold.  First,
+during program execution, variables are often updated with new values.  Our
+optimization should therefore perform static analysis on the values of
+variables, and use the result to optimize specifically for the trade-off
+between accuracy and resource usage.  Second, it is much more difficult to
+formally define program equivalence, and subsequently, to search efficiently
+for optimized equivalent programs.  For instance, even without the introduction
+of branches and loops, the following two programs are equivalent, but
+syntactically, they are very different.  In practice, it is desirable to
+eliminate as much as possible the need for these syntactic rewrites that do not
+affect our performance metrics.
 
-% program transformation why?
+\begin{figure}[ht]
+    \centering
+    \subfloat[$P_1$]{%
+        \shortstack[l]{%
+            \texttt{x = x + 1;} \\
+            \texttt{y = 2 * x;} \\
+            \texttt{x = x + 3;}
+        }
+    } \qquad \qquad
+    \subfloat[$P_2$]{%
+        \shortstack[l]{%
+            \texttt{y = x + 1;} \\
+            \texttt{x = y;} \\
+            \texttt{y = y * 2;} \\
+            \texttt{x = x + 3;}
+        }
+    }
+    \caption{Two programs that are equivalent but syntactically different.}
+    \label{fig:equiv_progs}
+\end{figure}
 
-In this chapter, we propose a new general \emph{program} optimization technique
+Therefore, in this chapter, we provide answers to these two above issues.  In
+the meantime, we propose a new general \emph{program} optimization technique
 for numerical algorithms, which allows \texttt{if} statements as well as
 \texttt{while} loops, and developed its accompanied tool, \newsoap, to enable
 the joint optimization of accuracy and resource usage, as well as the trade-off
@@ -50,6 +50,49 @@ between these performance metrics.  We develop a tool, which we call \newsoap,
 to perform source-to-source optimization of numerical programs targeting FPGAs,
 and generate implementations that trade off resource usage and numerical
 accuracy.
+
+% floating-point arithmetic has round-off errors, exploit equivalence
+
+Similar to the approach we have proposed in Chapter~\ref{chp:stropt}, we
+exploit equivalence rules such as such as \emph{associativity} $(a + b) +
+c \equiv a + (b + c)$, and \emph{distributivity} $(a + b) \times c \equiv
+a \times c + b \times c$ to automatically optimize implementations for
+the optimal trade-off between resource usage, \ie~the number of LUTs and
+DSP elements utilized, and accuracy when evaluated using floating-point
+computations.  For example, with single precision floating-point format, our
+tool found that give an input $x \in [0, 100]$ and $y \in [0, 2]$, then the
+program:
+\begin{lstlisting}
+    if (x < 1) {
+        x = (x + y) + 0.1;
+    } else {
+        x = x + (y + 0.1);
+    }
+\end{lstlisting}
+is most accurate when rewritten in the following form:
+\begin{lstlisting}
+    if (x < 1) {
+        x = (x + 0.1) + y;
+    } else {
+        x = x + (y + 0.1);
+    }
+\end{lstlisting}
+On the other hand, the original program uses fewest resources when
+subexpressions are shared and the \iflit~statement is eliminated:
+\begin{lstlisting}
+    x = x + (y + 0.1);
+\end{lstlisting}
+
+This kind of optimization generates a Pareto optimal set of implementations,
+which trades off accuracy and area.  A na{\"\i}ve strategy to search for
+the Pareto optimal implementations is to discover all possible equivalent
+expressions.  However, this would result in combinatorial explosion and become
+intractable even for very small expressions~\cite{ioualalen,mouilleron}.  To
+remedy this, in Chapter~\ref{chp:stropt} we proposed a novel approach, known
+as \soap, to significantly reduce the space and time complexity to produce a
+subset of the Pareto frontier.
+
+% program transformation why?
 
 Our program optimization flow is \emph{safe}, \emph{semantics-directed} and
 \emph{flexible}. \emph{Safety} means that because we make use of formal
@@ -71,7 +114,7 @@ errors, hence further increases range of options in the Pareto frontier of
 trade-offs.  Finally, our method naturally subsumes constant propagation,
 redundant code elimination, and also branch and loop fusions.
 
-% Our tool fits in the familiar setting of the high-level synthesis tool flow, as a front-end that performs the source-to-source optimization of 
+% Our tool fits in the familiar setting of the high-level synthesis tool flow, as a front-end that performs the source-to-source optimization of
 
 Our main contributions in this chapter are as follows:
 \begin{enumerate}
