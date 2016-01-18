@@ -188,6 +188,9 @@ derive for the subexpression $a + b$:
             &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
     \end{aligned}
 \end{equation}
+\todo{George: I am a little confused by addition here.  What is the definition
+of ``+'' on labels?  If $l_a + l_b$ should be read purely as a syntactic
+construct, why does it need a distinct representation as $l_3$?}
 Finally, for the full expression $(a + b) \times (a + b)$:
 \begin{equation}
     \begin{aligned}
@@ -218,7 +221,7 @@ to denote our resource usage analysis.
 In earlier sections, we introduce semantics that define additions and
 multiplications on intervals, then gradually transition to error semantics that
 compute bounds of values and errors, as well as labelling environments that
-allows common subexpression elimination, by defining arithmetic operations on
+allow common subexpression elimination, by defining arithmetic operations on
 these structures. In this section, we now take the leap from not only analyzing
 an expression for its quality, to defining arithmetic operations on sets of
 equivalent expressions, and use these rules to discover equivalent expressions.
@@ -227,11 +230,28 @@ functions to discover them.
 
 \subsubsection{Discovering Equivalent Expressions}
 
-From an expression, a set of equivalent expressions can be discovered by
-the following inference system of equivalence relations $\eqrel \subset
-\exprset\times\exprset$. Let's define $e_1, e_2, e_3 \in \exprset$, $v_1, v_2,
-v_3 \in \realset$, and $\circ \in \{+, \times\}$. First, the arithmetic rules
-are:
+From an expression, a set of equivalent expressions can be discovered by our
+\emph{equivalence relation} $\eqrel$ on the set of all expressions $\exprset$,
+and $\eqrel \subset \exprset\times\exprset$.  It is noteworthy that a relation
+is said to be an equivalence relation when it is reflexive, symmetric and
+transitive, \ie~for all $e_1, e_2, e_3 \in \exprset$, we have the following
+rules in our inference system:
+\begin{equation}
+    \begin{aligned}
+        \text{Reflexivity}
+            &: e_1 \eqrel e_1 \\
+        \text{Symmetry}
+            &: \text{~if~} e_1 \eqrel e_2,
+            \text{~then~} e_2 \eqrel e_1 \\
+        \text{Transitivity}
+            &: \text{~if~} e_1 \eqrel e_2 \text{~and~} e_2 \eqrel e_3,
+            \text{~then~} e_1 \eqrel e_3.
+    \end{aligned}
+\end{equation}
+
+We extend our inference system with additional rules that relate equivalent
+expressions.  Let's define $e_1, e_2, e_3 \in \exprset$, $v_1, v_2, v_3 \in
+\realset$, and $\circ \in \{+, \times\}$.  First, the arithmetic rules are:
 \begin{equation*}
     \begin{aligned}
         \text{Associativity}(\circ)
@@ -239,19 +259,17 @@ are:
         \text{Commutativity}(\circ)
             &: e_1 \circ e_2 \eqrel e_2 \circ e_1 \\
         \text{Distributivity}
-            &: e_1 \times (e_2 + e_3) \eqrel e_1 \times e_2 + e_1 \times e_3 \\
-        \text{Distributivity}^\prime
-            &: e_1 \times e_2 + e_1 \times e_3 \eqrel e_1 \times (e_2 + e_3)
+            &: e_1 \times (e_2 + e_3) \eqrel e_1 \times e_2 + e_1 \times e_3
     \end{aligned}
 \end{equation*}
 Secondly, the reduction rules are:
 \begin{equation*}
     \begin{aligned}
-        \text{Identity($\times$)}
+        \text{Identity}(\times)
             &: e_1 \times 1 \eqrel e_1 \quad &
         \text{ZeroProp}
             &: e_1 \times 0 \eqrel 0 \\
-        \text{Identity($+$)}
+        \text{Identity}(+)
             &: e_1 + 0 \eqrel e_1 &
         \text{ConstProp}(\circ)
             &: \inference{v_3 = v_1 \circ v_2}{v_1 \circ v_2 \eqrel v_3}
@@ -259,30 +277,54 @@ Secondly, the reduction rules are:
 \end{equation*}
 The ConstProp rule states that if an expression is a summation/multiplication
 of two values, then it can be simply evaluated to produce the result. Finally,
-the following one allows structural induction on expression trees, \ie~it is
+the following two allow structural induction on expression trees, \ie~it is
 possible to derive that $a + (b + c) \eqrel a + (c + b)$ from $b + c \eqrel c +
 b$:
 \begin{equation}
-    \text{Tree}(\circ)
-        : \inference{e_1 \eqrel e_2}{e_3 \circ e_1 \eqrel e_3 \circ e_2}
+    \begin{aligned}
+        \text{Tree}(\circ)
+            : \inference{e_1 \eqrel e_2}{e_3 \circ e_1 \eqrel e_3 \circ e_2}
+        \quad &
+        \text{Tree}^\prime(\circ)
+            : \inference{e_1 \eqrel e_2}{e_1 \circ e_3 \eqrel e_2 \circ e_3}
+    \end{aligned}
     \label{eq:equivalence_inference}
 \end{equation}
-It is possible to transform the structure of expressions using these
-above-mentioned inference rules. We define the function $\eqstep:
-\powersetof\exprset\to\powersetof\exprset$, where $\powersetof\exprset$
-denotes the power set of $\exprset$, which generates a (possibly larger)
-set of equivalent expressions from an initial set of equivalent expressions
-by one step of (\ref{eq:equivalence_inference}), that is:
+
+We say that $e_1$ is equivalent to $e_2$ if and only if $e_1 \eqrel e_2$ For
+some expressions $e_1$ and $e_2$.  Although for simplicity, we have not defined
+rules for subtraction and division, these rules can be easily added and are
+present in our framework.
+
+
+\subsubsection{Scalable Methods}
+
+The above rules of equivalence relates an expression with all of its equivalent
+expressions.  In general because of combinatorial explosion, the set of all
+equivalent expressions is so large to be derived, which motivates us to develop
+scalable methods that execute fast enough even with large expressions.
+
+Instead of deriving the full set of equivalent expressions, we can define a
+new relation $\eqgenrel$, a subset of $\eqrel$, which is identical to our
+equivalent relation $\eqrel$ except that we drop reflexivity, symmetry and
+transitivity from $\eqrel$, to generate equivalent expressions in a series of
+steps.
+
+We define the function $\eqstep: \powersetof\exprset\to\powersetof\exprset$,
+where $\powersetof\exprset$ denotes the power set of $\exprset$, which
+generates a (possibly larger) set of equivalent expressions from an initial set
+of equivalent expressions by one step of $\eqgenrel$, that is:
 \begin{equation}
     \eqstep(\epsilon) = \left\{
         e^\prime\in\exprset \mid
-        e \eqrel e^\prime \wedge e\in\epsilon\right\}
+        e \eqgenrel e^\prime \wedge e\in\epsilon\right\}
 \end{equation}
-where $\epsilon$ is a set of equivalent expressions. From this, we may note
-that the set of equivalent expressions generated by taking the union of any
-number of steps of~\eqref{eq:equivalence_inference} of $\epsilon$ is the
-transitive closure $\eqstep^\star(\epsilon)$, as given by the following
-formula:
+where $\epsilon$ is a set of equivalent expressions.
+
+From this, we may note that the set of equivalent expressions generated by
+taking the union of any number of steps of~\eqref{eq:equivalence_inference} of
+$\epsilon$ is the transitive closure $\eqstep^\star(\epsilon)$, as given by the
+following formula:
 \begin{equation}
     \eqstep^\star(\epsilon) = \bigcup_{i = 0}^\infty \eqstep^i(\epsilon)
     \label{eq:transitive_closure}
@@ -296,69 +338,62 @@ Here we define:
         \right) \quad \text{for~} i \in \{ 0, 1, 2, \cdots \}
     \end{aligned}
 \end{equation}
-We say that $e_1$ is equivalent to $e_2$ if and only if $e_1 \in
-\eqstep^\star(\{e\})$ and $e_2 \in \eqstep^\star(\{e\})$ for some expression
-$e$. In general because of combinatorial explosion, it is not possible to
-derive the full set of equivalent expressions by rules of equivalence, which
-motivates us to develop scalable methods that executes fast enough even with
-large expressions.
 
-\subsubsection{Scalable Methods}
-
-The complexity of equivalent expression finding is reduced by fixing the
-structure of subexpressions at a certain depth $k$ in the original expression.
-The definition of depth is given as follows: first the root of the parse
-tree of an expression is assigned depth $d = 1$; then we recursively define
-the depth of a node as one more than the depth of its greatest-depth parent.
-If the depth of the node is greater than $k$, then we fix the structure of
-its child nodes by disallowing any equivalence transformation beyond this
-node. We let $\eqstep_k$ denote this ``depth limited'' equivalence finding
-function, where $k$ is the depth limit used, and $\eqstep^\star_k$ denotes
-its transitive closure. This approach is similar to Martel's depth limited
-equivalent expression transform~\cite{martel07}, however Martel's method
-eventually allows transformation of subexpressions beyond the depth limit,
-because rules of equivalence would transform these to have a smaller depth.
-This contributes to a time complexity at least exponential in terms of the
-expression size. In contrast, our technique has a time complexity that does not
-depend on the size of the input expression, but grows with respect to the depth
-limit $k$. Note that the full equivalence closure using the inference system we
-defined earlier in~\eqref{eq:transitive_closure} is at least $O({2n - 1}!!)$
-where $n$ is the number of terms in an expression, as we discussed earlier.
+Furthermore, the complexity of equivalent expression finding is reduced
+by fixing the structure of subexpressions at a certain depth $k$ in the
+original expression.  The definition of depth is given as follows: first
+the root of the parse tree of an expression is assigned depth $d = 1$; then
+we recursively define the depth of a node as one more than the depth of
+its greatest-depth parent.  If the depth of the node is greater than $k$,
+then we fix the structure of its child nodes by disallowing any equivalence
+transformation beyond this node. We let $\eqstep_k$ denote this ``depth
+limited'' equivalence finding function, where $k$ is the depth limit used, and
+$\eqstep^\star_k$ denotes its transitive closure. This approach is similar to
+Martel's depth limited equivalent expression transform~\cite{martel07}, however
+Martel's method eventually allows transformation of subexpressions beyond the
+depth limit, because rules of equivalence would transform these to have a
+smaller depth.  This contributes to a time complexity at least exponential in
+terms of the expression size. In contrast, our technique has a time complexity
+that does not depend on the size of the input expression, but grows with
+respect to the depth limit $k$. Note that the full equivalence closure using
+the inference system we defined earlier in~\eqref{eq:transitive_closure} is at
+least $O({2n - 1}!!)$ where $n$ is the number of terms in an expression, as we
+discussed earlier.
 
 \subsubsection{Pareto Frontier}
 
 Because we optimize expressions in two quality metrics, \ie~the accuracy of
-computation and the estimate of FPGA resource utilization. We desire the
-largest subset of all equivalent expressions $E$ discovered such that in this
-subset, no expression dominates any other expression, in terms of having both
-better area and better accuracy. This subset is known as the Pareto frontier.
-Figure~\ref{alg:pareto} shows a na{\"\i}ve algorithm for calculating the Pareto
-frontier for a set of equivalent expressions $\epsilon$.
+computation and the estimate of FPGA resource utilization, there is a trade-off
+between them. We desire the largest subset of all equivalent expressions
+$E$ discovered such that in this subset, no expression dominates any other
+expression, in terms of having both better area and better accuracy. This
+subset is known as the Pareto frontier.  Figure~\ref{alg:pareto} shows
+a simplified algorithm for calculating the Pareto frontier for a set of
+equivalent expressions $\epsilon$.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
         \Function{Frontier}{$\epsilon$}
-            \State{$e_1, e_2, \ldots, e_n
-                \gets \mathtt{sort\_by\_accuracy}(\epsilon)$}
-            \State{$e \gets e_1$}
-            \State{$\mathit{frontier} \gets \{e\}$}
-            \For{$i \in \{1, 2, \ldots, n\}$}
-                \If{$\area(e_i) < \area(e)$}
-                    \State{$e \gets e_i$}
-                    \State{%
-                        $\mathit{frontier}
-                            \gets \mathit{frontier} \cup \{e_i\}$}
-                \EndIf%
-            \EndFor%
+            \State{$\mathit{frontier} \gets \epsilon$}
+            \For{$e \in \epsilon$}
+                \For{$e^\prime \in \epsilon$}
+                    \If{$\mathit{Area}(e^\prime) < \mathit{Area}(e)$ and
+                        $\abserr(e^\prime) < \abserr(e)$}
+                        \State{%
+                            $\mathit{frontier} \gets
+                                \mathit{frontier} / \{ e \}$}
+                    \EndIf{}
+                \EndFor{}
+            \EndFor{}
             \State{\Return{$\mathit{frontier}$}}
         \EndFunction%
     \end{algorithmic}
     \caption{The Pareto frontier from a set of equivalent expressions.
     }\label{alg:pareto}
 \end{figure} \\
-The function $\mathtt{sort\_by\_accuracy}$ sorts a set of expressions by their
-analyzed bounds of errors in increasing order, where the magnitudes of error
-bounds are used to perform the ordering~\cite{martel07}:
+Here, $\mathit{frontier} / \{ e \}$ is a set identical to $\mathit{frontier}$,
+except that the element $e$ is removed.  We use the function $\abserr$ to
+analyze the magnitudes of error bounds, which is defined as follows:
 \begin{equation}
     \begin{aligned}
         \abserr(e) &= \max\left(

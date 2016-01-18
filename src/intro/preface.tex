@@ -1,0 +1,104 @@
+As the computational capability of new FPGA devices grows at an exponential
+rate, numerical applications running on them become increasingly more complex.
+Traditional design methodologies, working on the register-transfer level (RTL),
+have become increasingly costly, forcing us to work on a higher abstraction
+level~\cite{gajski}, \ie~to implement our designs using high-level languages
+such as C\@.
+
+There are many reasons why FPGA implementations of numerical algorithms
+are now best obtained via \emph{high-level synthesis} (HLS) from C\@:
+less development effort, the abundance of software engineers compared to
+hardware designers, the relative ease of testing C code on an ordinary
+microprocessor, the opportunities for rapid design space exploration, and
+so on~\cite{meeus12}. Great advances have been made in this area recently,
+and the output from HLS tools is nowadays competitive with hand-crafted
+designs~\cite{bdti_xilinx}.
+
+Numerical C programs are typically written with floating-point arithmetic,
+following the \emph{IEEE 754 standard} for floating-point computation.
+Floating-point numbers can represent a wide range of real values, and most
+programming languages support it seamlessly.  It has become highly ubiquitous,
+and is used in most of our software and hardware implementations of numerical
+programs.  Recently, Altera has introduced Arria 10 and Stratix 10 devices
+to incorporate hardened floating-point DSP blocks in the FPGA fabric.  As a
+result, we expect to see floating-point arithmetic continuing to dominate in
+the FPGA implementation of numerical applications.
+
+Although we often make use floating-point arithmetic to implement algorithms,
+often specified in real arithmetic, in practice, it is often neglected that
+floating-point computations almost always have \emph{roundoff errors}, \ie~the
+discrepancy between the actual result in real arithmetic and the rounded result
+computed with floating-point arithmetic.  Round-off errors, when accumulated,
+can have a devastating effect on numerical accuracy~\cite{higham02}.
+
+In fact, properties such as associativity $(a + b) + c \equiv a + (b + c)$
+and distributivity $a \times (b + c) \equiv a \times b + a \times c$ which
+we consider to be fundamental laws of real numbers no longer hold under
+floating-point arithmetic.  For instance, under single-precision floating-point
+arithmetic with rounding to the nearest, the result of $(2^{-24} + 2^{-24})
++ 1 = 1.00000012\textellipsis$ is exact, but $(1 + 2^{-24}) + 2^{-24}$ is
+rounded to $1$.  Round-off errors in a numerical program are dependent on
+every arithmetic operation and every input value, and with the impact on
+floating-point accuracy being so esoteric, it is challenging for engineers to
+understand the repercussions of switching between ``\verb|(a + b) * c|'' and
+``\verb|a * c + b * c|'' in their programs.
+
+Nevertheless, this opens the possibility of using these rules to generate a
+program equivalent to the original program in real arithmetic, which could
+have better quality than the original when evaluated in floating point
+computation.  Experienced engineers often apply such expression rewriting
+intuitions in numerical programs.  For instance, when summing a sequence
+of floating-point values, one can sometimes reduce round-off error in the
+result by summing the inputs in ascending order.  On the other hand, one can
+often reduce latency by applying \emph{expression balancing}, \ie~rearranging
+operators in an expression to construct a balanced tree, so that more operators
+can work in parallel.  These heuristics cover a very limited number of
+possible transformations and may not always improve the original code.  A
+trivial process therefore does not exist to apply steps of transformations
+using equivalence rules to \emph{optimally} trade off latency, resources and
+numerical accuracy.
+
+Existing HLS tools consider these rewrites to be unsafe, and thus make very
+limited use of them when restructuring floating-point data-paths.  For
+instance, Vivado HLS~\cite{vivado_hls} has only a very simple \emph{expression
+balancing} feature that uses associativity to improve latency, and only
+expressions with either additions or multiplications are optimized.  Moreover,
+it does not produce optimal loop pipelining, because it does not take
+into account the implications of these transformations on inter-iteration
+dependences and does not explore partial loop unrolling.  In addition, Vivado
+HLS cannot reason about how this feature affects numerical accuracy; there is
+no guarantee that this transformation will not result in a catastrophically
+inaccurate implementation.
+
+In response, this thesis proposes new methodologies and the accompanied
+tool---a fully automatic source-to-source optimizer that augments Vivado
+HLS---to optimize a given numerical C program using these transformations in
+tandem with conventional program transformations.  Our optimizer discovers
+not only one, but a wide spectrum of program candidates.  When synthesized
+in Vivado HLS, these candidates trade off three performance metrics of great
+importance to engineers: run time, resource usage and round-off error.  Here,
+run time refers to the latency in clock cycles, resource usage refers to
+the number of look-up tables (LUTs) and digital signal processing (DSP)
+elements.  Some of these performance metrics could be in conflict.  For
+example, higher performance tends to require more circuitry, and how to
+resolve this trade-off depends on the user's requirements.  As a result, our
+tool produces a \emph{set} of optimized programs, known as the \emph{Pareto
+frontier}: those programs $P$ for which the tool has found no $P'$ that
+improves on $P$ in all three metrics.  We thus go beyond existing literature
+by not only optimizing the precision requirements of an implementation, but
+changing the structure of the implementation itself.
+
+Generating candidate optimizations na{\"\i}vely would however produce a
+combinatorial explosion, even for small input programs.  For instance,
+in worst case, the parsing of a simple summation of $n$ variables could
+result in $(2n - 1)!! = 1\times3\times5\times\cdots\times(2n - 1)$ distinct
+expressions~\cite{ioualalen, mouilleron}.  This is further complicated
+by distributivity as the expression ${(a + b)}^k$ could expand into an
+expression with a summation of $2^k$ terms each with $k - 1$ multiplications.
+Usually, for this reason, it would be infeasible to generate a complete set
+of equivalent expressions using the rules of equivalence, since an expression
+with a moderate number of terms will have a very large number of equivalent
+expressions.  A new approach was therefore developed to specifically tackle
+the efficient discovery of equivalent structures in numerical programs, by
+intelligently pruning the set of candidates as it progresses up the input
+program's abstract syntax tree.
