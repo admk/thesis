@@ -2,8 +2,16 @@
 
 Chapter~\ref{chp:background} serves to explain various essential concepts used
 throughout this thesis.  We introduce rigorous approaches from software static
-analysis, specifically formal semantics and abstract interpretation, to bear on
-source-to-source transformation for high-level synthesis. \todo{Expand this.}
+analysis, specifically formal semantics and abstract interpretation, to bear
+on source-to-source transformation for high-level synthesis.  We introduce
+a new expression-based intermediate representation to represent numerical
+programs, which we call \emph{metasemantic intermediate representation}.  A
+MIR is designed to preserve only the effect of program execution, and abstract
+away how the program is executed.  For example, details such as temporary
+variables and the ordering of program statements are discarded, this hence
+greatly reduces the size of the search space, while optimal solutions are
+still reachable.  We further introduce the concept of loop pipelining and how
+restructuring numerical programs can optimize run time.
 
 In Chapter~\ref{chp:stropt} we propose new methods to automatically optimize
 the structure of arithmetic expressions for FPGA implementation as part of
@@ -26,23 +34,18 @@ targeting the trade-off between numerical accuracy and resource usage, but
 we have extended it to optimize general numerical programs, consisting of
 \iflit~statements and \whilelit~loops.  Because there are infinite number
 of ways to rewrite numerical C programs, and many of these rewrites produce
-programs that have the same resource usage, accuracy and latency properties,
-in this chapter we propose a new expression-based intermediate representation,
-which we call \emph{metasemantic intermediate representation} (MIR), and the
-back-and-forth translation between numerical C programs and MIRs.  A MIR
-is designed to preserve only the effect of program execution, and abstract
-away how the program is executed.  For example, details such as temporary
-variables and the ordering of program statements are discarded, this hence
-greatly reduces the size of the search space, while optimal solutions are
-still reachable.  We efficiently discover equivalent structures in MIRs by
-exploiting not only the rules of real arithmetic, such as associativity and
-distributivity, but also rules that enable control flow restructuring.  Our
-numerical accuracy and resource usage analyses are further extended to analyze
-MIRs.  Additionally, we further broaden the Pareto frontier in our optimization
-flow to automatically explore the numerical implications of partial loop
-unrolling and loop splitting.  In real applications, the tool discovers a
-wide range of Pareto optimal options, and the most accurate one improves the
-accuracy of numerical programs by up to 65\%.
+programs that have the same resource usage, accuracy and latency properties, in
+this chapter we explain in detail the structure of MIRs, and the back-and-forth
+translation between numerical C programs and MIRs.  We efficiently discover
+equivalent structures in MIRs by exploiting not only the rules of real
+arithmetic, such as associativity and distributivity, but also rules that
+enable control flow restructuring.  Our numerical accuracy and resource usage
+analyses are further extended to analyze MIRs.  Additionally, we further
+broaden the Pareto frontier in our optimization flow to automatically explore
+the numerical implications of partial loop unrolling and loop splitting.  In
+real applications, the tool discovers a wide range of Pareto optimal options,
+and the most accurate one improves the accuracy of numerical programs by up to
+65\%.
 
 The optimization techniques flows we have discussed so far have only been
 limited to minimize area and round-off errors of numerical programs.  Often
