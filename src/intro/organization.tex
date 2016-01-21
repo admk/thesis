@@ -9,9 +9,11 @@ programs, which we call \emph{metasemantic intermediate representation}.  A
 MIR is designed to preserve only the effect of program execution, and abstract
 away how the program is executed.  For example, details such as temporary
 variables and the ordering of program statements are discarded, this hence
-greatly reduces the size of the search space, while optimal solutions are
-still reachable.  We further introduce the concept of loop pipelining and how
-restructuring numerical programs can optimize run time.
+greatly reduces the size of the search space, while optimal solutions are still
+reachable.  We introduce the concept of loop pipelining and how restructuring
+numerical programs can optimize run time.  Finally, we further explain the
+design of our accuracy, area and latency analyses, and in the efficient
+discovery of equivalent MIRs.
 
 In Chapter~\ref{chp:stropt} we propose new methods to automatically optimize
 the structure of arithmetic expressions for FPGA implementation as part of

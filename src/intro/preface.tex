@@ -98,7 +98,23 @@ expression with a summation of $2^k$ terms each with $k - 1$ multiplications.
 Usually, for this reason, it would be infeasible to generate a complete set
 of equivalent expressions using the rules of equivalence, since an expression
 with a moderate number of terms will have a very large number of equivalent
-expressions.  A new approach was therefore developed to specifically tackle
-the efficient discovery of equivalent structures in numerical programs, by
-intelligently pruning the set of candidates as it progresses up the input
-program's abstract syntax tree.
+expressions.  New approach were therefore developed to specifically tackle the
+efficient discovery of equivalent structures in numerical programs.  First, we
+reduce the search space by inventing a new intermediate representation. Second,
+we further reduce the effort of exploring the search space by intelligently
+pruning the set of candidates as it progresses up the input program's abstract
+syntax tree.
+
+All of our techniques above are designed with \emph{compositionality} in mind.
+It means that we recursively break down each component we work on---such as
+programs and MIRs---into smaller components and use our analysis to calculate
+the results of each, such as accuracy, area and latency, and subsequently
+equivalent candidates; the final results are then constructed from those of
+the subcomponents.  When compared with a global approach, there are two major
+advantages.  First, because components are considered independent of each
+other, once analyzed the results can be reused in the analysis in the larger
+enclosing components.  Another advantage of this is that although we did not
+formally prove the correctness of our approach, we have designed it to be
+easily expressible in a formal language, by proving smaller pieces of lemmas,
+we can deductively prove the correctness of, for instance, a program-to-MIR
+translation.
