@@ -1,27 +1,28 @@
 \section{Structural Optimization}
-\label{sec:structural_optimization}
+\label{lo:sec:structural_optimization}
 
 From a numerical program, we can generate an MIR using the translation in
-Sec.~\ref{sec:intermediate}.  The next step is to transform the MIR, and
+Section~\ref{lo:sec:intermediate}.  The next step is to transform the MIR, and
 discover MIRs that are equivalent to the original MIR in real arithmetic, but
 may execute differently in finite-precision arithmetic because of round-off
 errors.
 
 \subsection{Algorithm}
-\label{sub:algorithm}
+\label{lo:sub:algorithm}
 
 % Our optimization starts by partitioning the MIR into sub-MIRs.  This further
 % reduces the size of the search space, \ie~equivalent MIRs reachable using our
 % transformation rules.  This speeds up the rest of the optimization process,
 % because these rules are not applied on partition boundaries.
 
-As discussed in Sec.~\ref{sec:introduction}, even a small expression could have
-a huge number of equivalent ones.  Exhaustively discovering all equivalent MIRs
-would result in combinatorial explosion of the number of equivalent MIRs in the
-search space.  For this reason, we base ourselves on an algorithm from \SOAP{}
-that search efficiently, by discovering equivalences in a bottom-up hierarchy.
-In this section we discuss the improvements we have made to the algorithm which
-further increases the performance of this algorithm.
+As discussed in Section~\ref{lo:sec:introduction}, even a small expression
+could have a huge number of equivalent ones.  Exhaustively discovering all
+equivalent MIRs would result in combinatorial explosion of the number of
+equivalent MIRs in the search space.  For this reason, we base ourselves on an
+algorithm from \SOAP{} that search efficiently, by discovering equivalences
+in a bottom-up hierarchy.  In this section we discuss the improvements we
+have made to the algorithm which further increases the performance of this
+algorithm.
 
 Our first contribution is that instead of optimizing the MIR immediately, we
 start by partitioning the MIR into multiple smaller sub-MIRs.  In turn, each
@@ -30,10 +31,10 @@ select combinations from these sub-MIRs to be merged, this generates a set of
 MIRs that are equivalent to the original.  Finally, we preserve those MIRs
 merged on the Pareto frontier.
 
-Fig.~\ref{alg:optimize} shows the pseudocode of the optimization algorithm,
-it takes as an input an MIR graph, and produces a set of equivalent graphs
-that are estimated to be Pareto-optimal when converted into C programs and
-synthesized into circuits.  Although this algorithm deals with a special
+Figure~\ref{lo:alg:optimize} shows the pseudocode of the optimization
+algorithm, it takes as an input an MIR graph, and produces a set of equivalent
+graphs that are estimated to be Pareto-optimal when converted into C programs
+and synthesized into circuits.  Although this algorithm deals with a special
 case, \ie~a root node $op$ with two child subtrees $e_1, e_2$, it can
 easily be generalized to an arbitrary number of child subtrees.  Here, $e
 \stackrel{r}{\rightsquigarrow} e'$ means $e^\prime$ can be obtained by
@@ -106,14 +107,14 @@ at a cost of less points on the Pareto frontier.
         The algorithm we used for the efficient discovery of equivalent
         structures in MIRs.
     }
-    \label{alg:optimize}
+    \label{lo:alg:optimize}
 \end{figure}
 
 \subsection{Transformation Rules}
-\label{sub:transformation_rules}
+\label{lo:sub:transformation_rules}
 
 This section details the transformation rules used in our structural
-optimization algorithm in Fig.~\ref{alg:optimize}.  These transformation
+optimization algorithm in Figure~\ref{lo:alg:optimize}.  These transformation
 rules, each on its own is not revolutionary, but for the first time, we bring
 them together to show a much better automatic structural optimization on the
 latency, resource usage and accuracy of numerical programs, than using only a
@@ -126,52 +127,52 @@ subset of them.
 \hline
 \multicolumn{2}{c}{\bf Arithmetic Rules}
 \\\hline
-\emph{Associativity} & {\tt (a + b) + c} $~\rightsquigarrow~$ {\tt a + (b +
+\emph{Associativity} & \texttt{(a + b) + c} $~\rightsquigarrow~$ {\tt a + (b +
 c)}
 \\\hline
-\emph{Commutativity} & {\tt a + b} $~\rightsquigarrow~$ {\tt b + a}
+\emph{Commutativity} & \texttt{a + b} $~\rightsquigarrow~$ \texttt{b + a}
 \\\hline
-\emph{Distributivity} & {\tt (a + b) * c} $~\rightsquigarrow~$ {\tt a * c + b * c}
+\emph{Distributivity} & \texttt{(a + b) * c} $~\rightsquigarrow~$ \texttt{a * c + b * c}
 \\\hline
-\emph{Negation} & {\tt a - b} $~\rightsquigarrow~$ {\tt a + (-b)}
+\emph{Negation} & \texttt{a - b} $~\rightsquigarrow~$ \texttt{a + (-b)}
 \\\hline
-\emph{Subtraction} & {\tt (a + b) - (a + b)} $~\rightsquigarrow~$ {\tt 0}
+\emph{Subtraction} & \texttt{(a + b) - (a + b)} $~\rightsquigarrow~$ \texttt{0}
 \\\hline
-\emph{Const.\ prop.} & {\tt (a * b + c / d) * 0} $~\rightsquigarrow~$ {\tt 0}
+\emph{Const.\ prop.} & \texttt{(a * b + c / d) * 0} $~\rightsquigarrow~$ \texttt{0}
 \\\hline
-\emph{Division} & {\tt a / (5 / b)} $~\rightsquigarrow~$ {\tt a * b * 0.2}
+\emph{Division} & \texttt{a / (5 / b)} $~\rightsquigarrow~$ \texttt{a * b * 0.2}
 \\\hline\hline
 \multicolumn{2}{c}{\bf Control Flow Restructuring Rules}
 \\\hline
-\emph{Partial loop unrolling} & \tstack{{\tt for(i=0;i<1000;i++)\string{C\textsubscript{i};\string}} $~\rightsquigarrow~$ \\ {\tt for(i=0;i<1000;i+=2)\string{C\textsubscript{i}; C\textsubscript{i+1};\string}}}
+\emph{Partial loop unrolling} & \tstack{\texttt{for(i=0;i<1000;i++)\string{C\textsubscript{i};\string}} $~\rightsquigarrow~$ \\ \texttt{for(i=0;i<1000;i+=2)\string{C\textsubscript{i}; C\textsubscript{i+1};\string}}}
 \\\hline\hline
 \multicolumn{2}{c}{\bf Access Reduction Rules}
 \\\hline
-\emph{Multiple reads} & {\tt x=A[i-{}-]; y=A[i+1];} $~\rightsquigarrow~$ {\tt x=A[i-{}-]; y=x;}
+\emph{Multiple reads} & \texttt{x=A[i-{}-]; y=A[i+1];} $~\rightsquigarrow~$ \texttt{x=A[i-{}-]; y=x;}
 \\\hline
-\emph{Multiple writes} & {\tt A[i++]=x; A[i-1]=y;} $~\rightsquigarrow~$ {\tt A[i++]=y;}
+\emph{Multiple writes} & \texttt{A[i++]=x; A[i-1]=y;} $~\rightsquigarrow~$ \texttt{A[i++]=y;}
 \\\hline
-\emph{Read after write} & {\tt A[i++]=x; y=A[i-1];} $~\rightsquigarrow~$ {\tt A[i++]=x; y=x;}
+\emph{Read after write} & \texttt{A[i++]=x; y=A[i-1];} $~\rightsquigarrow~$ \texttt{A[i++]=x; y=x;}
 \\\hline
-\emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) & {\tt A[i]=x; y=A[j];} $~\rightsquigarrow~$ {\tt y=A[j]; A[i]=x;}
+\emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) & \texttt{A[i]=x; y=A[j];} $~\rightsquigarrow~$ \texttt{y=A[j]; A[i]=x;}
 \\\hline
 \end{tabular}
 \caption{%
     Before-and-after examples to demonstrate the transformation rules
     we used. The arithmetic and control flow rules are inherited from
     Chapter~\ref{chp:progopt}; the access reduction rules are introduced in
-    this work.}\label{tab:rules}
+    this work.}\label{lo:tab:rules}
 \end{table}
 
 \SOAP{} provides a range of equivalence rules that are used in the
 optimization, such as associativity, distributivity, commutativity, constant
-propagation, and partial loop unrolling.  In Table~\ref{tab:rules}, we list
+propagation, and partial loop unrolling.  In Table~\ref{lo:tab:rules}, we list
 those rules that proved effective when minimizing loop latencies.  Although
 these rules are used to transform MIRs, we present before-and-after examples
 written in C to allow the effect of each rule to be readily understand.
 
 Our new rules, the access reduction rules, with formal definitions below and
-examples in Table~\ref{tab:rules}, remove extraneous data dependences that
+examples in Table~\ref{lo:tab:rules}, remove extraneous data dependences that
 arise after partial unrolling.  These rules, along with partial loop unrolling,
 mostly do not really impact latency, because they are very well studied in
 polyhedral compilation, and tools such as Vivado HLS can make use of them
@@ -205,16 +206,16 @@ to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
     \end{equation}
     We visualize this rule also in the following sample MIR transformation:
     \begin{equation}
-        \label{eq:indep_reads_mir}
+        \label{lo:eq:indep_reads_mir}
         \begin{tikzpicture}[mir]
-            \node[mirnode] (var_y) at (0,0) {{\tt y}};
+            \node[mirnode] (var_y) at (0,0) {\texttt{y}};
             \node[mirnode] (access)[right=of var_y] {$\accessop$};
-            \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {{\tt j}};
+            \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {\texttt{j}};
             \node[mirnode] (update)[below left=of access, xshift=6mm] {$\updateop$};
-            \node[mirnode] (var_A) [left=of update] {{\tt A}};
-            \node[mirnode] (a2)    [below left=of update] {{\tt A}};
-            \node[mirnode] (i2)    [below=of update] {{\tt i}};
-            \node[mirnode] (x2)    [below right=of update] {{\tt x}};
+            \node[mirnode] (var_A) [left=of update] {\texttt{A}};
+            \node[mirnode] (a2)    [below left=of update] {\texttt{A}};
+            \node[mirnode] (i2)    [below=of update] {\texttt{i}};
+            \node[mirnode] (x2)    [below right=of update] {\texttt{x}};
 
             \draw[|->] (var_y) -- (access);
             \draw[|->] (var_A) -- (update);
@@ -227,14 +228,14 @@ to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
         \end{tikzpicture}
         \rightsquigarrow
         \begin{tikzpicture}[mir]
-            \node[mirnode] (var_y) at (0,0) {{\tt y}};
+            \node[mirnode] (var_y) at (0,0) {\texttt{y}};
             \node[mirnode] (access)[right=of var_y] {$\accessop$};
-            \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {{\tt j}};
+            \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {\texttt{j}};
             \node[mirnode] (update)[below left=of access] {$\updateop$};
-            \node[mirnode] (var_A) [left=of update] {{\tt A}};
-            \node[mirnode] (a2)    [below left=of update] {{\tt A}};
-            \node[mirnode] (i2)    [below=of update] {{\tt i}};
-            \node[mirnode] (x2)    [below right=of update] {{\tt x}};
+            \node[mirnode] (var_A) [left=of update] {\texttt{A}};
+            \node[mirnode] (a2)    [below left=of update] {\texttt{A}};
+            \node[mirnode] (i2)    [below=of update] {\texttt{i}};
+            \node[mirnode] (x2)    [below right=of update] {\texttt{x}};
 
             \draw[|->] (var_y) -- (access);
             \draw[|->] (var_A) -- (update);
@@ -282,5 +283,5 @@ reach this optimized implementation.  Conversely, it is not possible to relax
 scheduling constraints due to inter-iteration dependences without arithmetic
 equivalence rules, as these reduction rules are there to assist transformation
 rules that could really make a difference in latency.  Therefore all these
-rules in Table~\ref{tab:rules} are essential to the optimization of latency in
-numerical programs.
+rules in Table~\ref{lo:tab:rules} are essential to the optimization of latency
+in numerical programs.

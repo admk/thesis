@@ -1,5 +1,5 @@
 \section{Performance Analysis}
-\label{sec:performance_analysis}
+\label{lo:sec:performance_analysis}
 
 This section explains how we analyze MIRs for our three performance metrics:
 latency, resource usage, and accuracy. %  Later we use these analyses
@@ -7,18 +7,18 @@ latency, resource usage, and accuracy. %  Later we use these analyses
 % procedure.
 
 \subsection{Latency Analysis}
-\label{sub:latency_analysis}
+\label{lo:sub:latency_analysis}
 
 The purpose of our latency analysis is not to create a complete scheduling
 of numerical programs, as this would be computationally expensive, and
 would need to be repeated for tens of thousands of equivalent programs.
 Instead, our latency analysis computes a lower bound of the loop's initiation
 interval ($\II$), \ie~the minimum initiation interval ($\MII$).  (Recall from
-Sec.~\ref{sec:introduction} that the initiation interval is the number of clock
-cycles that must elapse between the starts of two consecutive loop iterations,
-and is determined by data dependences and resource constraints.)  We then
-compute the overall latency of the loop, and subsequently, the total latency of
-the program.
+Section~\ref{lo:sec:introduction} that the initiation interval is the number
+of clock cycles that must elapse between the starts of two consecutive loop
+iterations, and is determined by data dependences and resource constraints.)
+We then compute the overall latency of the loop, and subsequently, the total
+latency of the program.
 
 Following LegUp~\cite{legup} and Vivado HLS~\cite{vivado_hls}, we compute
 $\MII$ values using \emph{iterative modulo scheduling}~\cite{rau94}. For our
@@ -45,7 +45,7 @@ captures \emph{read after write} (RAW) dependences across loop iterations.
 This step involves checking whether each pair of ``$\accessop$'' and
 ``$\updateop$'' nodes has a dependence, and if so, adding a new edge between
 them with latency and dependence distance attributes.  As an example, consider
-the MIR in~\eqref{eq:array_example} and assume each iteration increments
+the MIR in~\eqref{lo:eq:array_example} and assume each iteration increments
 \verb|i| by 1.  Because in the original program, \verb|A[i]| and \verb|A[i+1]|
 are respectively reading from and writing to the same array \verb|A|, we need
 to check if these accesses could touch the same memory location in different
@@ -58,19 +58,19 @@ new edges for reads and writes to the same variable, which can be treated as a
 special array with only one element. Our analysis yields the following MIR\@:
 \begin{equation}
 \newcommand\pair[2]{\footnotesize $#1,#2$}
-    \label{eq:array_example_latency}
+    \label{lo:eq:array_example_latency}
     \begin{tikzpicture}[mir, inner sep=0pt]
-        \node[mirnode] (var_A) at (0,0) {{\tt A}};
+        \node[mirnode] (var_A) at (0,0) {\texttt{A}};
         \node[mirnode] (update)[right=of var_A, xshift=5mm] {$\updateop$};
-        \node[mirnode] (A1)    [below left=of update, xshift=-1mm, yshift=-2mm] {{\tt A}};
+        \node[mirnode] (A1)    [below left=of update, xshift=-1mm, yshift=-2mm] {\texttt{A}};
         \node[mirnode] (plus)  [below=of update, yshift=-3mm] {$+$};
-        \node[mirnode] (i1)    [below left=of plus] {{\tt i}};
+        \node[mirnode] (i1)    [below left=of plus] {\texttt{i}};
         \node[mirnode] (n1)    [below right=of plus] {$1$};
         \node[mirnode] (times) [below right=of update, xshift=11mm] {$\times$};
         \node[mirnode] (n2)    [below left=of times, xshift=-1mm, yshift=-1mm] {$2$};
         \node[mirnode] (access)[below right=of times] {$\accessop$};
-        \node[mirnode] (A2)    [below left=of access] {{\tt A}};
-        \node[mirnode] (i2)    [below right=of access] {{\tt i}};
+        \node[mirnode] (A2)    [below left=of access] {\texttt{A}};
+        \node[mirnode] (i2)    [below right=of access] {\texttt{i}};
 
         \draw[|->] (var_A) -- (update);
         \draw[<-] (update) to[auto, swap, pos=0.8]
@@ -133,12 +133,12 @@ with:
         \MII = \max\left(\RecMII, \ResMII\right)
     \nonumber
 \end{equation}
-where, recalling from Sec.~\ref{sec:introduction}, $N$ is the maximum
+where, recalling from Section~\ref{lo:sec:introduction}, $N$ is the maximum
 \emph{trip count}, \ie~the loop's total number of iterations, and $D$ is the
 loop's depth, \ie~the total number of cycles per iteration.
 
 Because we optimize programs in a bottom-up hierarchy, as described in
-Sec.~\ref{sec:structural_optimization}, when an expression in a loop is
+Section~\ref{lo:sec:structural_optimization}, when an expression in a loop is
 optimized, its latency is estimated by scheduling its operations by using an
 As-Late-As-Possible (ALAP)~\cite{wang_hls} scheduling algorithm, where each
 operation is scheduled to the latest opportunity, while respecting the order of
@@ -159,7 +159,7 @@ inter-iteration dependences:
 \end{equation}
 
 \subsection{Resource Utilization Analysis}
-\label{sub:resource_utilization_analysis}
+\label{lo:sub:resource_utilization_analysis}
 
 The hardware resource usage analysis of Chapter~\ref{chp:stropt} captures the
 sharing of common subexpressions, but cannot analyze resource binding, which
@@ -189,7 +189,7 @@ operators, which is the estimated resource utilization for the full program.
 
 
 \subsection{Accuracy Analysis}
-\label{sub:accuracy_analysis}
+\label{lo:sub:accuracy_analysis}
 
 We extend the accuracy analysis of Chapter~\ref{chp:progopt} to support
 arrays. Because our benchmark suite consists of programs with large arrays,

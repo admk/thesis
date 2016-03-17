@@ -1,11 +1,11 @@
 \subsection{Accuracy Analysis}
-\label{sub:accuracy_analysis}
+\label{po:sub:accuracy_analysis}
 
 In a typical program execution, values of variables, typically integers
 $\integerset$ and floating-point values $\floatset$, are modified according
 to the effect of the program statements, and they are propagated through
 arithmetic operators from the beginning to the end of the program.  By
-comparison, the static analysis approach in Chapter~\ref{chp:strop} and
+comparison, the static analysis approach in Chapter~\ref{chp:stropt} and
 \cite{martel07} analyzes round-off errors in floating-point numerical
 programs by following the same procedure, but instead of propagating actual
 values of numerical types, value-error ranges are used.  A value-error range
@@ -95,7 +95,7 @@ $\mu(x)$.  Formally,
     \mirerrorfunc{\mu}{\sigma^\sharp} = {\left[
         x \mapsto \exprerrorfunc{\mu(x)}{\sigma^\sharp}
     \right]}_{x \in \varfunc{\mu}}.
-    \label{eq:mir_accuracy}
+    \label{po:eq:mir_accuracy}
 \end{equation}
 The notation ${[x \mapsto \exprerrorfunc{\mu(x)}{\sigma^\sharp}]}_{x \in
 \varfunc{\mu}}$ means that the mapping is constructed by collecting for
@@ -106,10 +106,10 @@ value-error bound of the semantic expression $\mu(x)$.
 
 The analysis of an expression $e \expand \mu$, where $e \in \sexprset$ and $\mu
 \in \mirset$ is carried out in two steps.  Initially, given an input state
-$\sigma^\sharp$, $\mu$ is analyzed using~\eqref{eq:mir_accuracy}, and we write
-${\sigma^\sharp}^\prime$ as the analyzed state.  Then the expression $e$ is
-analyzed for its accuracy as usual, using ${\sigma^\sharp}^\prime$ as the input
-state.  Equivalently, this procedure can be defined as:
+$\sigma^\sharp$, $\mu$ is analyzed using~\eqref{po:eq:mir_accuracy}, and we
+write ${\sigma^\sharp}^\prime$ as the analyzed state.  Then the expression $e$
+is analyzed for its accuracy as usual, using ${\sigma^\sharp}^\prime$ as the
+input state.  Equivalently, this procedure can be defined as:
 \begin{equation}
     \exprerrorfunc{e \expand \mu}{\sigma^\sharp}
     = \exprerrorfunc{e}{\left( \mirerrorfunc{\mu}{\sigma^\sharp} \right)}
@@ -197,18 +197,18 @@ to iteratively evaluate $b$ for its truth value, if $b$ is true, then the loop
 MIR $\mu_s$ is used to update the program state for the next iteration and we
 repeat the process and iterate until $b$ is evaluated to false.
 
-Before we explain how a fixpoint expression can be analyzed for its accuracy,
-we introduce the concept of \emph{loop invariants} (LI).  In our context, an LI
-of a \whilelit~loop is a set of bounds on loop variables that holds invariantly
-on entry to each loop iteration.  For example, in~\eqref{eq:syntax_example},
-if our input is $n = 10$, then the LI on the variable $x$ is that its value is
-an integer, and is bounded by $[0, 9]$ on loop entry, whereas on loop exit,
-$x$ is always equal to $10$.  The reason for inferring the LI is that, because
-we optimize the fixpoint expression's child nodes in a bottom-up hierarchy,
-the child $\mu_s$ is optimized before the expression $\fixpoint{b, \mu_s, x}$
-itself, we are using the LI as the input state to optimize $\mu_s$, because the
-LI encompasses all possible program states the loop body $\mu_s$ will encounter
-when executed.
+Before we explain how a fixpoint expression can be analyzed for its
+accuracy, we introduce the concept of \emph{loop invariants} (LI).  In our
+context, an LI of a \whilelit~loop is a set of bounds on loop variables
+that holds invariantly on entry to each loop iteration.  For example, in
+Figure~\ref{po:fig:syntax_example}, if our input is $n = 10$, then the LI on
+the variable $x$ is that its value is an integer, and is bounded by $[0, 9]$
+on loop entry, whereas on loop exit, $x$ is always equal to $10$.  The reason
+for inferring the LI is that, because we optimize the fixpoint expression's
+child nodes in a bottom-up hierarchy, the child $\mu_s$ is optimized before the
+expression $\fixpoint{b, \mu_s, x}$ itself, we are using the LI as the input
+state to optimize $\mu_s$, because the LI encompasses all possible program
+states the loop body $\mu_s$ will encounter when executed.
 
 Our accuracy analysis follows a similar pattern.  Initially, we start
 with an input state $\sigma^\sharp_0$.  In the first iteration $k = 0$,
@@ -223,9 +223,10 @@ $n$, where $\sigma^\sharp_n = \sigma^\sharp_{n-1}$.  Hence, we can obtain the
 LI by computing $\sigma^\sharp_0|_b \join \sigma^\sharp_1|_b \join \cdots
 \join \sigma^\sharp_n|_b$, and the loop exit states with its counterpart,
 \ie~$\sigma^\sharp_0|_{\neg b} \join \sigma^\sharp_1|_{\neg b} \join \cdots
-\join \sigma^\sharp_n|_{\neg b}$.  The meaning of $\join$ operator on states
-is similar to joining intervals and value-error bounds, which is defined
-to join the two value-error bounds in respective states for each variable, which is defined as follows, where $\sigma^\sharp_a, \sigma^\sharp_b \in \errordom$:
+\join \sigma^\sharp_n|_{\neg b}$.  The meaning of $\join$ operator on states is
+similar to joining intervals and value-error bounds, which is defined to join
+the two value-error bounds in respective states for each variable, which is
+defined as follows, where $\sigma^\sharp_a, \sigma^\sharp_b \in \errordom$:
 \begin{equation}
     \sigma^\sharp_a \join \sigma^\sharp_b =
         {%
@@ -233,7 +234,7 @@ to join the two value-error bounds in respective states for each variable, which
         }_{x \in \varset}.
 \end{equation}
 
-The process above is achieved with the algorithm in Figure~\ref{alg:fix}.
+The process above is achieved with the algorithm in Figure~\ref{po:alg:fix}.
 The value $\bot$ indicates an empty or unreachable state, and for any
 state $\sigma^\sharp \in \errordom$, we have $\bot \join \sigma^\sharp =
 \sigma^\sharp$.  The return values $li$ and $le$ are respectively the LI and
@@ -265,5 +266,5 @@ the loop exit state.
         \EndFunction%
     \end{algorithmic}
     \caption{%
-        The accuracy analysis of a fixpoint expression.}\label{alg:fix}
+        The accuracy analysis of a fixpoint expression.}\label{po:alg:fix}
 \end{figure}

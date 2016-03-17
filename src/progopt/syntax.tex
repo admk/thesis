@@ -1,5 +1,5 @@
 \section{Syntax Definition}
-\label{sec:syntax_definition}
+\label{po:sec:syntax_definition}
 
 Before we discuss program transform, we first look at the syntax definition
 used to write numerical programs.  Our program transformation optimizes
@@ -28,7 +28,7 @@ programs, written in the Backus-Naur Form~\cite{knuth64}:
             \mathtt{if}~(b)~\{ s_1 \}~\mathtt{else}~\{ s_2 \} \synor
             \whilelit~(b)~\{s\}
     \end{aligned}
-    \label{eq:program_syntax}
+    \label{po:eq:program_syntax}
 \end{equation}
 We define $\odot \in \left\{ +, -, \times, / \right\}$ to be the arithmetic
 operators, $n$ is a numerical constant of type either \inttype{} or \floattype;
@@ -47,8 +47,8 @@ to be optimized.  We can also use ``\verb|#pragma| \verb|soap in|'' and
 ``\verb|#pragma| \verb|soap out|'' to provide input ranges and to declare
 output variables, respectively.
 
-As a simple example, the program in Figure~\ref{fig:syntax_example} computes an
-approximate value of ${\pi^2 a}/6$.  It has two inputs $a$, a floating point
+As a simple example, the program in Figure~\ref{po:fig:syntax_example} computes
+an approximate value of ${\pi^2 a}/6$.  It has two inputs $a$, a floating point
 value between 0 and 1, and $n$, an integer value between 10 and 20, which
 determines the number of iterations for the loop, and a return variable $y$.
 
@@ -65,7 +65,7 @@ determines the number of iterations for the loop, and a return variable $y$.
     }
     \end{lstlisting}
     \caption{A simple program written with our syntax definition.}
-    \label{fig:syntax_example}
+    \label{po:fig:syntax_example}
 \end{figure}
 
 Despite the simplicity of our syntax, it includes all the features of

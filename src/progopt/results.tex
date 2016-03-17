@@ -1,5 +1,5 @@
 \section{Results}
-\label{sec:results}
+\label{po:sec:results}
 
 In this section we optimize a set of numerical programs using our tool in
 a benchmark suite with six different examples.  We use the IEEE 754 32-bit
@@ -13,7 +13,7 @@ quality of their execution:
 it with $0.9$, until the result is less than or equal to 1, the number of
 iterations is dependent on $x$ and can only be determined by analyzing the
 program.
-    \item \texttt{basal}: the example in~\eqref{eq:syntax_example}.
+    \item \texttt{basal}: the example in Figure~\ref{po:fig:syntax_example}.
     \item \texttt{taylor}: the Taylor expansion of $\cos(x + y)$, with single
 precision inputs $x \in [-0.1, 0.1]$ and $y \in [0, 1]$, and an integer $n \in
 [10, 20]$, which determines the bound on the iteration count.
@@ -47,7 +47,7 @@ frequency, then compiled and verified with Quartus, targeting an Altera
 Stratix IV device (EP4SGX530) for the actual resource usage statistics and the
 frequency achieved.
 
-Figure~\ref{fig:results} shows the results of optimizing the above benchmark
+Figure~\ref{po:fig:results} shows the results of optimizing the above benchmark
 examples.  The rows labeled ``\texttt{FR}'' and ``\texttt{MA}'' respectively
 show the statistics for the most resource efficient, and the most accurate
 implementations.  ``Time (s)'' shows the time required for the optimization,
@@ -71,13 +71,13 @@ whereas in actual computations worst case round-off errors are extremely rare.
     \centering
     \includegraphics[width=\linewidth]{results}
     \captionof{figure}{%
-    Table of optimization results.}\label{fig:results}
+    Table of optimization results.}\label{po:fig:results}
 \end{figure}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.7]{rank}
     \captionof{figure}{%
-    \mbox{The quality of resource estimation.}}\label{fig:rank}
+    \mbox{The quality of resource estimation.}}\label{po:fig:rank}
 \end{figure}
 
 \begin{figure*}[ht]
@@ -97,7 +97,7 @@ method used in our optimization can identify accurately whether an actual
 implementations is on the Pareto frontier, we gathered 150 implementations
 discovered across the benchmark examples, and for each one we rank its
 number of estimated LUTs among them, and do the same for actual LUTs.
-Figure~\ref{fig:rank} plots the rank of estimated LUTs against the rank of
+Figure~\ref{po:fig:rank} plots the rank of estimated LUTs against the rank of
 actual LUTs, which shows the Pareto frontier we produced is very close to using
 Quartus to count resources.
 
@@ -111,8 +111,8 @@ $a - a = 0$ and $0 \times a = 0$.
 
 Besides the choices of implementations that are either most accurate or most
 resource efficient, each optimization also offers a wide selection of optimized
-programs on the Pareto frontier.  For instance, Figure~\ref{fig:euler} shows
-the Pareto frontier of \texttt{euler}, which has 26 different trade-off
+programs on the Pareto frontier.  For instance, Figure~\ref{po:fig:euler}
+shows the Pareto frontier of \texttt{euler}, which has 26 different trade-off
 options.  Furthermore, in the optimization of \texttt{euler}, our optimization
 not only identifies that it is resource efficient when the two return variables
 are computed by the same loop, but also by individually optimizing the
@@ -121,8 +121,8 @@ a different goal, that is to compute their respective return variables as
 accurately as possible, this generated a program that consists of two loops
 that have completely different structures.  With this, we further widen the
 trade-off curve with the most accurate option improving the accuracy by 65\%.
-In Figure~\ref{fig:filter}, because the loop kernel of \texttt{filter} has the
-expression $\sum_{i=0}^2{(a_i y_i + b_i x_i)}$, which has a large number of
+In Figure~\ref{po:fig:filter}, because the loop kernel of \texttt{filter} has
+the expression $\sum_{i=0}^2{(a_i y_i + b_i x_i)}$, which has a large number of
 equivalent expressions, without increasing the resource usage, our optimization
 improves its accuracy by 14.5\%.  Because our Pareto frontier has three
 dimensions, which are respectively accuracy, LUT utilization and the number of
@@ -132,11 +132,11 @@ DSPs, points within the shaded region optimize DSP count.
     \centering
     \subfloat[\texttt{euler}]{%
         \includegraphics[width=0.6\linewidth]{euler}
-        {}\label{fig:euler}
+        {}\label{po:fig:euler}
     } \\
     \subfloat[\texttt{filter}]{%
         \includegraphics[width=0.6\linewidth]{filter}
-        {}\label{fig:filter}
+        {}\label{po:fig:filter}
     }
     \caption{The Pareto frontier.}
 \end{figure}

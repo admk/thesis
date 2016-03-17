@@ -1,5 +1,5 @@
 \subsection{Resource Usage Analysis}
-\label{sub:resource_usage_analysis}
+\label{po:sub:resource_usage_analysis}
 
 Expressions can have common subexpressions, and eliminating them reduces
 resource usage.  We identify and eliminate common subexpressions when we
@@ -14,7 +14,7 @@ to share conditional and fixpoint operators.
 
 In its essence, the sharing of the conditional operator is equivalent to branch
 fusion.  For example, the metasemantic analysis of the program below produces
-the MIR in Figure~\ref{fig:mir_cond_fusion_1}:
+the MIR in Figure~\ref{po:fig:mir_cond_fusion_1}:
 \begin{equation}
     \begin{aligned}
         & \iflit~(x < 0)~\thenlit~( \\
@@ -31,11 +31,11 @@ the MIR in Figure~\ref{fig:mir_cond_fusion_1}:
     \centering
     \subfloat[Before fusion]{%
         \includegraphics[scale=\mirfigscale]{mir_cond_fusion_1}
-        {}\label{fig:mir_cond_fusion_1}
+        {}\label{po:fig:mir_cond_fusion_1}
     }\quad
     \subfloat[After fusion]{%
         \includegraphics[scale=\mirfigscale]{mir_cond_fusion_2}
-        {}\label{fig:mir_cond_fusion_2}
+        {}\label{po:fig:mir_cond_fusion_2}
     }
     \caption{The sharing of conditional expressions.}
 \end{figure}
@@ -44,11 +44,11 @@ Because we compute an abstraction of the program, the MIR does not keep
 the structure of the \iflit~statement to allow them to be optimized
 separately, as doing this would allow our optimization to produce more
 accurate implementations.  The resulting MIR of the program consists of two
-conditional expressions as shown in Figure~\ref{fig:mir_cond_fusion_1}.
+conditional expressions as shown in Figure~\ref{po:fig:mir_cond_fusion_1}.
 Because of this, after optimization, the MIR may has duplicate control
 paths.  To resolve this, we introduce new kinds of nodes, as shown in
-Figure~\ref{fig:mir_cond_fusion_2}, to ``bundle up'' more than one conditional
-expressions, when they all have the same Boolean expression.
+Figure~\ref{po:fig:mir_cond_fusion_2}, to ``bundle up'' more than one
+conditional expressions, when they all have the same Boolean expression.
 
 
 \subsubsection{Resource sharing in substitution expressions}
@@ -59,17 +59,17 @@ in the variable-expression pairing, \ie~for any variable $x$ that is
 assigned an expression in both $\mu_1$ and $\mu_2$, $\mu_1(x)$ is equal
 to $\mu_2(x)$.  A ``bundle'' of expressions can also be created to denote
 the sharing of the substitution operator.  For example, a simple MIR in
-Figure~\ref{fig:mir_sub_fusion_1} can be restructured by fusing both variables
-$x$ and $y$.
+Figure~\ref{po:fig:mir_sub_fusion_1} can be restructured by fusing both
+variables $x$ and $y$.
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion]{%
         \includegraphics[scale=\mirfigscale]{mir_sub_fusion_1}
-        {}\label{fig:mir_sub_fusion_1}
+        {}\label{po:fig:mir_sub_fusion_1}
     }
     \subfloat[After fusion]{%
         \includegraphics[scale=\mirfigscale]{mir_sub_fusion_2}
-        {}\label{fig:mir_sub_fusion_2}
+        {}\label{po:fig:mir_sub_fusion_2}
     }
     \caption{The sharing of substitution expressions.}
 \end{figure}
@@ -82,25 +82,25 @@ fixpoint expressions in an analogous fashion as described above for
 conditional expressions, and it is related to the conventional loop fusion
 compiler optimization.  For instance, the program $\whilelit~(x > y)$
 $\dolit~(\assignstmt{z}{z + x} \semicolon$ $\assignstmt{x}{x / 2})$ has the
-MIR in Figure~\ref{fig:mir_fix_fusion_1}, where $b = x > y$, $\mu_1 = [x
+MIR in Figure~\ref{po:fig:mir_fix_fusion_1}, where $b = x > y$, $\mu_1 = [x
 \mapsto x / 2]$ and $\mu_2 = [x \mapsto x / 2, z \mapsto z + x]$.  During
 our optimizations, we may wish to evaluate both $x$ and $z$ as accurate as
 possible, therefore the two fixpoint expressions are optimized individually,
 because loop splitting could enhance the accuracy of both $x$ and $z$.
 After optimization, in the resulting MIR, fixpoint expressions may share
 computations.  For instance, by fusing these two expressions into one fixpoint
-expression, as illustrated in Figure~\ref{fig:mir_fix_fusion_2}, we save
+expression, as illustrated in Figure~\ref{po:fig:mir_fix_fusion_2}, we save
 resource in the conditional expressions and the control logic that are formerly
 duplicated.
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion]{%
         \includegraphics[scale=\mirfigscale]{mir_fix_fusion_1}
-        {}\label{fig:mir_fix_fusion_1}
+        {}\label{po:fig:mir_fix_fusion_1}
     }
     \subfloat[After fusion]{%
         \includegraphics[scale=\mirfigscale]{mir_fix_fusion_2}
-        {}\label{fig:mir_fix_fusion_2}
+        {}\label{po:fig:mir_fix_fusion_2}
     }
     \caption{The sharing of fixpoint expressions.}
 \end{figure}
@@ -108,39 +108,39 @@ duplicated.
 Another transformation is to allow sharing of expressions across nested
 MIRs.  As a simple example, the program ``$\assignstmt{y}{y + 1}
 \semicolon \whilestmt{x < y}{\assignstmt{x}{x + 1}}$'' has the MIR in
-Figure~\ref{fig:mir_fix_external_1}, where $\mu = [x \mapsto x + 1]$ and $b =
-x < y$, which also has duplicate computations (shaded region).  An additional
+Figure~\ref{po:fig:mir_fix_external_1}, where $\mu = [x \mapsto x + 1]$ and $b
+= x < y$, which also has duplicate computations (shaded region).  An additional
 structure is required to share them across expressions.  We restructure it
 by introducing a special \emph{external} operator, to allow a nested MIR to
 reference and reuse an expression from the outer MIR as demonstrated below in
-Figure~\ref{fig:mir_fix_external_2}.
+Figure~\ref{po:fig:mir_fix_external_2}.
 \begin{figure}[ht]
     \centering
     \subfloat[Before]{%
         \includegraphics[scale=\mirfigscale]{mir_fix_external_1}
-        {}\label{fig:mir_fix_external_1}
+        {}\label{po:fig:mir_fix_external_1}
     }
     \subfloat[After]{%
         \includegraphics[scale=\mirfigscale]{mir_fix_external_2}
-        {}\label{fig:mir_fix_external_2}
+        {}\label{po:fig:mir_fix_external_2}
     }
     \caption{Restructuring nested MIR to reuse expression.}
     \centering
 \end{figure}
 
-However in some cases the above transformations could create cyclic graphs.
-To illustrate this, consider the following conditional expression fusion
-example in Figure~\ref{fig:mir_cond_fusion_3}.  By fusing both conditionals
-$a$ and $b$, a cycle is created as in Figure~\ref{fig:mir_cond_fusion_4}.
+However in some cases the above transformations could create cyclic graphs.  To
+illustrate this, consider the following conditional expression fusion example
+in Figure~\ref{po:fig:mir_cond_fusion_3}.  By fusing both conditionals $a$ and
+$b$, a cycle is created as in Figure~\ref{po:fig:mir_cond_fusion_4}.
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion, the MIR is acyclic]{%
         \includegraphics[scale=\mirfigscale]{mir_cond_fusion_3}
-        {}\label{fig:mir_cond_fusion_3}
+        {}\label{po:fig:mir_cond_fusion_3}
     }\quad
     \subfloat[Fusion of $a$ and $b$ creates a cycle]{%
         \includegraphics[scale=\mirfigscale]{mir_cond_fusion_4}
-        {}\label{fig:mir_cond_fusion_4}
+        {}\label{po:fig:mir_cond_fusion_4}
     }
     \caption{Example branch fusion creates a cycle.}
 \end{figure}

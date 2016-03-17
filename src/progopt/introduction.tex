@@ -1,4 +1,5 @@
 \section{Introduction}
+\label{po:sec:introduction}
 
 Our previous chapter introduced a new methodology to efficiently restructure
 arithmetic expressions for the optimized trade-off between two performance
@@ -38,7 +39,7 @@ affect our performance metrics.
         }
     }
     \caption{Two programs that are equivalent but syntactically different.}
-    \label{fig:equiv_progs}
+    \label{po:fig:equiv_progs}
 \end{figure}
 
 Therefore, in this chapter, we provide answers to these two above issues.  In
@@ -90,7 +91,7 @@ expressions.  However, this would result in combinatorial explosion and become
 intractable even for very small expressions~\cite{ioualalen,mouilleron}.  To
 remedy this, in Chapter~\ref{chp:stropt} we proposed a novel approach, known
 as \soap, to significantly reduce the space and time complexity to produce a
-subset of the Pareto frontier.
+subset of the Pareto frontier. \todo{I should rewrite this.}
 
 % program transformation why?
 
@@ -113,6 +114,14 @@ and loop splitting, which can create more opportunity for minimizing round-off
 errors, hence further increases range of options in the Pareto frontier of
 trade-offs.  Finally, our method naturally subsumes constant propagation,
 redundant code elimination, and also branch and loop fusions.
+
+As none of the methods in Section~\ref{bg:sec:discovering_equivalent_programs}
+of Chapter~\ref{chp:background} looks at the multiple-objective optimization
+of numerical programs, we are the first to propose a tool that performs a
+semantics-directed and truly restructuring program transformation, which
+optimizes not only arithmetic expressions, but also numerical programs, for the
+trade-off between numerical accuracy and resource usage when synthesized to
+FPGAs.
 
 % Our tool fits in the familiar setting of the high-level synthesis tool flow, as a front-end that performs the source-to-source optimization of
 
@@ -140,16 +149,15 @@ Our main contributions in this chapter are as follows:
     \vspace{-6pt}
 \end{enumerate}
 
-Section~\ref{sec:related_work} provides an overview of the existing work
-related in both the software and high-level synthesis community.  We then
-proceed to define our program syntax in Section~\ref{sec:syntax_definition}.
-Using the syntax definition, we provide a detailed formal explanation
-of our numerical program transformation, which consists of three
-stages.  Section~\ref{sec:program_to_mir}, {}~\ref{sec:transformations},
-{}~\ref{sec:code_generation} describe in sequence how numerical programs
-can be translated into MIRs, how we infer bounds and error bounds on
-variables and analyze resource usage estimates for the efficient discovery
-of equivalent structures in the analyzed MIR, and finally, we explain how
+This chapter is organized as follows.  We start by defining our program syntax
+in Section~\ref{po:sec:syntax_definition}.  Using the syntax definition, we
+provide a detailed formal explanation of our numerical program transformation,
+which consists of three stages.  Sections~\ref{po:sec:program_to_mir}
+describe how how numerical programs can be translated into MIRs,
+Section~\ref{po:sec:transformations} discusses how we infer bounds and
+error bounds on variables and analyze resource usage estimates, and how
+these analyses can be used to efficiently discover equivalent structures
+in the analyzed MIR\@.  Section~\ref{po:sec:code_generation} explains how
 a chosen MIR can be translated into an optimized numerical program.  Then
-we present the optimization results in Section~\ref{sec:results} and
-Section~\ref{sec:conclusion} concludes this chapter.
+we present the optimization results in Section~\ref{po:sec:results} and
+Section~\ref{po:sec:conclusion} concludes this chapter.

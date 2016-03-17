@@ -36,7 +36,12 @@
 \chapter{Background}
 \label{chp:background}
 
-\input{bg/related_work}
+% \input{bg/introduction}
+\input{bg/high_level_synthesis}
+\input{bg/abstract_interpretation}
+\input{bg/equivalent}
+\input{bg/intermediate}
+\input{bg/pipelining}
 
 \chapter{Structural Optimization of Arithmetic Expressions}
 \label{chp:stropt}
@@ -65,8 +70,8 @@
 % \end{abstract}
 
 \input{stropt/introduction}
-\input{stropt/related_work}
-\input{stropt/abstract_interpretation}
+% \input{stropt/related_work}
+% \input{stropt/abstract_interpretation}
 \input{stropt/semantics}
 \input{stropt/implementation}
 \input{stropt/results}
@@ -92,8 +97,18 @@
 % discovers a wide range of Pareto optimal options, and the most accurate one
 % improves the accuracy of numerical programs by up to 65\%.
 
+\newcommand{\mirfigscale}{0.35}
+\newcommand{\mirfig}[1]{%
+    \begin{equation}
+        \begin{aligned}
+            \includegraphics[scale=\mirfigscale]{#1}
+            \label{po:eq:#1}
+        \end{aligned}
+    \end{equation}
+}
+
 \input{progopt/introduction}
-\input{progopt/related_work}
+% \input{progopt/related_work}
 \input{progopt/syntax}
 \input{progopt/metasemantics}
 \input{progopt/transformations}
@@ -130,12 +145,9 @@
 \input{latopt/analysis}
 \input{latopt/usage}
 \input{latopt/results}
-\input{latopt/related_work}
+% \input{latopt/related_work}
 \input{latopt/conclusion}
 
-
-\chapter{Literature Review}
-\label{chp:litrev}
 
 \chapter{Conclusion}
 \label{chp:conclusion}
@@ -152,7 +164,7 @@ optimized expressions. Thirdly, as an alternative for interval analysis, we
 could employ more sophisticated abstract domains that capture the correlations
 between variables, and produce tighter bounds for results. Finally, there
 could be a lot of interest in the HLS community on how our tool can be
-incorporated with Martin Langhammer's work on fused floating-point datapath
+incorporated with Martin Langhammer's work on fused floating-point data-path
 synthesis~\cite{langhammer}.
 
 We are convinced that with the foundation and framework that we developed,

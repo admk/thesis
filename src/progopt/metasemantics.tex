@@ -1,5 +1,5 @@
 \section{Program to Metasemantic Intermediate Representation}
-\label{sec:program_to_mir}
+\label{po:sec:program_to_mir}
 
 The first step of our approach is to analyze the program return value
 into a metasemantic intermediate representation (MIR).  This procedure is
@@ -34,8 +34,8 @@ associated expression of the variable $x \in \varset$ for the MIR $\mu \in
 \mirset$.  For each variable, its semantic expression in itself provides a
 complete picture of how computations can lead to the resulting value of the
 variable.  In the rest of this section, we progressively explain how each type
-of program statement defined in~\eqref{eq:program_syntax} is analyzed into an
-MIR\@.
+of program statement defined in~\eqref{po:eq:program_syntax} is analyzed into
+an MIR\@.
 
 \subsection{Skip}
 
@@ -66,9 +66,9 @@ $\join$ merges the two MIRs together:
             \end{aligned}
         \right.
     \right]_{y \in \varset}
-    \label{eq:mir_assign}
+    \label{po:eq:mir_assign}
 \end{equation}
-The MIR in~\eqref{eq:mir_assign} signifies for a variable $y \in \varset$,
+The MIR in~\eqref{po:eq:mir_assign} signifies for a variable $y \in \varset$,
 if $y$ is $x$, then we assign the expression $e$ to the variable $x$, where
 $e$ is a semantic expression represented with a DAG\@.  The DAG shares all
 common subexpressions in $e$.  For instance, an expression written as $(x + 1)
@@ -84,7 +84,7 @@ variable $x$ is shared between two semantic expressions:
 \mirfig{mir_assign_2}
 
 \subsection{Sequential statements}
-\label{sub:sequential_statements}
+\label{po:sub:sequential_statements}
 
 A sequential statement, ``$s_1 \semicolon s_2$'' is formed by joining together
 $s_1$ and $s_2$, where $s_1, s_2 \in \stmtset$ are statements.  It signifies
@@ -104,9 +104,9 @@ $e$ is substituted with $\mu$ using the substitution strategy above.
 We illustrate this by using a simple example program $p = {}$``$x
 \assign x + 1 \semicolon y \assign x \times 2$''.  Using the MIR of
 assignments, the MIR of $p$ can be derived, as shown in the right-hand
-side of equation~\eqref{eq:mir_seq_1}.  By substituting the variables
+side of equation~\eqref{po:eq:mir_seq_1}.  By substituting the variables
 with corresponding expressions, we arrive at the left-hand side of
-\eqref{eq:mir_seq_1}:
+\eqref{po:eq:mir_seq_1}:
 \mirfig{mir_seq_1}
 
 \subsection{Conditional Branches}
@@ -128,11 +128,12 @@ $\mu_1(x)$ and $\mu_2(x)$, that is, $[x \mapsto \select{b}{\mu_1}{\mu_2}]_{x
 \in \varset}$.  As an example we consider the program ``$\iflit~(x < 0)$
 $\thenlit~(y \assign x \times 2)$ $\elselit~\skipstmt$'', where the set of
 program variables is $\{x, y\}$.  Its MIR is shown in the left-hand side
-of~\eqref{eq:mir_if_2}.  Because both true- and false-expressions of $x$
+of~\eqref{po:eq:mir_if_2}.  Because both true- and false-expressions of $x$
 are the same, regardless of the truth value of $x < 0$, the two expressions
 will evaluated to the same value.  In our analysis we further simplify
 the expression of $x$, and the resulting MIR is in the right-hand side
-of~\eqref{eq:mir_if_2}. \mirfig{mir_if_2}
+of~\eqref{po:eq:mir_if_2}.
+\mirfig{mir_if_2}
 
 The traditional approach of program abstraction uses control and data flow
 graphs (CDFGs)~\cite{namballa04}, which preserves the ordering of sequential
@@ -168,7 +169,7 @@ by computing the fixpoint expression for each variable:
             \end{aligned}
         \right.
     \right]_{x \in \varset}
-    \label{eq:mir_while}
+    \label{po:eq:mir_while}
 \end{equation}
 Here, $\varfunc{\mu_s}$ computes the set of variables that is assigned in the
 loop body $\mu_s$.  If a program variable $x$ is in the set $\varfunc{\mu_s}$,

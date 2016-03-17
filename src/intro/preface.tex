@@ -24,8 +24,8 @@ to incorporate hardened floating-point DSP blocks in the FPGA fabric.  As a
 result, we expect to see floating-point arithmetic continuing to dominate in
 the FPGA implementation of numerical applications.
 
-Although we often make use floating-point arithmetic to implement algorithms,
-often specified in real arithmetic, in practice, it is often neglected that
+Although we make use floating-point arithmetic to implement algorithms,
+generally specified in real arithmetic, in practice, it is often neglected that
 floating-point computations almost always have \emph{round-off errors}, \ie~the
 discrepancy between the actual result in real arithmetic and the rounded result
 computed with floating-point arithmetic.  Round-off errors, when accumulated,
@@ -43,20 +43,20 @@ floating-point accuracy being so esoteric, it is challenging for engineers to
 understand the repercussions of switching between ``\verb|(a + b) * c|'' and
 ``\verb|a * c + b * c|'' in their programs.
 
-Nevertheless, this opens the possibility of using these rules to generate a
-program equivalent to the original program in real arithmetic, which could
-have better quality than the original when evaluated in floating point
-computation.  Experienced engineers often apply such expression rewriting
-intuitions in numerical programs.  For instance, when summing a sequence
-of floating-point values, one can sometimes reduce round-off error in the
-result by summing the inputs in ascending order.  On the other hand, one can
-often reduce latency by applying \emph{expression balancing}, \ie~rearranging
-operators in an expression to construct a balanced tree, so that more operators
-can work in parallel.  These heuristics cover a very limited number of
-possible transformations and may not always improve the original code.  A
-trivial process therefore does not exist to apply steps of transformations
-using equivalence rules to \emph{optimally} trade off latency, resources and
-numerical accuracy.
+This numerical implication nevertheless opens the possibility of using these
+rules to generate a program equivalent to the original program in real
+arithmetic, which could have better quality than the original when evaluated
+in floating-point computation.  Experienced engineers often apply such
+expression rewriting intuitions in numerical programs.  For instance, when
+summing a sequence of floating-point values, one can sometimes reduce round-off
+error in the result by summing the inputs in ascending order.  On the other
+hand, one can often reduce latency by applying \emph{expression balancing},
+\ie~rearranging operators in an expression to construct a balanced tree, so
+that more operators can work in parallel.  These heuristics cover a very
+limited number of possible transformations and may not always improve the
+original code.  A trivial process therefore does not exist to apply steps of
+transformations using equivalence rules to \emph{optimally} trade off latency,
+resources and numerical accuracy.
 
 Existing HLS tools consider these rewrites to be unsafe, and thus make very
 limited use of them when restructuring floating-point data-paths.  For
@@ -98,12 +98,16 @@ expression with a summation of $2^k$ terms each with $k - 1$ multiplications.
 Usually, for this reason, it would be infeasible to generate a complete set
 of equivalent expressions using the rules of equivalence, since an expression
 with a moderate number of terms will have a very large number of equivalent
-expressions.  New approach were therefore developed to specifically tackle the
-efficient discovery of equivalent structures in numerical programs.  First, we
-reduce the search space by inventing a new intermediate representation. Second,
-we further reduce the effort of exploring the search space by intelligently
-pruning the set of candidates as it progresses up the input program's abstract
-syntax tree.
+expressions, and this number grows faster than exponential rate with the
+increase of the number of terms.  New approach were therefore developed to
+specifically tackle the efficient discovery of equivalent structures in
+numerical programs.
+\todo{Explain why we need a new IR.}
+First, we reduce the size of our search space without affecting the optimality
+of it by inventing a new intermediate representation, called \emph{metasemantic
+intermediate represenation} (MIR).  Second, we further reduce the effort of
+exploring the new search space by intelligently pruning the set of candidates
+as it progresses up the input program's abstract syntax tree.
 
 All of our techniques above are designed with \emph{compositionality} in mind.
 It means that we recursively break down each component we work on---such as
@@ -114,7 +118,7 @@ the subcomponents.  When compared with a global approach, there are two major
 advantages.  First, because components are considered independent of each
 other, once analyzed the results can be reused in the analysis in the larger
 enclosing components.  Another advantage of this is that although we did not
-formally prove the correctness of our approach, we have designed it to be
-easily expressible in a formal language, by proving smaller pieces of lemmas,
-we can deductively prove the correctness of, for instance, a program-to-MIR
-translation.
+formally prove the correctness of our methodologies in this thesis, they are
+designed to be easily expressible in a formal language, by proving small
+pieces of lemmas, we can deductively prove the correctness of, for instance, a
+program-to-MIR translation.

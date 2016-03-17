@@ -1,5 +1,5 @@
 \subsection{Equivalent Structure Analysis}
-\label{sub:equivalence_analysis}
+\label{po:sub:equivalence_analysis}
 
 In this section, we start by taking one step further from simple arithmetic
 equivalence relations such as associativity, commutativity and distributivity
@@ -54,7 +54,7 @@ unrolling on fixpoint expressions:
     \fixpoint{b, \mu, x}
     \quad \eqrel \quad
     \fixpoint{b, p_\mu^k(\mu), x} \quad \text{for $k \in \naturalset$}
-    \label{eq:unroll}
+    \label{po:eq:unroll}
 \end{equation}
 Here $x \in \varset$, $p_\mu$ is a function that computes the unrolling
 of the loop MIR $\mu$, where
@@ -90,7 +90,7 @@ when $k = 0, 1, 2$:
     \end{aligned}
 \end{equation}
 
-The next set of rules in~\eqref{eq:tree} allows us to inductively discover
+The next set of rules in~\eqref{po:eq:tree} allows us to inductively discover
 equivalent structures in child expressions.  In these rules, the formulae above
 the line are the premises, whereas the ones below the line are conclusions,
 this means that in such a rule, if the premise is true, then the conclusion
@@ -140,7 +140,7 @@ replacing the expression $\mu(x)$ with $e_x$.
             \mu \eqrel [x \mapsto e_x]_{x \in \varset}
         }
     \end{aligned}
-    \label{eq:tree}
+    \label{po:eq:tree}
 \end{equation}
 
 \subsubsection{Discovering Equivalent Structures Efficiently}
@@ -187,9 +187,9 @@ set of equivalent conditional expressions.  Substitution expressions, $e
 for each of them discovered, we compute a new program state $\sigma^\sharp_0
 = \mirerrorfunc{\mu} \sigma^\sharp$, and use it to optimize $e$.  Fixpoint
 expressions are optimized in three steps.  Initially, partially unrolled
-versions are discovered using the rules defined in~\eqref{eq:unroll}.  Then
+versions are discovered using the rules defined in~\eqref{po:eq:unroll}.  Then
 for each unrolled version, we obtain its loop invariant using the algorithm
-illustrated in Figure~\ref{alg:fix}, and the loop invariant is then used to
+illustrated in Figure~\ref{po:alg:fix}, and the loop invariant is then used to
 optimize its child nodes, which are the Boolean expression and the loop MIR\@.
 Finally, a set of equivalent fixpoint expressions can be derived by combining
 equivalent child nodes together, and $\closure(\sigma^\sharp)$ is again used to

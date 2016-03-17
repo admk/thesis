@@ -1,5 +1,5 @@
 \section{Code Generation}
-\label{sec:code_generation}
+\label{po:sec:code_generation}
 
 The final stage is to translate the optimized MIR back to a program in its
 original syntax.  As discussed earlier, the MA produces an abstraction of the
@@ -10,11 +10,11 @@ transformations explained in our resource usage analysis to produce a unique
 and deterministic translation from the MIR\@.
 
 Our code generation is carried out in three stages.  The first stage applies
-the transformations outlined in Section~\ref{sub:resource_usage_analysis} to
-perform loop and branch fusion, and to allow sharing of expressions across
-nested MIRs. After the first stage, we perform a simple one-to-one mapping
-from MIRs to program code.  This process is a breadth-first traversal of
-the MIR, it keeps removing nodes that has no data flows to other nodes
+the transformations outlined in Section~\ref{po:sub:resource_usage_analysis}
+to perform loop and branch fusion, and to allow sharing of expressions
+across nested MIRs. After the first stage, we perform a simple one-to-one
+mapping from MIRs to program code.  This process is a breadth-first traversal
+of the MIR, it keeps removing nodes that has no data flows to other nodes
 in the MIR and translate each node into one statement, and repeat this
 process until the MIR is empty.  The final step of our code generation, is
 to perform code sinking, which moves parts of the code so that when their

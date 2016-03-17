@@ -1,5 +1,5 @@
 \section{Evaluation}
-\label{sec:results}
+\label{lo:sec:results}
 
 \newcommand\redcircle{%
 \begin{tikzpicture}\draw[red] (0,0) circle (1mm);\end{tikzpicture}}
@@ -111,18 +111,19 @@ $\begin{array}{l|r|r|r|r|r|r|r|r|r}
 \\ \hline
 \end{array}$
     \caption{%
-        Comparisons of the original (non-shaded rows) and the optimized
-        program with lowest latency (shaded rows), for each benchmark. Values
-        in parentheses are obtained after slightly tweaking our experimental
-        set-up; see Sec.~\ref{sec:results_discussion}.  We performed
+        Comparisons of the original (non-shaded rows) and the optimized program
+        with lowest latency (shaded rows), for each benchmark. Values in
+        parentheses are obtained after slightly tweaking our experimental
+        set-up; see Section~\ref{lo:sec:results_discussion}.  We performed
         place-and-route for exact statistics.
-    }\label{tab:results}
+    }\label{lo:tab:results}
 \end{table}
 
-Table~\ref{tab:results} compares, for each benchmark in our evaluation set, the
-performance metrics of the original program against those of the program with
-the smallest latency discovered by our tool. We synthesized each program to a
-circuit to obtain exact statistics, which are shown in Table~\ref{tab:results}.
+Table~\ref{lo:tab:results} compares, for each benchmark in our evaluation
+set, the performance metrics of the original program against those of the
+program with the smallest latency discovered by our tool. We synthesized
+each program to a circuit to obtain exact statistics, which are shown in
+Table~\ref{lo:tab:results}.
 
 
 \begin{figure}[ht]
@@ -148,7 +149,7 @@ circuit to obtain exact statistics, which are shown in Table~\ref{tab:results}.
     \caption{%
         Comparisons of our estimated LUT counts against actual LUT counts from
         Vivado HLS\@.}
-    \label{fig:lut}
+    \label{lo:fig:lut}
 \end{figure}
 
 \begin{figure}[ht]
@@ -175,7 +176,7 @@ circuit to obtain exact statistics, which are shown in Table~\ref{tab:results}.
     \caption{%
         Comparisons of our estimated latency statistics against actual latency
         from Vivado HLS\@.}
-    \label{fig:lat}
+    \label{lo:fig:lat}
 \end{figure}
 
 \begin{figure*}[t]
@@ -242,66 +243,67 @@ circuit to obtain exact statistics, which are shown in Table~\ref{tab:results}.
     \end{tikzpicture}
     \caption{%
         Pareto-optimal variants of the Seidel stencil program from
-        Fig.~\ref{fig:seidel_prog}. Each graph shows a 2D projection of the
-        3D Pareto frontier. In each graph, the original program is marked
-        $\times$, and the lowest-latency variant obtained by arithmetic
+        Figure~\ref{lo:fig:seidel_prog}. Each graph shows a 2D projection
+        of the 3D Pareto frontier. In each graph, the original program is
+        marked $\times$, and the lowest-latency variant obtained by arithmetic
         transformations alone is marked \protect\redcircle.}
-    \label{fig:seidel}
+    \label{lo:fig:seidel}
 \end{figure*}
 
-Fig.~\ref{fig:lut} compares our estimated LUT counts (vertical axis)
+Figure~\ref{lo:fig:lut} compares our estimated LUT counts (vertical axis)
 against the exact LUT counts (horizontal axis) obtained by synthesizing RTL
-implementations of each program in Table~\ref{tab:results}.  Although our
+implementations of each program in Table~\ref{lo:tab:results}.  Although our
 estimates deviate from the exact values, because we compute lower bounds on
 resource utilizations, and finite state machines synthesized and address
 calculation are not taken into account, our estimate can still accurately
 predict the general trend---a linear regression of all scatter points finds
 $R^2 = 0.9344$.
 
-Fig.~\ref{fig:lat} compares our latency estimates (vertical axis)
+Figure~\ref{lo:fig:lat} compares our latency estimates (vertical axis)
 against the actual latency values (horizontal axis). The solid line
 represents the linear regression of data points that we have gathered in
-Table~\ref{tab:results}. This line is a tight fit with our data, with $R^2 =
+Table~\ref{lo:tab:results}. This line is a tight fit with our data, with $R^2 =
 0.9959$, which indicates that our latency estimation can accurately predict the
 exact latency of synthesized implementations.
 
-Returning to our motivating example from Sec.~\ref{sec:motivation},
-Fig.~\ref{fig:seidel} demonstrates the range of optimized programs discovered
-by our tool when applied to the Seidel stencil loop kernel. In the figure,
-$\times$-points indicate the original program. By using only the rules of
-real arithmetic, our tool finds a more efficient program that can improve run
-time by 2.5$\times$, as shown by the \redcircle-points. However, by enabling
-partial loop unrolling and our dependence elimination rules, the performance
-is further improved, resulting in a 6.7$\times$ reduction of total run time.
-Furthermore, we have found that numerical accuracy can often be optimized at
-the same time as we optimize the initiation intervals of loops. Because by
-partially unrolling loops, the sizes of the expressions in loop grow, which
-provides our tool a greater freedom in terms of discovering more accurate
-expressions. In this example, the most efficient program is also the most
-accurate one: it minimizes round-off errors by approximately 2.5$\times$. It
-is worth noting that our tool can detect that as it explores deep levels of
-partial loop unrolling, we start to see a diminishing return in performance as
-it hits a bottleneck in memory bandwidth.  This is due to the fact that Vivado
-HLS synthesizes dual port RAMs for arrays, and in one clock cycle we can only
-read from the memory allocating array twice.  Our optimization flow is aware of
-this bottleneck and stops exploring further loop unrolling.
+Returning to our motivating example from Section~\ref{lo:sec:motivation},
+Figure~\ref{lo:fig:seidel} demonstrates the range of optimized programs
+discovered by our tool when applied to the Seidel stencil loop kernel. In
+the figure, $\times$-points indicate the original program. By using only the
+rules of real arithmetic, our tool finds a more efficient program that can
+improve run time by 2.5$\times$, as shown by the \redcircle-points. However,
+by enabling partial loop unrolling and our dependence elimination rules, the
+performance is further improved, resulting in a 6.7$\times$ reduction of
+total run time.  Furthermore, we have found that numerical accuracy can often
+be optimized at the same time as we optimize the initiation intervals of
+loops. Because by partially unrolling loops, the sizes of the expressions in
+loop grow, which provides our tool a greater freedom in terms of discovering
+more accurate expressions. In this example, the most efficient program is
+also the most accurate one: it minimizes round-off errors by approximately
+2.5$\times$. It is worth noting that our tool can detect that as it explores
+deep levels of partial loop unrolling, we start to see a diminishing return
+in performance as it hits a bottleneck in memory bandwidth.  This is due to
+the fact that Vivado HLS synthesizes dual port RAMs for arrays, and in one
+clock cycle we can only read from the memory allocating array twice.  Our
+optimization flow is aware of this bottleneck and stops exploring further loop
+unrolling.
 
 Similar graphs for the other benchmarks can be viewed
-online,\footnote{\url{https://dl.dropboxusercontent.com/u/268386/www/plot.html}
-(anonymized)} each showing three projections from different axes of the
-3D Pareto frontier. Our web page can be used to interactively explore the
-positions of each data point on the three projections simultaneously, and view
-the corresponding generated C programs.
+online,\footnote{\url{https://admk.github.io/soap/plot.html}} each showing
+three projections from different axes of the 3D Pareto frontier. Our web page
+can be used to interactively explore the positions of each data point on the
+three projections simultaneously, and view the corresponding generated C
+programs.
 
 \subsection{Discussion}
-\label{sec:results_discussion}
+\label{lo:sec:results_discussion}
 
-As demonstrated by Fig.~\ref{fig:lat}, our tool generally produces accurate
-latency estimates. However, we have discovered a few notable discrepancies. For
-instance, \verb|gemver|, \verb|mvt| and \verb|syr2k| all have significant
-differences between our estimated latency and the actual latency from
-synthesized RTL implementations.  An inspection of these programs reveals that
-they all share a common programming idiom:
+As demonstrated by Figure~\ref{lo:fig:lat}, our tool generally produces
+accurate latency estimates. However, we have discovered a few notable
+discrepancies. For instance, \verb|gemver|, \verb|mvt| and \verb|syr2k| all
+have significant differences between our estimated latency and the actual
+latency from synthesized RTL implementations.  An inspection of these programs
+reveals that they all share a common programming idiom:
 %
 \begin{lstlisting}
   for (int i=0; i<N; i++)
@@ -322,9 +324,9 @@ By rewriting the above code into:
   }
 \end{lstlisting}
 %
-We fix this problem, and enable Vivado HLS to generate a hardware implementation
-with the expected $\II$. The ratios in parentheses in Table~\ref{tab:results}
-reflect the speedup by performing this simple fix.
+We fix this problem, and enable Vivado HLS to generate a hardware
+implementation with the expected $\II$. The ratios in parentheses in
+Table~\ref{lo:tab:results} reflect the speedup by performing this simple fix.
 
 %%% Local Variables:
 %%% mode: latex

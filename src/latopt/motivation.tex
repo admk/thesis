@@ -1,11 +1,11 @@
 \section{Motivation}
-\label{sec:motivation}
+\label{lo:sec:motivation}
 
 % \newcommand\arr[3]{\texttt{#1}_{\texttt{#2},\texttt{#3}}}
 \newcommand\arr[3]{\texttt{#1[#2][#3]}}
 \newcommand\barr[3]{\texttt{\underline{#1[#2][#3]}}}
 
-Figure~\ref{fig:seidel_prog} gives an implementation of the Seidel stencil
+Figure~\ref{lo:fig:seidel_prog} gives an implementation of the Seidel stencil
 computation, extracted from PolyBench~\cite{polybench}, where initially all
 values in the array \verb|A| are single-precision floating-point values between
 0 and 1.  It resembles the typical code frequently used in fluid dynamic
@@ -25,7 +25,7 @@ equations.
     An excerpt from the Seidel stencil~\cite{polybench}.  The inter-iteration
     data dependence of the innermost loop is underlined ($\arr{A}{i}{j}$ and
     $\arr{A}{i}{j-1}$).}
-    \label{fig:seidel_prog}
+    \label{lo:fig:seidel_prog}
 \end{figure}
 
 We start by synthesizing this program in \emph{Vivado HLS} (VHLS)\@.  We
@@ -34,8 +34,8 @@ overlapping its iterations.  However, we can observe that this program has
 very limited opportunity for pipelining, because each iteration \verb|j| of
 the innermost loop ends by writing to \verb|A[i][j]|, and the next iteration
 \verb|j+1| begins by reading from \verb|A[i][j]|; this inter-iteration
-dependence is highlighted in Figure~\ref{fig:seidel_prog}.  Hence, it serves as
-our example to demonstrate the power of our tool.
+dependence is highlighted in Figure~\ref{lo:fig:seidel_prog}.  Hence, it serves
+as our example to demonstrate the power of our tool.
 
 VHLS generates a schedule where each iteration requires $49$ cycles (the
 \emph{depth}, $D$, of the loop), and there are $46$ cycles between the starts
@@ -46,29 +46,30 @@ innermost loop is $((N-1) \times \II) + D = 47,015$ cycles.
 
 We then enable VHLS's \emph{expression balancing} (EB) optimization.  When
 synthesized, this optimization pass tries to reorder the sequence of additions
-in the loop body into a tree structure, thus reducing the $\II$ to 28 cycles,
-and the depth $D$ to 42 cycles, while the trip count $N = 1022$ remains the
-same.  The overall latency is now $((N-1) \times \II) + D = 28,630$ cycles.
-The overall resource usage remains roughly the same.  However, as we mentioned
-in Sec.~\ref{sec:introduction}, VHLS is not aware of the inter-iteration data
-dependence.  Although enabling EB did produce a faster implementation, there is
-still room for improvement.  We further discovered that if we partially unroll
-the loop, VHLS's EB did not improve the total run time, despite using a lot
-more resources.  As we have explained in Sec.~\ref{sec:introduction}, EB only
-makes use of associativity, and does not make use of other equivalence rules.
+in the loop body into a tree structure, thus reducing the $\II$ to 28
+cycles, and the depth $D$ to 42 cycles, while the trip count $N = 1022$
+remains the same.  The overall latency is now $((N-1) \times \II) + D =
+28,630$ cycles.  The overall resource usage remains roughly the same.
+However, as we mentioned in Section~\ref{lo:sec:introduction}, VHLS is not
+aware of the inter-iteration data dependence.  Although enabling EB did
+produce a faster implementation, there is still room for improvement.  We
+further discovered that if we partially unroll the loop, VHLS's EB did
+not improve the total run time, despite using a lot more resources.  As
+we have explained in Section~\ref{lo:sec:introduction}, EB only makes
+use of associativity, and does not make use of other equivalence rules.
 These limitations pose great restrictions on VHLS's ability to produce a
 significantly faster implementation.  Most importantly, VHLS does not guarantee
 that this optimization will not result in catastrophic inaccuracies.
 
-We then use our tool to automatically discover equivalent programs from
-the program in Figure~\ref{fig:seidel_prog}.  Because our tool explores a
+We then use our tool to automatically discover equivalent programs from the
+program in Figure~\ref{lo:fig:seidel_prog}.  Because our tool explores a
 large number of paths that lead to a Pareto frontier of implementations,
 here we illustrate one of the many paths that could be taken by minimizing
 latency, while trying to optimize accuracy and resource usage.  By using just
 arithmetic equivalences, our tool specifically applies transformations to
 alleviate the constraints on the inter-iteration dependence, and discovers
 that the innermost loop can be rewritten to minimize latency as shown in
-Figure~\ref{fig:seidel_prog_2}.
+Figure~\ref{lo:fig:seidel_prog_2}.
 
 \begin{figure}[ht]
 \begin{lstlisting}
@@ -77,7 +78,7 @@ Figure~\ref{fig:seidel_prog_2}.
       (($\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$) + ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$)));
 \end{lstlisting}
     \caption{The optimized program using only arithmetic equivalences.}
-    \label{fig:seidel_prog_2}
+    \label{lo:fig:seidel_prog_2}
 \end{figure}
 
 Although this loop still has a data dependence between consecutive iterations,
@@ -96,7 +97,7 @@ two matrix elements on every iteration and halving the trip count) and
 applying other rules, results in a program with $\II = 19, D = 152, N = 511$.
 When implemented on a device it is 4.8$\times$ faster than the original,
 and almost twice as accurate, at a cost of 17\% more LUTs, as shown in
-Figure~\ref{fig:seidel_prog_3}.
+Figure~\ref{lo:fig:seidel_prog_3}.
 
 \begin{figure}[ht]
 \begin{lstlisting}
@@ -111,13 +112,13 @@ Figure~\ref{fig:seidel_prog_3}.
 \end{lstlisting}
     \caption{The optimized program using arithmetic equivalences in tandem with
     control-flow restructuring and memory access optimization.}
-    \label{fig:seidel_prog_3}
+    \label{lo:fig:seidel_prog_3}
 \end{figure}
 
 Further increasing the optimization effort, which enables the loop to
 be deeper partially unrolled, leads to a program that is 7$\times$
 faster than the original, but uses 2.8$\times$ LUTs.  To summarize, in
-Table~\ref{tab:seidel_results}, we compare VHLS with EB, against one of the
+Table~\ref{lo:tab:seidel_results}, we compare VHLS with EB, against one of the
 many implementations that we have explored using our tool with the increased
 optimization effort.  The three columns respectively shows the original
 program with loop pipelining enabled, what Vivado HLS can achieve alone, and
@@ -173,5 +174,5 @@ statistics.
     \caption{%
         Comparison among the optimized implementations generated by Vivado
         HLS's expression balancing and our optimizer.}
-    \label{tab:seidel_results}
+    \label{lo:tab:seidel_results}
 \end{table}

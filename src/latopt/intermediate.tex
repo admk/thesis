@@ -1,8 +1,8 @@
 \section{Intermediate Representation}
-\label{sec:intermediate}
+\label{lo:sec:intermediate}
 
 %\subsection{Background: Translating Programs to Graphs}
-%\label{sub:background}
+%\label{lo:sub:background}
 
 There are infinite number of ways to rewrite numerical C programs, and many of
 these rewrites produce programs that have the same resource usage, accuracy
@@ -27,7 +27,7 @@ computations.
         }
     }
     \caption{Two programs that are equivalent but syntactically different.}
-    \label{fig:equiv_progs}
+    \label{lo:fig:equiv_progs}
 \end{figure}
 
 In practice, it is desirable to eliminate as much as possible the need
@@ -41,16 +41,16 @@ are not marked as program outputs.
 % As an example, the two equivalent programs above can be automatically
 % translated into an identical MIR\@:
 % \begin{equation}
-    % \label{eq:assign_example}
+    % \label{lo:eq:assign_example}
     % \begin{tikzpicture}[mir]
-        % \node[mirnode] (var_x) at (0,0) {{\tt x}};
+        % \node[mirnode] (var_x) at (0,0) {\texttt{x}};
         % \node[mirnode] (plus1) [right=of var_x] {$+$};
         % \node[mirnode] (n3)    [below left=of plus1] {$3$};
         % \node[mirnode] (plus2) [below right=of plus1] {$+$};
-        % \node[mirnode] (var_y) [right=of plus1] {{\tt y}};
+        % \node[mirnode] (var_y) [right=of plus1] {\texttt{y}};
         % \node[mirnode] (times) [right=of var_y] {$\times$};
         % \node[mirnode] (n2)    [below right=of times] {$2$};
-        % \node[mirnode] (x)     [below left=of plus2] {{\tt x}};
+        % \node[mirnode] (x)     [below left=of plus2] {\texttt{x}};
         % \node[mirnode] (n1)    [below right=of plus2] {$1$};
         % \draw[|->] (var_x) -- (plus1);
         % \draw[<-] (plus1) -- (n3);
@@ -82,15 +82,15 @@ much more efficient.
 % \end{lstlisting}
 % can be represented in MIR form as follows:
 % \begin{equation}
-    % \label{eq:if_example}
+    % \label{lo:eq:if_example}
     % \begin{tikzpicture}[mir]
-        % \node[mirnode] (var_x) at (0,0) {{\tt x}};
+        % \node[mirnode] (var_x) at (0,0) {\texttt{x}};
         % \node[mirnode] (qop)   [right=8mm of var_x] {$\qop$};
-        % \node[mirnode] (b)     [below left=of qop] {{\tt b}};
+        % \node[mirnode] (b)     [below left=of qop] {\texttt{b}};
         % \node[mirnode] (times) [below right=of qop, yshift=2mm] {$\times$};
         % \node[mirnode] (n2)    [below left=of times] {$2$};
         % \node[mirnode] (plus)  [below right=of times, yshift=2mm] {$+$};
-        % \node[mirnode] (x)     [below left=of plus, yshift=2mm] {{\tt x}};
+        % \node[mirnode] (x)     [below left=of plus, yshift=2mm] {\texttt{x}};
         % \node[mirnode] (n1)    [below right=of plus, yshift=2mm] {$1$};
 
         % \draw[|->] (var_x) -- (qop);
@@ -113,7 +113,7 @@ much more efficient.
 % \emph{body} of the loop as a MIR\@.
 
 \subsection{Representing arrays}
-\label{sub:extending_the_translation_to_handle_arrays}
+\label{lo:sub:extending_the_translation_to_handle_arrays}
 
 Chapter~\ref{chp:progopt} did not include support for arrays in their original
 description of the MIR format. However, the examples that motivate our work
@@ -140,19 +140,19 @@ As a simple example, a loop body:
 \end{lstlisting}
 can be translated into the following MIR\@:
 \begin{equation}
-    \label{eq:array_example}
+    \label{lo:eq:array_example}
     \begin{tikzpicture}[mir]
-        \node[mirnode] (var_A) at (0,0) {{\tt A}};
+        \node[mirnode] (var_A) at (0,0) {\texttt{A}};
         \node[mirnode] (update)[right=of var_A] {$\updateop$};
-        \node[mirnode] (x1)    [below left=of update] {{\tt A}};
+        \node[mirnode] (x1)    [below left=of update] {\texttt{A}};
         \node[mirnode] (plus)  [below=of update] {$+$};
-        \node[mirnode] (i1)    [below left=of plus] {{\tt i}};
+        \node[mirnode] (i1)    [below left=of plus] {\texttt{i}};
         \node[mirnode] (n1)    [below right=of plus] {$1$};
         \node[mirnode] (times) [below right=of update, xshift=7mm, yshift=2mm] {$\times$};
         \node[mirnode] (n2)    [below left=of times] {$2$};
         \node[mirnode] (access)[below right=of times, yshift=2mm] {$\accessop$};
-        \node[mirnode] (x2)    [below left=of access, yshift=1mm] {{\tt A}};
-        \node[mirnode] (i2)    [below right=of access, yshift=1mm] {{\tt i}};
+        \node[mirnode] (x2)    [below left=of access, yshift=1mm] {\texttt{A}};
+        \node[mirnode] (i2)    [below right=of access, yshift=1mm] {\texttt{i}};
 
         \draw[|->] (var_A) -- (update);
         \draw[<-] (update) -- (x1);
@@ -181,4 +181,4 @@ e^\prime$ are equivalent.  They respectively update the $x$-th element of $A$
 with $e$ and $e^\prime$ and return different arrays.  A C program cannot be
 generated from this MIR without duplicating $A$.  We solve this problem by
 partitioning the MIR at ``$\updateop$'' nodes using the method described in
-Sec.~\ref{sec:structural_optimization}.
+Section~\ref{lo:sec:structural_optimization}.

@@ -1,5 +1,5 @@
 \section{Introduction}
-\label{sec:introduction}
+\label{lo:sec:introduction}
 
 % There are many reasons why FPGA implementations of numerical algorithms
 % are best obtained via high-level synthesis (HLS) from C\@: less
@@ -32,7 +32,7 @@ of this is the summation of all elements in an array:
 \end{lstlisting}
 This code can be partially unrolled and the sequence of additions can be
 rewritten using tree adders to reduce its latency, but we will see later in
-Sec.~\ref{sec:results} that more efficient implementations are possible.
+Section~\ref{lo:sec:results} that more efficient implementations are possible.
 
 % Unfortunately, in the presence of floating-point arithmetic, these program
 % transformations could have an impact on numerical accuracy.  For instance,
@@ -105,11 +105,11 @@ which does not necessarily improve over the original code.
 % the efficient discovery of equivalent structures in numerical programs,
 % by intelligently pruning the set of candidates as it progresses up the
 % input program's abstract syntax tree.
-We also exploit \SOAP{}'s ability
-to analyze the numerical accuracy of a given program.  To analyze the run
-time and resource utilization of a given program, we use a variant of the
-\emph{iterative modulo scheduling} algorithm~\cite{rau94} that computes
-fundamental lower bounds of these metrics.
+
+We also exploit \SOAP{}'s ability to analyze the numerical accuracy of
+a given program.  To analyze the run time and resource utilization of a
+given program, we use a variant of the \emph{iterative modulo scheduling}
+algorithm~\cite{rau94} that computes fundamental lower bounds of these metrics.
 
 We evaluated our tool on a suite of 11 programs from the Livermore
 Loops~\cite{livermore} and PolyBench~\cite{polybench} benchmark suites.  Our
@@ -129,16 +129,17 @@ the benchmarks, as they have no redundant computations.
     rules that removes extraneous array accesses, can give rise to the
     freedom for non-standard transformation rules, \eg~arithmetic rules,
     to significantly impact latency, resource usage and accuracy in a loop
-    (Sec.~\ref{sub:transformation_rules}).
+    (Section~\ref{lo:sub:transformation_rules}).
 
-    \item We significantly improve the performance of the efficient
-    discovery of equivalent through improved accuracy analysis
-    (Sec.~\ref{sub:accuracy_analysis}), graph partitioning and intelligent
-    pruning of optimization candidates (Sec.~\ref{sub:algorithm}).
+    \item We significantly improve the performance of the
+    efficient discovery of equivalent through improved accuracy
+    analysis (Section~\ref{lo:sub:accuracy_analysis}), graph
+    partitioning and intelligent pruning of optimization candidates
+    (Section~\ref{lo:sub:algorithm}).
 
     \item We designed a new scheduling analysis that estimates
     the latency and resource usage of a given optimized candidate
-    (Sec.~\ref{sec:performance_analysis}).
+    (Section~\ref{lo:sec:performance_analysis}).
 
     \item Incorporating the above-mentioned techniques, we have developed
     the first optimizer to \emph{automatically} and \emph{safely} produce
@@ -147,8 +148,10 @@ the benchmarks, as they have no redundant computations.
     accuracy, and area.  Our improvements on latency are notably better than
     the only ones produced by Vivado HLS's \emph{unsafe} optimizations. We have
     evaluated our tool on a suite of Livermore Loops and PolyBench benchmarks
-    (Sec.~\ref{sec:results}).
+    (Section~\ref{lo:sec:results}).
 
 \end{itemize}
 
 \end{trivlist}
+
+\todo{Chapter outline.}
