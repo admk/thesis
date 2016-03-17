@@ -1,0 +1,209 @@
+\section{Abstract Interpretation}
+\label{bg:sec:abstract_interpretation}
+
+This section starts by introducing the basic concepts of program semantics
+and the abstract interpretation framework, a static analysis technique.  This
+is then extended to define a scalable analysis capturing accuracy.  Later in
+Chapter~\ref{chp:progopt} we accommodate sequential statements, \iflit~branches
+and \whilelit~loops in the accuracy analysis, and in Chapter~\ref{chp:latopt},
+we further improve our analysis by supporting multi-dimensional arrays.
+
+
+\subsection{Intervals}
+\label{bg:sub:intervals}
+
+We illustrate these concepts by putting the familiar idea of \emph{interval
+arithmetic}~\cite{moore} in the framework of abstract interpretation. As
+an illustration, consider the following expression and its DFG in
+Figure~\ref{bg:fig:sample_tree}\@:
+\begin{equation}
+    (a + b) \times (a + b)
+    \label{bg:eq:absint_sample}
+\end{equation}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.6]{sample_tree}
+    \caption{The DFG for the sample expression.}\label{bg:fig:sample_tree}
+\end{figure}
+
+We may wish to ask: if initially $a$ and $b$ are real numbers in the range of
+$[0.2, 0.3]$ and $[2, 3]$ respectively, what would be the outcome of evaluating
+this expression with real arithmetic? A straightforward approach is simulation.
+Evaluating the expression for a large quantity of inputs will produce a set
+of possible outputs of the expression. However the simulation approach is
+unsafe, since there are infinite number of real-valued inputs possible and it
+is infeasible to simulate for all.
+
+A better method might be to represent the possible values of $a$ and $b$ using
+ranges. To compute the ranges of its output values, we could operate on ranges
+rather than values (note that the superscript $\sharp$ denotes ranges). Assume
+that $a^\sharp_{init} = [0.2, 0.3]$, $b^\sharp_{init} = [2, 3]$, which are the
+input ranges of $a$ and $b$, and $\enter{l}$ where $l \in \{1, 2, 3, 4\}$ are
+the intervals of the outputs of the boxes labelled with $l$ in the DFG\@. We
+extract the data flow from the DFG to produce the following set of equations:
+\begin{equation}
+    \begin{aligned}
+        \enter{1} &= a^\sharp_{init} \\
+        \enter{2} &= b^\sharp_{init} \\
+        \enter{3} &= \enter{1} + \enter{2} \\
+        \enter{4} &= \enter{3} \times \enter{3}
+    \end{aligned}
+    \label{bg:eq:absint_sample_analysis}
+\end{equation}
+For the equations above to make sense, addition and multiplication need to be
+defined on intervals. We may define the following interval operations:
+\begin{equation}
+    \begin{aligned}
+        \interval{a}{b} + \interval{c}{d} &= \interval{a + c}{b + d} \\
+        \interval{a}{b} - \interval{c}{d} &=  \interval{a - d}{b - c} \\
+        \interval{a}{b} \times \interval{c}{d} &=
+            \interval{\min(s)}{\max(s)} \\
+        \text{where~} s &= \{ a \times c, a \times d, b \times c, b \times d \}
+    \end{aligned}
+    \label{bg:eq:interval_operations}
+\end{equation}
+The solution to the set of~\eqref{bg:eq:absint_sample_analysis} for $\enter{4}$
+is $[4.84, 10.89]$, which represents a safe bound on the output at the end
+of program execution. Note that in actual execution of the program, the
+semantics represent the values of intermediate variables, which are real
+values. In our case, a set of real values forms the set of all possible
+values produced by our code. However computing this set precisely is not,
+in general, a possible task. Instead, we use abstract interpretation based
+on intervals, which gives the abstract semantics of this program. Here, we
+have achieved a classical interval analysis by \emph{defining} the meaning of
+addition and multiplication on abstract mathematical structures (in this case
+intervals) which capture a safe approximation of the original semantics of the
+program. Later in Section~\ref{so:sec:semantics} of Chapter~\ref{chp:stropt},
+we further generalize the idea by defining the meaning of these operations on
+more complex abstract structures which allow us to scalably reason about the
+area of FPGA implementations and equivalent program structures.
+
+
+\subsection{Accuracy Analysis}
+\label{bg:sub:accuracy}
+
+Because we optimize numerical programs in a way that may have significant
+impact on accuracy, and one of our objectives is to minimize round-off error
+in the process, it is necessary to perform accuracy analysis on optimized
+candidates.
+
+Since our numerical programs make use of floating-point arithmetic, we first
+introduce the concepts of the floating-point representation~\cite{ieee754}. Any
+values $v$ representable in floating-point with standard exponent offset can be
+expressed with the format given by the following equation:
+\begin{equation}
+    v = s \times 2^{e + 2^{k - 1} - 1} \times 1.{m_1 m_2 m_3 \ldots m_p}
+    \label{bg:eq:floating_point}
+\end{equation}
+In~\eqref{bg:eq:floating_point}, the bit $s$ is the sign bit, the $k$-bit
+unsigned integer $e$ is known as the exponent bits, and the $p$-bits $m_1 m_2
+m_3 \ldots m_p$ are the mantissa bits, here we use $1.{m_1 m_2 m_3 \ldots m_p}$
+to indicate a fixed-point number represented in unsigned binary format.
+
+Because of the finite characteristic of IEEE 754 floating-point format, it
+is not always possible to represent exact values with it. Computations in
+floating-point arithmetic often induces roundoff errors. Therefore, following
+Martel~\cite{martel07}, we bound with ranges the values of floating-point
+calculations, as well as their roundoff errors. Our accuracy analysis
+determines the bounds of all possible outputs and their associated range
+of roundoff errors for expressions. For example, assume that $a \in [0.2,
+0.3]$, $b \in [2.3, 2.4]$, it is possible to derive that in single precision
+floating-point computation with rounding to the nearest, ${(a + b)}^2 \in
+[6.24999857, 7.29000187]$ and the error caused by this computation is bounded
+by $[-1.60634534\times10^{-6}, 1.60634534\times10^{-6}]$.
+
+We employ abstract error semantics for the calculation of errors described
+in~\cite{ioualalen, martel07}. First we define the domain $\errorset
+= \floatintervalset\times\intervalset$, where $\intervalset$ and
+$\floatintervalset$ respectively represent the set of real intervals, and
+the set of floating-point intervals (intervals exactly representable in
+floating-point arithmetic). The value $(x^\sharp, \mu^\sharp) \in \errorset$
+represents a safe bound on floating-point values and the accumulated error
+represented as a range of real values. Then addition and multiplication can be
+defined for the semantics as in~\eqref{bg:eq:error_semantics}:
+\begin{equation}
+    \begin{aligned}
+        \left( x^\sharp_1, \mu^\sharp_1 \right) +
+        \left( x^\sharp_2, \mu^\sharp_2 \right)
+    &=  \left(
+            \roundup{x^\sharp_1 + x^\sharp_2},
+            \mu^\sharp_1 + \mu^\sharp_2 +
+            \rounddown{x^\sharp_1 + x^\sharp_2}
+        \right) \\
+        \left( x^\sharp_1, \mu^\sharp_1 \right) -
+        \left( x^\sharp_2, \mu^\sharp_2 \right)
+    &=  \left(
+            \roundup{x^\sharp_1 - x^\sharp_2},
+            \mu^\sharp_1 - \mu^\sharp_2 +
+            \rounddown{x^\sharp_1 - x^\sharp_2}
+        \right) \\
+        \left( x^\sharp_1, \mu^\sharp_1 \right) \times
+        \left( x^\sharp_2, \mu^\sharp_2 \right)
+    &=  \left(
+            \roundup{x^\sharp_1 \times x^\sharp_2},
+            x^\sharp_1 \times \mu^\sharp_2 + x^\sharp_2 \times \mu^\sharp_1 +
+            \mu^\sharp_1 \times \mu^\sharp_2 +
+            \rounddown{x^\sharp_1 \times x^\sharp_2}
+        \right) \\
+    &\qquad\qquad\qquad\qquad\qquad\qquad\text{~for~}
+        \left( x^\sharp_1, \mu^\sharp_1 \right) \in \errorset,
+        \left( x^\sharp_2, \mu^\sharp_2 \right) \in \errorset
+    \end{aligned}
+    \label{bg:eq:error_semantics}
+\end{equation}
+
+The addition, subtraction and multiplication of intervals follow the standard
+rules of interval arithmetic defined earlier in~\eqref{bg:eq:interval_operations}.
+In~\eqref{bg:eq:error_semantics}, the function $\rounddownop: \intervalset \to
+\intervalset$ determines the range of roundoff error due to the floating-point
+computation under one of the rounding modes $\circ \in \{ -\infty, \infty, 0,
+\neg0, \sim \}$ which are round towards negative infinity, towards infinity,
+towards zero, away from zero and towards nearest floating-point value
+respectively. It is defined as:
+\begin{equation}
+    \begin{aligned}
+        & \downarrow^\sharp_\circ([a, b]) = \left\{
+            \begin{aligned}
+                & \left[ -\frac{z}{2}, \frac{z}{2}\right]
+                    & \quad \circ & \text{~is~}\sim \\
+                & \left[ -z, z\right]
+                    & \quad \circ & \in \{ -\infty, \infty, 0, \neg0 \}
+            \end{aligned}
+        \right. \\
+        & \qquad\qquad\qquad\qquad \text{where~} z = \max(ulp(a), ulp(b))
+    \end{aligned}
+\end{equation}
+Here $z$ denotes the maximum rounding error that can occur for values
+within the range $[a, b]$, and the unit of the last place (ulp) function
+$ulp(x)$~\cite{muller} characterizes the distance between two adjacent
+floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
+f_2$~\cite{goldberg}. In our analysis, the function $ulp$ is defined as:
+\begin{equation}
+    ulp(x) = 2^{e(x) + 2^{k - 1} - 1} \times 2^{-p}
+\end{equation}
+where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
+floating-point format as defined in~\eqref{bg:eq:floating_point}. The function
+$\roundupop: \intervalset \to \floatintervalset$ computes the floating-point
+bound from a real bound, by rounding the infimum $a$ and supremum $b$ of the
+input interval $[a, b]$.
+
+Expressions can be evaluated for their accuracy by the method as follows.
+Initially the expression is parsed into a data flow graph (DFG). By way of
+illustration, the sample expression ${(a + b)}^2$ has the tree structure
+in Figure~\ref{bg:fig:sample_tree}. Then the exact ranges of values of $a$ and
+$b$ are converted into the abstract semantics using a cast operation as in
+\eqref{bg:eq:cast}:
+\begin{equation}
+    cast(x^\sharp) = (\roundup{x^\sharp}, \rounddown{x^\sharp})
+    \label{bg:eq:cast}
+\end{equation}
+For example, for the variable $a \in [0.2, 0.3]$ under single precision
+with rounding to nearest,
+\begin{equation}
+    cast([0.2, 0.3]) = ([0.200000003, 0.300000012], [-1/67108864, 1/67108864])
+\end{equation}
+After this, the propagation of bounds in the data flow graph is carried out as
+described in Section~\ref{bg:sub:intervals}, where the difference is the abstract
+error semantics defined in~\eqref{bg:eq:error_semantics} is used in lieu of the
+interval semantics. At the root of the tree (\ie~the exit of the DFG) we find
+the value of the accuracy analysis result for the expression.

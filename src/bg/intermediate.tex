@@ -1,0 +1,35 @@
+\section{Intermediate Representations}
+\label{bg:sec:intermediate_representations}
+
+As we have discussed in Chapter~\ref{chp:introduction}, there are infinitely
+many ways to rewrite numerical programs, and often these equivalent programs
+have identical resource usage, latency and accuracy characteristics.  For this
+we need to reduce the search space of equivalent programs using an alternative
+representation of the original program, which are called \emph{intermediate
+representations} (IR).  These representations include \emph{static} and
+\emph{dynamic single assignment forms} (SSA, DSA)~\cite{rau92, cytron91},
+and \emph{control and data flow graphs} (CDFG)~\cite{gajski94}.  These IRs
+are however less suitable for our work because they are all statement-based
+and do not identify as many equivalent programs as MIRs do.  Dependence
+graphs~\cite{rau94}, on the other hand, are designed for the purpose of
+capturing data-flow dependences in polyhedral methods, but they generally do
+not preserve enough information for us to reconstruct a program from the graph
+itself.
+
+In software, \emph{equality saturation} is proposed in~\cite{tate09}.  It
+creates a new intermediate representation, PEG, similar to our MIR, to
+encode the effects of executing the program, and used to discover equivalent
+structures.  The differences between PEG and our MIR is that, instead of using
+graphs with cycles in them to represent \whilelit~loops, we use a directed
+acyclic graph to encode programs and use a \emph{fixpoint} operator to define
+recursive functions which can be used to represent loops.  Cycles in graphs
+require reanalyzing a large proportion of the IR whenever a structural
+modification is made, whereas a tree structure can be reasoned in a bottom-up
+hierarchy.  This has significant implications on program transformation.
+First, for the above reason, their approach does not use semantics to optimize
+for numerical accuracy, while our method reasons about semantics and utilize
+them to steer optimization routes.  Moreover, tree structure allows us to
+easily support partial loop unrolling by simply extending the equivalence
+relations while avoiding re-evaluation.  In contrast, like~\cite{martel09}
+and~\cite{damouche15}, equality saturation is unable to perform partial loop
+unrolling.

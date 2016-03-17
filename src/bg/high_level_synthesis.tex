@@ -1,0 +1,35 @@
+\section{High-Level Synthesis}
+\label{bg:sec:high_level_synthesis}
+
+High-level synthesis (HLS) is the process of compiling a high-level
+representation of an application (usually in C, C++ or MATLAB) into
+register-transfer-level (RTL) implementation for FPGA~\cite{coussy, gajski}.
+HLS tools enable us to work in a high-level language, as opposed to facing
+labor-intensive tasks such as optimizing timing, designing control logic in
+the RTL implementation. This allows application designers to instead focus on
+the algorithmic and functional aspects of their implementation~\cite{coussy},
+without concerning themselves with the above intricate details of manual RTL
+designs.
+
+Another advantage of using HLS tools is that they are in general more
+productive and less error-prone to work with, when compared with traditional
+RTL tools.  The reasons are two-fold.  First, a C description is smaller than a
+traditional RTL description by a factor of 10~\cite{coussy, bdti}.  Second, C
+code can be easily tested on an ordinary microprocessor, debug and verification
+tools for C are relatively more abundant when compared to RTL counterparts.
+
+HLS tools benefit us in their ability to automatically search the design
+space with a reasonable design cost~\cite{bdti}, explore a large number of
+trade-offs between performance, cost and power~\cite{mcfarland}, which is
+generally much more difficult to achieve in RTL tools.  Our thesis proposes
+a natural extension to HLS tools by automatically exploring the space of
+rewrites of floating-point numerical C programs, which are equivalent in real
+arithmetic, but could trade off accuracy, throughput and resource utilization
+when synthesized into circuits.
+
+With recent advancements in this area, HLS tools has received a resurgence of
+interest, particularly in the FPGA community, and circuits synthesized with
+HLS tools are now with similar performance when compared with hand-crafted RTL
+implementations~\cite{bdti}.  Xilinx now incorporates a sophisticated HLS flow
+into its Vivado design suite~\cite{vivado_hls} and the open-source HLS tool,
+LegUp~\cite{legup}, is gaining significant traction in the research community.

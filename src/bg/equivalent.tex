@@ -1,0 +1,97 @@
+\section{Discovering Equivalent Programs}
+\label{bg:sec:discovering_equivalent_programs}
+
+In this section, we explain existing optimization methods to restructure
+numerical programs with arithmetic equivalences.  Because general numerical
+program, consisting of program statements, conditional branches and loops,
+supersedes arithmetic expressions, we start by introducing approaches that
+optimizes expressions, followed by general numerical programs.
+
+
+\subsubsection{Arithmetic Expressions}
+\label{bg:ssub:arithmetic_expressions}
+
+LLVM-based HLS tools such as Vivado HLS and LegUp usually have some
+traditional static analysis-based optimization passes such as constant
+propagation and alias analysis.  These optimization passes, however, limit
+themselves by producing circuits that do not impact numerical accuracy,
+\ie~they compute the same output given identical inputs.  For this reason,
+new optimization passes are designed to allow dependence graphs to be
+restructured to improve loop parallelism, which allows more computation
+across loop iterations to overlap, and in turn faster programs.  Tree height
+reduction~\cite{nicolau91} aims to balance an arithmetic expression tree using
+associativity and distributivity.  Xilinx's Vivado HLS has a similar feature
+called \emph{expression balancing}~\cite{vivado_hls}.  Both of these methods do
+not produce optimal loop pipelining, as they do not examine the implications
+of loop-carried dependences.  Canis \etal~\cite{canis14} propose a similar
+approach called \emph{recurrence minimization}. They specifically tackle
+loop pipelining by incrementally restructuring dependence graphs to minimize
+longest paths of recurrences.  Their method is subsequently incorporated in
+LegUp~\cite{legup}, an open-source academic HLS tool.  However, both LegUp and
+Vivado HLS only apply associativity in their restructuring.
+
+Most importantly, none of the above mentioned techniques and tools aim to
+minimize, or even analyze, the impact of their transformations on resource
+usage and accuracy. In many numerically sensitive programs, small round-off
+errors would result in catastrophic inaccurate results.  HLS tools therefore
+generally disable this feature by default for floating-point computations.
+There are also academic tools that perform precision-performance trade-off by
+optimizing word-lengths of data paths~\cite{constantinides}; and this safely
+bounds round-off errors.  However, no existing HLS tools can perform the
+trade-off optimization among accuracy, resource usage and latency by varying
+the \emph{structure} of numerical programs.
+
+A further handful of techniques were proposed to minimizes resources, and none
+of these considers accuracy implications.  Hosangadi~\etal~\cite{hosangadi}
+propose an algorithm for the factorization of polynomials to reduce
+addition and multiplication counts, but this method is only suitable for
+factorization and it is not possible to choose different optimization
+levels. Peymandoust~\etal~\cite{peymandoust} present an approach that
+only deals with the factorization of polynomials in HLS using Gr\"obner
+bases. The shortcomings of this are its dependence on a set of library
+expressions~\cite{hosangadi} and the high computational complexity of Gr\"obner
+bases.
+
+Even in the software community, there are only a few existing techniques
+for optimizing expressions by transformation, none of which consider
+accuracy/run-time trade-offs.  With regard to the structural optimization
+of only arithmetic expressions without control structures, currently
+there are only a handful of tools that could optimize by \emph{truly
+restructuring}, \ie~they exploit any of the three equivalence relations in
+real arithmetic, namely associativity, commutativity and distributivity.
+Darulova~\etal~\cite{darulova} employ a metaheuristic technique. They use
+genetic programming to evolve the structure of arithmetic expressions into more
+accurate forms. However there are several disadvantages with metaheuristics,
+such as convergence can only be proved empirically and scalability is difficult
+to control because there is no definitive method to decide how long the
+algorithm must run until it reaches a satisfactory goal. The method proposed
+by Martel~\cite{martel07} is based on operational semantics with abstract
+interpretation, but even their depth limited strategy is, in practice, at least
+exponentially complex.  Finally Ioualalen~\etal~\cite{ioualalen} introduce the
+abstract interpretation of equivalent expressions, and creates a polynomially
+sized structure to represent an exponential number of equivalent expressions
+related by rules of equivalence. However it restricts itself to only a handful
+of these rules to avoid combinatorial explosion of the structure and there are
+no options for tuning its optimization level.
+
+Our tool, \soap{} was therefore designed to be the only tool that could trade
+off area and accuracy in this category.
+
+
+\subsubsection{Numerical Programs}
+\label{bg:ssub:numerical_programs}
+
+The technique we have explored so far has only been limited to individual
+arithmetic expressions, for a complete numerical program transformation, not
+only is it necessary to support sequential execution of straight-line code,
+but also control-flow structures such as conditional branches and loops.
+Methods has been developed in~\cite{martel09} and~\cite{damouche15} to utilize
+program semantics and abstract interpretation~\cite{cousot77}.  However,
+both techniques can neither unroll loops partially, nor optimize across loop
+boundaries.  Furthermore, they optimizes specifically numerical accuracy, and
+Martel~\cite{martel09} found that frequently this technique produces much
+slower implementations, while we also consider performance, by improving
+accuracy, latency and the resource usage of programs.
+
+In the next section, we delve deeper into intermediate representations that are
+designed for program optimization.
