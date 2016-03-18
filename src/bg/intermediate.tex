@@ -1,35 +1,76 @@
 \section{Intermediate Representations}
-\label{bg:sec:intermediate_representations}
+\label{bg:sec:intermediate}
 
-As we have discussed in Chapter~\ref{chp:introduction}, there are infinitely
-many ways to rewrite numerical programs, and often these equivalent programs
-have identical resource usage, latency and accuracy characteristics.  For this
-we need to reduce the search space of equivalent programs using an alternative
-representation of the original program, which are called \emph{intermediate
-representations} (IR).  These representations include \emph{static} and
-\emph{dynamic single assignment forms} (SSA, DSA)~\cite{rau92, cytron91},
-and \emph{control and data flow graphs} (CDFG)~\cite{gajski94}.  These IRs
-are however less suitable for our work because they are all statement-based
-and do not identify as many equivalent programs as MIRs do.  Dependence
-graphs~\cite{rau94}, on the other hand, are designed for the purpose of
-capturing data-flow dependences in polyhedral methods, but they generally do
-not preserve enough information for us to reconstruct a program from the graph
-itself.
+In this section, we delve deeper into intermediate representations that are
+designed for program optimization.
+
+The structural optimization of general numerical programs is much more complex
+than that of arithmetic expressions.  The reasons are two-fold.  First,
+during program execution, variables are often updated with new values.  Our
+optimization should therefore perform static analysis on the values of
+variables, and use the result to optimize specifically for the trade-off
+between accuracy and resource usage.  Second, it is much more difficult to
+formally define program equivalence, and subsequently, to search efficiently
+for optimized equivalent programs.  We proceed to explain further why this is
+the case.
+
+For instance, even without the introduction of branches and loops, the
+following two programs in Figure~\ref{bg:fig:equiv_progs} are equivalent, but
+syntactically, they are very different.
+\begin{figure}[ht]
+    \centering
+    \subfloat[$P_1$]{%
+        \shortstack[l]{%
+            \texttt{x = x + 1;} \\
+            \texttt{y = 2 * x;} \\
+            \texttt{x = x + 3;}
+        }
+    } \qquad \qquad
+    \subfloat[$P_2$]{%
+        \shortstack[l]{%
+            \texttt{y = x + 1;} \\
+            \texttt{x = y;} \\
+            \texttt{y = y * 2;} \\
+            \texttt{x = x + 3;}
+        }
+    }
+    \caption{%
+        Two programs that are equivalent but syntactically different.
+    }\label{bg:fig:equiv_progs}
+\end{figure}
+
+In fact, one can easily imagine infinitely many ways to rewrite numerical
+programs, and often these equivalent programs have identical resource usage,
+latency and accuracy characteristics.  In practice, it is desirable to
+eliminate as much as possible the need for these syntactic rewrites that do not
+affect our performance metrics, so that the search space of equivalent programs
+is greatly reduced.
+
+For this, we typically use an alternative representation of the original
+program, which are called \emph{intermediate representations} (IRs).  These
+representations include \emph{static} and \emph{dynamic single assignment
+forms} (SSA, DSA)~\cite{rau92, cytron91}, and \emph{control and data flow
+graphs} (CDFG)~\cite{gajski94}.  These IRs are however less suitable for
+our work because they are all statement-based and do not identify as many
+equivalent programs as MIRs do.  Dependence graphs~\cite{rau94}, on the other
+hand, are designed for the purpose of capturing data-flow dependences in
+polyhedral methods, but they generally do not preserve enough information for
+us to reconstruct a program from the graph itself.
 
 In software, \emph{equality saturation} is proposed in~\cite{tate09}.  It
-creates a new intermediate representation, PEG, similar to our MIR, to
-encode the effects of executing the program, and used to discover equivalent
-structures.  The differences between PEG and our MIR is that, instead of using
-graphs with cycles in them to represent \whilelit~loops, we use a directed
-acyclic graph to encode programs and use a \emph{fixpoint} operator to define
-recursive functions which can be used to represent loops.  Cycles in graphs
-require reanalyzing a large proportion of the IR whenever a structural
+creates a new intermediate representation, PEG, to encode the effects of
+executing the program, and used to discover equivalent structures.  The
+differences between PEG and what is required by us is that, instead of using
+graphs with cycles in them to represent \whilelit~loops, we must use a
+directed acyclic graph to encode programs and use a \emph{fixpoint} operator
+to define recursive functions which can be used to represent loops.  Cycles in
+graphs require reanalyzing a large proportion of the IR whenever a structural
 modification is made, whereas a tree structure can be reasoned in a bottom-up
 hierarchy.  This has significant implications on program transformation.
 First, for the above reason, their approach does not use semantics to optimize
-for numerical accuracy, while our method reasons about semantics and utilize
-them to steer optimization routes.  Moreover, tree structure allows us to
-easily support partial loop unrolling by simply extending the equivalence
+for numerical accuracy, while we want our method to reason about semantics
+and utilize them to steer optimization.  Moreover, tree structure allows us
+to easily support partial loop unrolling by simply extending the equivalence
 relations while avoiding re-evaluation.  In contrast, like~\cite{martel09}
 and~\cite{damouche15}, equality saturation is unable to perform partial loop
 unrolling.

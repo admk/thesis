@@ -3,9 +3,9 @@
 
 In this section, we explain existing optimization methods to restructure
 numerical programs with arithmetic equivalences.  Because general numerical
-program, consisting of program statements, conditional branches and loops,
-supersedes arithmetic expressions, we start by introducing approaches that
-optimizes expressions, followed by general numerical programs.
+programs---consisting of program statements, conditional branches and
+loops---supersede arithmetic expressions, we start by introducing optimization
+methods of expressions, followed by those of general numerical programs.
 
 
 \subsubsection{Arithmetic Expressions}
@@ -85,13 +85,15 @@ The technique we have explored so far has only been limited to individual
 arithmetic expressions, for a complete numerical program transformation, not
 only is it necessary to support sequential execution of straight-line code,
 but also control-flow structures such as conditional branches and loops.
-Methods has been developed in~\cite{martel09} and~\cite{damouche15} to utilize
-program semantics and abstract interpretation~\cite{cousot77}.  However,
-both techniques can neither unroll loops partially, nor optimize across loop
-boundaries.  Furthermore, they optimizes specifically numerical accuracy, and
-Martel~\cite{martel09} found that frequently this technique produces much
-slower implementations, while we also consider performance, by improving
-accuracy, latency and the resource usage of programs.
-
-In the next section, we delve deeper into intermediate representations that are
-designed for program optimization.
+Methods has been developed by Tate~\etal~\cite{tate09}, Martel~\cite{martel09}
+and Damouche~\etal~\cite{damouche15} to utilize program semantics and
+abstract interpretation~\cite{cousot77}.  However, all of these techniques
+can neither unroll loops partially, nor optimize across loop boundaries.
+Tate~\etal~\cite{tate09} however specifically target discovering equivalent
+structures only.  As we have discussed in Section~\ref{bg:sec:intermediate},
+it is difficult to optimize for numerical accuracy by using their approach.
+Martel~\cite{martel09} and Damouche~\etal~\cite{damouche15} optimize
+numerical accuracy only, and both do not optimize across basic blocks.
+Furthermore, Martel found that frequently their technique produces much slower
+implementations, while we also consider performance, by improving accuracy,
+latency and the resource usage of programs.
