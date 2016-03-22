@@ -4,46 +4,20 @@
 Our previous chapter introduced a new methodology to efficiently restructure
 arithmetic expressions for the optimized trade-off between two performance
 metrics, \ie~numerical accuracy when evaluated and area usage in synthesized
-FPGA implementations.  However, this method has a substantial limitation when
+FPGA implementations.  This method however has a substantial limitation when
 applied to general numerical programs, that is, it can only be applied to
 straight-line codes without control structures such as branches and loops.
 
-The structural optimization of general numerical programs is much more complex
-than that of arithmetic expressions.  The reasons are two-fold.  First,
-during program execution, variables are often updated with new values.  Our
-optimization should therefore perform static analysis on the values of
-variables, and use the result to optimize specifically for the trade-off
-between accuracy and resource usage.  Second, it is much more difficult to
-formally define program equivalence, and subsequently, to search efficiently
-for optimized equivalent programs.  For instance, even without the introduction
-of branches and loops, the following two programs are equivalent, but
-syntactically, they are very different.  In practice, it is desirable to
-eliminate as much as possible the need for these syntactic rewrites that do not
-affect our performance metrics.
+\todo{Fix this.}
+We explored in Section~\ref{bg:sec:intermediate} of
+Chapter~\ref{chp:background} various intermediate representations designed for
+program transformation, 
 
-\begin{figure}[ht]
-    \centering
-    \subfloat[$P_1$]{%
-        \shortstack[l]{%
-            \texttt{x = x + 1;} \\
-            \texttt{y = 2 * x;} \\
-            \texttt{x = x + 3;}
-        }
-    } \qquad \qquad
-    \subfloat[$P_2$]{%
-        \shortstack[l]{%
-            \texttt{y = x + 1;} \\
-            \texttt{x = y;} \\
-            \texttt{y = y * 2;} \\
-            \texttt{x = x + 3;}
-        }
-    }
-    \caption{Two programs that are equivalent but syntactically different.}
-    \label{po:fig:equiv_progs}
-\end{figure}
+In this chapter, we therefore provide a solution to the above limitation, by
+presenting a new intermediate representation to specifically tackle the program
+equivalences.
 
-Therefore, in this chapter, we provide answers to these two above issues.  In
-the meantime, we propose a new general \emph{program} optimization technique
+In the meantime, we propose a new general \emph{program} optimization technique
 for numerical algorithms, which allows \texttt{if} statements as well as
 \texttt{while} loops, and developed its accompanied tool, \newsoap, to enable
 the joint optimization of accuracy and resource usage, as well as the trade-off
