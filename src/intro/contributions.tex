@@ -1,4 +1,5 @@
 \section{Contributions}
+\label{intro:sec:contributions}
 
 In this section, we summarize the following original major contributions in
 this thesis:
@@ -7,29 +8,31 @@ this thesis:
     \item a new expression-based intermediate representation, metasemantic
     intermediate representation, developed based on the formal semantics of
     programs, to safely and considerably reduce the size of the search space of
-    equivalent programs;
+    equivalent programs~\cite{soap2};
 
-    \item an efficient algorithm to discover equivalent MIRs through bottom-up
-    hierarchy, graph partitioning, and intelligent pruning of optimization
-    candidates by performing accuracy, area estimation and latency analysis;
+    \item an efficient algorithm to discover equivalent expressions and MIRs
+    through bottom-up hierarchy, graph partitioning, and intelligent pruning of
+    optimization candidates by performing accuracy, area estimation and latency
+    analysis~\cite{soap};
 
     \item for the first time we bring together standard program equivalences
     that do not affect program behavior (\eg~loop/branch splitting/merging,
     partial loop unrolling, rules that removes extraneous array accesses), and
     non-standard transformation rules (\eg~arithmetic rules), to be used in a
     novel way to significantly impact latency, resource usage and accuracy of a
-    numerical program;
+    numerical program~\cite{soap3};
 
     \item an accuracy analysis based on abstract interpretation to calculate
     bounds on the output and their corresponding round-off errors of a given
-    optimized candidate;
+    optimized expression~\cite{soap} or program candidate~\cite{soap2};
 
     \item a scheduling analysis that estimates the latency and resource usage
-    of a given optimized candidate; and
+    of a given optimized candidate~\cite{soap3}; and
 
     \item incorporating the above-mentioned techniques, the first optimizer to
     \emph{automatically} and \emph{safely} to produce optimized programs (and
     subsequent RTL implementations with Vivado HLS) on the three-dimensional
-    Pareto frontier of options that trade off run time, accuracy, and area.
+    Pareto frontier of options that trade off run time, accuracy, and
+    area~\cite{soap3}.
 
 \end{itemize}
