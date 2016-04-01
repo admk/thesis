@@ -105,12 +105,12 @@ is not always possible to represent exact values with it. Computations in
 floating-point arithmetic often induces roundoff errors. Therefore, following
 Martel~\cite{martel07}, we bound with ranges the values of floating-point
 calculations, as well as their roundoff errors. Our accuracy analysis
-determines the bounds of all possible outputs and their associated range
-of roundoff errors for expressions. For example, assume that $a \in [0.2,
-0.3]$, $b \in [2.3, 2.4]$, it is possible to derive that in single precision
-floating-point computation with rounding to the nearest, ${(a + b)}^2 \in
-[6.24999857, 7.29000187]$ and the error caused by this computation is bounded
-by $[-1.60634534\times10^{-6}, 1.60634534\times10^{-6}]$.
+determines the bounds of all possible outputs and their associated range of
+roundoff errors for expressions. For example, assume that real variables $a
+\in [0.2, 0.3]$, $b \in [2.3, 2.4]$, it is possible to derive that in single
+precision floating-point computation with rounding to the nearest, ${(a + b)}^2
+\in [6.24999857, 7.29000187]$ and the error caused by this computation is
+bounded by $[-1.60634534\times10^{-6}, 1.60634534\times10^{-6}]$.
 
 We employ abstract error semantics for the calculation of errors described
 in~\cite{ioualalen, martel07}. First we define the domain $\errorset
@@ -152,14 +152,14 @@ defined for the semantics as in~\eqref{bg:eq:error_semantics}:
     \label{bg:eq:error_semantics}
 \end{equation}
 
-The addition, subtraction and multiplication of intervals follow the standard
-rules of interval arithmetic defined earlier in~\eqref{bg:eq:interval_operations}.
-In~\eqref{bg:eq:error_semantics}, the function $\rounddownop: \intervalset \to
-\intervalset$ determines the range of roundoff error due to the floating-point
-computation under one of the rounding modes $\circ \in \{ -\infty, \infty, 0,
-\neg0, \sim \}$ which are round towards negative infinity, towards infinity,
-towards zero, away from zero and towards nearest floating-point value
-respectively. It is defined as:
+The addition, subtraction and multiplication of intervals follow
+the standard rules of interval arithmetic defined earlier
+in~\eqref{bg:eq:interval_operations}.  In~\eqref{bg:eq:error_semantics}, the
+function $\rounddownop: \intervalset \to \intervalset$ determines the range
+of roundoff error due to the floating-point computation under one of the
+\emph{rounding modes} $\circ \in \{ -\infty, \infty, 0, \neg0, \sim \}$ which
+are round towards negative infinity, towards infinity, towards zero, away from
+zero and towards nearest floating-point value respectively. It is defined as:
 \begin{equation}
     \begin{aligned}
         & \downarrow^\sharp_\circ([a, b]) = \left\{
@@ -185,7 +185,18 @@ where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
 floating-point format as defined in~\eqref{bg:eq:floating_point}. The function
 $\roundupop: \intervalset \to \floatintervalset$ computes the floating-point
 bound from a real bound, by rounding the infimum $a$ and supremum $b$ of the
-input interval $[a, b]$.
+input interval $[a, b]$:
+\begin{equation}
+    \roundupop\left(\left[a, b\right]\right)
+    = {\left[
+        \uparrow_\circ{\left(a\right)},
+        \uparrow_\circ{\left(b\right)}
+    \right]}_\floatset
+\end{equation}
+where the subscript $\floatset$ indicates the interval is a floating-point
+interval, and we define $\uparrow_\circ: \realset \to \floatset$ to be the
+function that rounds a real number to a floating-point value, under the
+rounding mode $\circ$.
 
 Expressions can be evaluated for their accuracy by the method as follows.
 Initially the expression is parsed into a data flow graph (DFG). By way of
@@ -194,13 +205,18 @@ in Figure~\ref{bg:fig:sample_tree}. Then the exact ranges of values of $a$ and
 $b$ are converted into the abstract semantics using a cast operation as in
 \eqref{bg:eq:cast}:
 \begin{equation}
-    cast(x^\sharp) = (\roundup{x^\sharp}, \rounddown{x^\sharp})
+    \mathrm{cast}\left(x^\sharp\right) = \left(
+        \roundup{x^\sharp}, \rounddown{x^\sharp}
+    \right)
     \label{bg:eq:cast}
 \end{equation}
-For example, for the variable $a \in [0.2, 0.3]$ under single precision
+For example, for the real variable $a \in [0.2, 0.3]$ under single precision
 with rounding to nearest,
 \begin{equation}
-    cast([0.2, 0.3]) = ([0.200000003, 0.300000012], [-1/67108864, 1/67108864])
+    \mathrm{cast}\left([0.2, 0.3]\right) = \left(
+        {\left[0.200000003, 0.300000012\right]}_\floatset,
+        \left[-1/67108864, 1/67108864\right]
+    \right)
 \end{equation}
 After this, the propagation of bounds in the data flow graph is carried out as
 described in Section~\ref{bg:sub:intervals}, where the difference is the abstract
