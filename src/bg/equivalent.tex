@@ -74,24 +74,24 @@ related by rules of equivalence. However it restricts itself to only a handful
 of these rules to avoid combinatorial explosion of the structure and there are
 no options for tuning its optimization level.
 
-Our tool, \soap{} was therefore designed to be the only tool that could trade
-off area and accuracy in this category.
+The tool, \soap{}, proposed in this thesis was therefore designed to be the
+only tool that could trade off area and accuracy in this category.
 
 
 \subsection{Numerical Programs}
 \label{bg:sub:numerical_programs}
 
 The technique we have explored so far has only been limited to individual
-arithmetic expressions, for a complete numerical program transformation, not
+arithmetic expressions; for a complete numerical program transformation, not
 only is it necessary to support sequential execution of straight-line code,
 but also control-flow structures such as conditional branches and loops.
 Methods has been developed by Tate~\etal~\cite{tate09}, Martel~\cite{martel09}
 and Damouche~\etal~\cite{damouche15} to utilize program semantics and
 abstract interpretation~\cite{cousot77}.  However, all of these techniques
 can neither unroll loops partially, nor optimize across loop boundaries.
-Tate~\etal~\cite{tate09} however specifically target discovering equivalent
-structures only.  As we have discussed in Section~\ref{bg:sec:intermediate},
-it is difficult to optimize for numerical accuracy by using their approach.
+Tate~\etal~\cite{tate09} specifically target discovering equivalent structures
+only, it is however difficult to optimize for numerical accuracy using
+their approach, as we have discussed in Section~\ref{bg:sec:intermediate}.
 Martel~\cite{martel09} and Damouche~\etal~\cite{damouche15} optimize
 numerical accuracy only, and both do not optimize across basic blocks.
 Furthermore, Martel found that frequently their technique produces much slower

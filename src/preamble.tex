@@ -51,7 +51,7 @@
 \usepackage{subfig}
 \usepackage{textgreek}  % for \textmu
 \usepackage{tikz}       % graphs
-\usepackage{todonotes}
+\usepackage[obeyDraft,textsize=tiny]{todonotes}
 \usepackage{verbatim}
 
 \addbibresource{intro/publications.bib}
@@ -156,6 +156,7 @@
 \newcommand{\greedytrace}{\texttt{greedy\_trace}}
 
 % math
+\newtheorem{definition}{Definition}[chapter]
 \newtheorem{corollary}{Corollary}[chapter]
 \newtheorem{theorem}{Theorem}[chapter]
 \newtheorem{lemma}{Lemma}[chapter]
@@ -163,8 +164,8 @@
 % program objects
 \newcommand{\inttype}{\texttt{int}}
 \newcommand{\floattype}{\texttt{float}}
-\newcommand{\aexprset}{\ensuremath\mathbf{ArithExpr}}
-\newcommand{\bexprset}{\ensuremath\mathbf{BoolExpr}}
+\newcommand{\aexprset}{\ensuremath\mathbf{AExpr}}
+\newcommand{\bexprset}{\ensuremath\mathbf{BExpr}}
 \newcommand{\stmtset}{\ensuremath\mathbf{Stmt}}
 
 % program syntax
@@ -193,6 +194,7 @@
     \ensuremath\forlit \left(#1\right) \dolit \left(#2\right)}
 
 % metasemantic syntax
+\newcommand{\binopset}{\ensuremath\mathbf{BinOp}}
 \newcommand{\qop}{\ensuremath\mathbin{?}}
 \newcommand{\colonop}{\ensuremath\mathbin{:}}
 \newcommand{\select}[3]{\ensuremath#1\qop#2\colonop#3}

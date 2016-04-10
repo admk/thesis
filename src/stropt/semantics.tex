@@ -5,9 +5,9 @@
 
 In Section~\ref{bg:sub:accuracy} of Chapter~\ref{chp:background}, we described
 a technique to analyze the round-off error of evaluating an expression tree.
-Throughout this chapter, we use the function $\error: \exprset\to\errorset$ to
-represent the above-mentioned analysis of evaluation accuracy, where $\exprset$
-denotes the set of all expressions.
+Throughout this chapter, we use the function $\error: \aexprset\to\errorset$ to
+represent the above-mentioned analysis of evaluation accuracy, where $\aexprset$
+denotes the set of all arithmetic expressions.
 
 
 \subsection{Resource Usage Analysis}
@@ -19,13 +19,14 @@ elimination. This is important as, for example, rewriting $a \times b + a
 \times c) + {(a \times b)}^2$ causes the common subexpression $a \times b$ to
 be no longer present in both terms. Our analysis must capture this.
 
-The analysis proceeds by labelling subexpressions. Intuitively, the set of
-labels $\labelset$, is used to assign unique labels to unique expressions,
-so it is possible to easily identify and reuse them. For convenience, let
-the function $\fresh: \exprset\to\labelset$ assign a distinct label to each
-expression or variable, where $\exprset$ is the set of all expressions. Before
+The analysis proceeds by labelling subexpressions. Intuitively, the
+set of labels $\labelset$, is used to assign unique labels to unique
+expressions, so it is possible to easily identify and reuse them. For
+convenience, let the function $\fresh: \aexprset\to\labelset$ assign a
+distinct label to each expression or variable, where $\aexprset$ is the set
+of all expressions.  It is noteworthy that $\fresh$ is a bijection. Before
 we introduce the labeling semantics, we define the environment $\lambda:
-\labelset\to\exprset\cup\{\bot\}$, which is a function that maps labels to
+\labelset\to\aexprset\cup\{\bot\}$, which is a function that maps labels to
 expressions, and $\env{}$ denotes the set of such environments. A label $l$ in
 the domain of $\lambda\in\env{}$ that maps to $\bot$ indicates that $l$ does
 not map to an expression. An element $(l, \lambda)\in\labelset\times\env{}$
@@ -112,7 +113,7 @@ value $A_\circ$ denotes the number of LUTs per $\circ$ operator, which is
 dependent on the type of the operator and the floating-point format used to
 generate the operator.
 
-In the following sections, we use the function $\area: \exprset\to\naturalset$
+In the following sections, we use the function $\area: \aexprset\to\naturalset$
 to denote our resource usage analysis.
 
 \subsection{Equivalent Expressions Analysis}
@@ -131,145 +132,260 @@ functions to discover them.
 \subsubsection{Discovering Equivalent Expressions}
 
 From an expression, a set of equivalent expressions can be discovered by our
-\emph{equivalence relation} $\eqrel$ on the set of all expressions $\exprset$,
-and $\eqrel \subset \exprset\times\exprset$.  It is noteworthy that a relation
-is said to be an equivalence relation when it is reflexive, symmetric and
-transitive, \ie~for all $e_1, e_2, e_3 \in \exprset$, we have the following
-rules in our inference system:
+\emph{equivalence relation} $\eqrel$ on the set of all arithmetic expressions
+$\aexprset$, and $\eqrel \subset \aexprset\times\aexprset$.  It is noteworthy
+that a relation is said to be an equivalence relation when it is reflexive,
+symmetric and transitive, \ie~for all $e_1, e_2, e_3 \in \aexprset$, we
+have the following rules in our inference system:
 \begin{equation}
-    \begin{aligned}
-        \text{Reflexivity}
-            &: e_1 \eqrel e_1 \\
-        \text{Symmetry}
-            &: \text{~if~} e_1 \eqrel e_2,
-            \text{~then~} e_2 \eqrel e_1 \\
-        \text{Transitivity}
-            &: \text{~if~} e_1 \eqrel e_2 \text{~and~} e_2 \eqrel e_3,
-            \text{~then~} e_1 \eqrel e_3.
+    \begin{aligned}{}
+        & [\mathrm{Reflexivity}] & \quad &
+            e_1 \eqrel e_1 \\
+        & [\mathrm{Symmetry}] & \quad &
+            \inference{e_1 \eqrel e_2}{e_2 \eqrel e_1} \\
+        & [\mathrm{Transitivity}] & \quad &
+            \inference{e_1 \eqrel e_2 \wedge e_2 \eqrel e_3}{e_1 \eqrel e_3}
     \end{aligned}
     \label{so:eq:equivalence_relation}
 \end{equation}
+Here, a rule of the form $\inference{a}{b}$ means that if the formula $a$ is
+true, then $b$ also holds.
 
-We extend our inference system with additional rules that relate equivalent
-expressions.  Let's define $e_1, e_2, e_3 \in \exprset$, $v_1, v_2, v_3 \in
-\realset$, and $\circ \in \{+, \times\}$.  First, the arithmetic rules are:
+We extend our inference system with additional arithmetic rules that relate
+equivalent expressions.  Let's define $e_1, e_2, e_3 \in \aexprset$, $v_1, v_2,
+v_3 \in \realset$.  Firstly, we start with a set of associativity rules:
 \begin{equation}
-    \begin{aligned}
-        \text{Associativity}(\circ)
-            &: (e_1 \circ e_2) \circ e_3 \eqrel e_1 \circ (e_2 \circ e_3) \\
-        \text{Commutativity}(\circ)
-            &: e_1 \circ e_2 \eqrel e_2 \circ e_1 \\
-        \text{Distributivity}
-            &: e_1 \times (e_2 + e_3) \eqrel e_1 \times e_2 + e_1 \times e_3
+    \begin{aligned}{}
+        & [\mathrm{Assoc}_1] & \quad &
+            \forall \circ \in \{ +, \times \}:
+            (e_1 \circ e_2) \circ e_3 \eqrel e_1 \circ (e_2 \circ e_3) \\
+        & [\mathrm{Assoc}_2] & \quad &
+            \forall \circ \in \{ +, \times, / \}:
+            (e_1 \circ e_2) \circ e_3 \eqrel (e_1 \circ e_3) \circ e_2 \\
+        & [\mathrm{Assoc}_3 (/)] & \quad &
+            (e_1 / e_2) / e_3 \eqrel e_1 / (e_2 \times e_3) \\
+        & [\mathrm{Assoc}_4 (/)] & \quad &
+            e_1 / (e_2 / e_3) \eqrel e_1 \times e_3 / e_2
     \end{aligned}
-    \label{so:eq:equivalence_arithmetic}
 \end{equation}
-Secondly, the reduction rules are:
+Secondly, we define commutativity rules for addition and multiplication:
 \begin{equation}
-    \begin{aligned}
-        \text{Identity}(\times)
-            &: e_1 \times 1 \eqrel e_1 \quad &
-        \text{Zero Propagation}
-            &: e_1 \times 0 \eqrel 0 \\
-        \text{Identity}(+)
-            &: e_1 + 0 \eqrel e_1 &
-        \text{Constant Propagation}(\circ)
-            &: \inference{v_3 = v_1 \circ v_2}{v_1 \circ v_2 \eqrel v_3}
+    [\mathrm{Commut}] \quad
+    \forall \circ \in \{ +, \times \}: e_1 \circ e_2 \eqrel e_2 \circ e_1
+\end{equation}
+Thirdly, distributivity rules enable further equivalent expressions to be
+explored with our relation:
+\begin{equation}
+    \begin{aligned}{}
+        & [\mathrm{Distrib}_1] & \quad &
+            \forall \circ \in \{ \times, / \}:
+            e_1 \circ e_3 + e_2 \circ e_3 \eqrel (e_1 + e_2) \circ e_3 \\
+        & [\mathrm{Distrib}_2 (\times)] & \quad &
+            e_1 + e_1 \times e_2 \eqrel (1 + e_2) \times e_1 \\
+        & [\mathrm{Distrib}_3 (\times)] & \quad &
+            e_1 + e_1 \eqrel 2 \times e_1 \\
+        & [\mathrm{Distrib}_4 (/)] & \quad &
+            e_1 + e_2 / e_3 \eqrel (e_1 \times e_3 + e_2) / e_3 \\
+        & [\mathrm{Distrib}_5 (/)] & \quad &
+            e_1 / e_3 + e_2 / e_4 \eqrel
+            (e_1 \times e_4 + e_2 \times e_3) / (e_3 \times e_4) \\
+        & [\mathrm{Distrib}_6] & \quad &
+            \forall \circ \in \{ +, - \}:
+            -(e_1 \circ e_2) \eqrel (-e_1) \circ (-e_2) \\
+        & [\mathrm{Distrib}_7] & \quad &
+            \forall \circ \in \{ \times, / \}:
+            -(e_1 \circ e_2) \eqrel (-e_1) \circ e_2 \eqrel e_1 \circ (-e_2)
+    \end{aligned}
+\end{equation}
+The following rule rewrites an expression with subtraction into an addition:
+\begin{equation}
+    [\mathrm{Subtract}] \quad
+    e_1 - e_2 \eqrel e_1 + (-e_2)
+\end{equation}
+Finally, the reduction rules are as follows, where we define $\binopset = \{ +,
+-, \times, / \}$ to be the set of binary operators:
+\begin{equation}
+    \begin{aligned} &
+        \begin{aligned}{}
+            & [\mathrm{Identity}_1] &~&
+                \forall \circ \in \{ \times, / \}:
+                e_1 \circ 1 \eqrel e_1
+                & \quad
+            & [\mathrm{Elim}_1 (-)] &~&
+                e_1 - e_1 \eqrel 0
+                \\
+            & [\mathrm{Identity}_2] &~&
+                \forall \circ \in \{ +, - \}:
+                e_1 \circ 0 \eqrel e_1
+                & \quad
+            & [\mathrm{Elim}_2 (/)] &~&
+                e_1 / e_1 \eqrel 1
+                \\
+            & [\mathrm{ZeroProp} (\times)] &~&
+                0 \times e_1 \eqrel 0
+                & \quad
+            & [\mathrm{DoubleNeg} (-)] &~&
+                -(-e_1) \eqrel e_1
+                \\
+        \end{aligned} \\ &
+        \begin{aligned}{}
+            & [\mathrm{ConstProp_1}] &~&
+            \inference{%
+                (v_3 = v_1 \circ v_2) \wedge
+                (\circ \in \binopset)
+            }{%
+                v_1 \circ v_2 \eqrel v_3
+            } \\
+            & [\mathrm{ConstProp_2} (-)] &~&
+            \inference{%
+                v_2 = -v_1
+            }{%
+                -v_1 \eqrel v_2
+            }
+        \end{aligned}
     \end{aligned}
     \label{so:eq:equivalence_reduction}
 \end{equation}
-The Constant Propagation rule states that if an expression is a
-summation/multiplication of two values, then it can be simply evaluated to
-produce the result. Finally, the following two allow structural induction on
-expression trees, \eg~it is possible to derive that $a + (b + c) \eqrel a + (c
-+ b)$ from $b + c \eqrel c + b$:
+The $\mathrm{ConstProp}_1$ rule states that if an expression is an arithmetic
+operation of two constant values, then it can be simply evaluated to produce
+the result; whereas $\mathrm{ConstProp}_2$ rewrites an expression that has a
+negation on a constant value into a single constant. Finally, the following two
+allow structural induction on expression trees, \eg~it is possible to derive
+that $a + (b + c) \eqrel a + (c + b)$ from $b + c \eqrel c + b$:
 \begin{equation}
     \begin{aligned}
-        \text{Tree}(\circ)
-            : \inference{e_1 \eqrel e_2}{e_3 \circ e_1 \eqrel e_3 \circ e_2}
-        \quad &
-        \text{Tree}^\prime(\circ)
-            : \inference{e_1 \eqrel e_2}{e_1 \circ e_3 \eqrel e_2 \circ e_3}
+        & [\mathrm{Tree}_1] &~&
+        \inference{%
+            \left( e_1 \eqrel e_2 \right) \wedge
+            \left( e_3 \eqrel e_4 \right) \wedge
+            \left( \circ \in \binopset \right)
+        }{%
+            e_1 \circ e_3 \eqrel e_2 \circ e_4
+        } \\
+        & [\mathrm{Tree}_2] &~&
+        \inference{%
+            e_1 \eqrel e_2
+        }{%
+            -e_1 \eqrel -e_2
+        }
     \end{aligned}
     \label{so:eq:equivalence_tree}
 \end{equation}
 
 We say that $e_1$ is equivalent to $e_2$ if and only if $e_1 \eqrel e_2$ For
-some expressions $e_1$ and $e_2$.  Although for simplicity, we have not defined
-rules for subtraction and division, these rules can be easily added and are
-present in our framework.
+some expressions $e_1$ and $e_2$.  Many rules are considered redundant and thus
+excluded from our equivalence relation, as these can be derived by combining
+rules from our inference system.  For instance, $e_1 \times (e_2 + e_3) \eqrel
+e_1 \times e_2 + e_1 \times e_3$ can be derived by using $\mathrm{Distrib}_1$,
+in tandem with the $\mathrm{Commut}$ rule.
 
 
 \subsubsection{Scalable Methods}
 
-The above rules of equivalence relates an expression with all of its equivalent
+The above rules of equivalence relate an expression with all of its equivalent
 expressions.  In general because of combinatorial explosion, the set of all
 equivalent expressions is so large to be derived, which motivates us to develop
 scalable methods that execute fast enough even with large expressions.
 
-Instead of deriving the full set of equivalent expressions, we can define
-a new relation $\eqgenrel$, a subset of $\eqrel$, which is identical to
-our equivalent relation $\eqrel$ except that we do not have transitivity
-in~\eqref{so:eq:equivalence_relation} from $\eqrel$, to generate equivalent
-expressions in a series of steps.
+Instead of deriving the full set of equivalent expressions, we can
+define a new relation $\eqgenrel$, a subset of $\eqrel$, which
+is identical to our equivalent relation $\eqrel$ except that we
+place a few restrictions on the relation.  Firstly, we do not have
+transitivity in~\eqref{so:eq:equivalence_relation} from $\eqrel$, as
+we can have the flexibility to apply $\eqgenrel$ in a series of steps
+to generate equivalent expressions.  Secondly, we further disallow
+symmetry in~\eqref{so:eq:equivalence_relation} for the reduction rules
+in~\ref{so:eq:equivalence_reduction} to reduce the space-time complexity of the
+search space, because often performance metrics, such as accuracy and resource
+usage, improve when the number of terms in the expression is reduced.
 
-We define the function $\eqstep: \powersetof\exprset\to\powersetof\exprset$,
-where $\powersetof\exprset$ denotes the power set of $\exprset$, which
-generates a (possibly larger) set of equivalent expressions from an initial set
-of equivalent expressions by one step of $\eqgenrel$, that is:
+\begin{definition}
+    We call a function an \emph{equivalent expression generator} (EEG) function
+if and only if the function takes as an input an initial set of equivalent
+expressions, and generates a set of equivalent expressions.
+\end{definition}
+
+For instance, an EEG function $\eqstep: \powersetof\aexprset \to
+\powersetof\aexprset$, where $\powersetof\aexprset$ denotes the power set of
+$\aexprset$, can be defined as follows:
 \begin{equation}
     \eqstep(\epsilon) = \left\{
-        e^\prime\in\exprset \mid
+        e^\prime\in\aexprset \mid
         e \eqgenrel e^\prime \wedge e\in\epsilon\right\}
     \label{so:eq:eqstep}
 \end{equation}
 where $\epsilon$ is a set of equivalent expressions.
+
+\begin{definition}
+    We say an EEG function $f$ is \emph{$\cup$-distributive} if and only if
+    the function satisfies $f(\epsilon_a \cup \epsilon_b) = f(\epsilon_a) \cup
+    f(\epsilon_b)$.
+\end{definition}
 \begin{corollary}
-    By the definition of $\eqstep$ in~\eqref{so:eq:eqstep}, $\eqstep(\epsilon_a
-    \cup \epsilon_b) = \eqstep(\epsilon_a) \cup \eqstep(\epsilon_b)$.
-    \label{so:cor:union}
+    By the definition of $\eqstep$ in~\eqref{so:eq:eqstep}, it is clear that
+    $\eqstep$ is $\cup$-distributive.
+    {}\label{so:cor:union}
 \end{corollary}
 
-From this, we may note that we can define a function
-$\eqstep^{\star:N}(\epsilon)$ to generate a set of equivalent expressions,
-by taking the union of $N$ steps of $\eqstep$ of $\epsilon$, as given by the
-following formula:
+\renewcommand{\closure}{\ensuremath\mathsf{cl}}
+
+We further define a functional $\closure_N: ( \powersetof\aexprset \to
+\powersetof\aexprset ) \to ( \powersetof\aexprset \to$ $\powersetof\aexprset
+)$, which takes as an input a EEG function and produces another EEG function:
 \begin{equation}
-    \eqstep^{\star:N}(\epsilon) = \bigcup_{i = 0}^N \eqstep^i(\epsilon)
+    f^\prime (\epsilon) \stackrel{\text{def}}=
+        \bigcup_{i = 0}^N f^i(\epsilon),
+    \text{~where~} f^\prime = \closure_N (f)
     \label{so:eq:transitive_generator}
 \end{equation}
-Here we define:
+here, $f$ and $f^\prime$, respectively the input and output of $\closure_N$,
+are both EEG functions.  In the rest of the section, we omit the brackets
+surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N (f)$ can
+be written as $\closure_N f$.  We further define the meaning of $f^i$ with the
+following equations:
 \begin{equation}
     \begin{aligned}
-        \eqstep^0(\epsilon) &= \epsilon \quad \text{and~} \\
-        \eqstep^i(\epsilon) &= \eqstep\left(
-            \eqstep^{i - 1}\left(\epsilon\right)
+        f^0(\epsilon) &= \epsilon \quad \text{and~} \\
+        f^i(\epsilon) &= \eqstep\left(
+            f^{i - 1}\left(\epsilon\right)
         \right) \quad \text{for~} i \in \{ 0, 1, 2, \cdots \}
     \end{aligned}
 \end{equation}
-By allowing $N$ to approach $\infty$, we obtain the full set of equivalent
-expressions of $\epsilon$, \ie~the transitive closure:
-\begin{equation}
-    \eqstep^\star(\epsilon)
-    = \eqstep^{\star:\infty}(\epsilon)
-    = \bigcup_{i = 0}^\infty \eqstep^i(\epsilon)
-    \label{so:eq:transitive_closure}
-\end{equation}
 
 \begin{lemma}
-    $\eqstep^{\star:N}(\epsilon) = \epsilon \cup
-    \eqstep\left(\eqstep^{\star:N-1}(\epsilon)\right)$.
-    \label{so:lem:transitive}
+    $\closure_N f(\epsilon) = \epsilon \cup f \left( \closure_{N-1} f(\epsilon)
+    \right)$ for any $\cup$-distributive EEG function $f$.
+    {}\label{so:lem:transitive}
 \end{lemma}
 \begin{proof}
-    Following~\eqref{so:eq:transitive_generator}, $\eqstep^{\star:N}(\epsilon)
-    = \eqstep^0(\epsilon) \cup \eqstep^1(\epsilon) \cup \cdots \cup
-    \eqstep^N(\epsilon)$.  We then apply Corollary~\eqref{so:cor:union} to the
-    right-hand side to get $\epsilon \cup \eqstep\left( \eqstep^0(\epsilon)
-    \cup \eqstep^1(\epsilon) \cup \cdots \cup \eqstep^{N-1}(\epsilon)\right)$,
-    which equals to $\epsilon \cup \eqstep\left( \eqstep^{\star:N-1}(\epsilon)
-    \right)$ by definition.
+    Following~\eqref{so:eq:transitive_generator}, $\closure_N f(\epsilon) =
+    f^0(\epsilon) \cup f^1(\epsilon) \cup \cdots \cup f^N(\epsilon)$.  Because
+    $f$ is $\cup$-distributive, we apply distributivity to the right-hand side
+    to derive:
+    \begin{equation}
+        \closure_N f(\epsilon) = \epsilon \cup f\left(
+            f^0(\epsilon) \cup f^1(\epsilon) \cup \cdots \cup f^{N-1}(\epsilon)
+        \right)
+    \end{equation}
+    which equals to $\epsilon \cup f\left( \closure_{N-1} f(\epsilon) \right)$
+    by definition.
 \end{proof}
+
+As an example use of the functional $\closure_N$, we may note that we can
+substitute $f$ with $\eqstep$ in $\closure_N f (\epsilon)$ to generate a set
+of equivalent expressions, by taking the union of $N$ steps of $\eqstep$ of
+$\epsilon$.  By further allowing $N$ to approach $\infty$, we obtain the full
+set of equivalent expressions of $\epsilon$ that can be discovered using our
+inference system, \ie~the transitive closure of equivalent expressions related
+by $f$, from an initial set of equivalent expressions $\epsilon$:
+\begin{equation}
+    \closure_\infty \eqstep (\epsilon) =
+        \bigcup_{i = 0}^\infty \eqstep^i(\epsilon)
+    \label{so:eq:transitive_closure}
+\end{equation}
+We may further omit the $\infty$ from $\closure_\infty$ to denote the
+transitive closure, \eg~the above example in~\ref{so:eq:transitive_closure} can
+be simplified to be $\closure \eqstep (\epsilon)$.
 
 In practice, it is often infeasible to generate the full transitive closure of
 a given expression, we therefore impose further constraints on how we discover
@@ -282,14 +398,14 @@ equivalent expressions to be computed.
 
 Second, the complexity of equivalent expression finding is reduced by fixing
 the structure of subexpressions at a certain depth $k$ in the original
-expression.  The definition of depth is given as follows: first the root
-of the parse tree of an expression is assigned depth $d = 1$; then we
-recursively define the depth of a node as one more than the depth of its
-greatest-depth parent.  If the depth of the node is greater than $k$, then
-we fix the structure of its child nodes by disallowing any equivalence
-transformation beyond this node. We let $\eqstep_k$ denote this ``depth
-limited'' equivalence finding function, where $k$ is the depth limit used.  We
-use $\eqstep^{\star:N}_k$ and $\eqstep^\star_k$ to denote the functions to
+expression.  The definition of depth is given as follows: first the root of
+the parse tree of an expression is assigned depth $d = 1$; then we recursively
+define the depth of a node as one more than the depth of its greatest-depth
+parent.  If the depth of the node is greater than $k$, then we fix the
+structure of its child nodes by disallowing any equivalence transformation
+beyond this node. We let $\eqstep_k$ denote this ``depth limited'' equivalence
+finding function, where $k$ is the depth limit used.  We can then use
+$\closure_N \eqstep_k$ and $\closure \eqstep_k$ to denote the functions to
 respectively compute the union of $N$ steps of $\eqstep_k$ and the transitive
 closure. This approach is similar to Martel's depth limited equivalent
 expression transform~\cite{martel07}, however Martel's method eventually allows
@@ -302,23 +418,23 @@ that the full equivalence closure using the inference system we defined earlier
 in~\eqref{so:eq:transitive_closure} is at least $O({2n - 1}!!)$ where $n$ is
 the number of terms in an expression, as we discussed earlier.
 
-Finally, we use the iterative algorithm in Figure~\ref{so:alg:eqstep} to
-efficiently compute $\eqstep^{\star:N}_k$.  In each iteration, we keep track of
-the equivalent expressions that are newly discovered in the current iteration,
-so that in the next iteration we apply $\eqgenrel$ only to those expressions,
-to avoid redundant computation.  We then continue to prove that this algorithm
-indeed computes $\eqstep^{\star:N}_k$.
+Finally, we use the iterative algorithm in Figure~\ref{so:alg:closure} to
+efficiently compute $\closure_N f$, where $f$ is a $\cup$-distributive EEG\@.
+In each iteration, we keep track of the equivalent expressions that are newly
+discovered in the current iteration, so that in the next iteration we apply
+$\eqgenrel$ only to those expressions, to avoid redundant computation.  We then
+continue to prove that this algorithm indeed computes $\closure_N f$.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
-        \Function{Equivalent}{$\epsilon$, $k$, $N$}
+        \Function{Closure}{$f$, $N$, $\epsilon$}
             \State{$s_0 \gets \epsilon$}
             \State{$s^\prime_0 \gets \epsilon$}
             \For{$i \gets 1, \ldots, N$}
                 \State{$s^\prime_i \gets
-                    \eqstep_k \left(s^\prime_{i-1}\right) - s_{i-1}$}
+                    f \left(s^\prime_{i-1}\right) - s_{i-1}$}
                 \State{$s_i \gets s_{i-1} \cup s^\prime_i$}
-                \If{$s^\prime_i \neq \emptyset$}
+                \If{$s^\prime_i = \emptyset$}
                     \State{\Return{$s_i$}}
                 \EndIf{}
             \EndFor{}
@@ -326,65 +442,65 @@ indeed computes $\eqstep^{\star:N}_k$.
         \EndFunction{}
     \end{algorithmic}
     \caption{%
-        Our algorithm to discover a set of equivalent expressions from an
-        initial set $\epsilon$.
-    }\label{so:alg:eqstep}
+        Our algorithm to discover a set of equivalent expressions with
+        a $\cup$-distributive EEG $f$ from an initial set of equivalent
+        expressions $\epsilon$.
+    }\label{so:alg:closure}
 \end{figure}
 \begin{theorem}
-    In the algorithm in Figure~\ref{so:alg:eqstep}, at iteration
-    $n$, the set of equivalent expressions $s_n$ computes exactly
-    $\eqstep^{\star:n}_k(\epsilon)$.
+    In the algorithm in Figure~\ref{so:alg:closure}, at iteration $n$, the set
+    of equivalent expressions $s_n$ computes exactly $\closure_n f(\epsilon)$,
+    if $f$ is a $\cup$-distributive EEG\@.
 \end{theorem}
 \begin{proof}
-    We start by assuming that at iteration $m > 0$, $s_m =
-    \eqstep^{\star:m}_k(\epsilon)$, and we prove this equality still holds if
-    substitute $m$ with $m + 1$.  From the algorithm, we can deduce:
+    We start by assuming that at iteration $m > 0$, $s_m = \closure_m
+    f(\epsilon)$, and we prove this equality still holds if substitute $m$ with
+    $m + 1$.  From the algorithm, we can deduce:
     \begin{equation*}
     \begin{aligned}
         s_{m+1}
          &= s_m \cup s^\prime_{m+1} \\
-         &= s_m \cup \left( \eqstep_k \left( s^\prime_m \right) - s_m \right) \\
-         &= s_m \cup \eqstep_k \left( s^\prime_m \right) \\
-         &= s_m \cup \eqstep_k \left(
-                \eqstep_k \left( s^\prime_{m-1} \right) - s_{m-1}
+         &= s_m \cup \left( f \left( s^\prime_m \right) - s_m \right) \\
+         &= s_m \cup f \left( s^\prime_m \right) \\
+         &= s_m \cup f \left(
+                f \left( s^\prime_{m-1} \right) - s_{m-1}
             \right)
     \end{aligned}
     \end{equation*}
     We substitute $s_m$ using Lemma~\ref{so:lem:transitive} to get:
     \begin{equation*}
         s_{m+1}
-          = \epsilon \cup \eqstep_k \left( s_{m-1} \right) \cup
-            \eqstep_k \left(
-                \eqstep_k \left( s^\prime_{m-1} \right) - s_{m-1}
+          = \epsilon \cup f \left( s_{m-1} \right) \cup
+            f \left(
+                f \left( s^\prime_{m-1} \right) - s_{m-1}
             \right)
     \end{equation*}
-    Using distributivity of $\eqstep_k$ over $\cup$ and the iteration $m$ of
-    the algorithm, we can derive:
+    Using distributivity of $f$ over $\cup$ and the iteration $m$ of the
+    algorithm, we can derive:
     \begin{equation*}
     \begin{aligned}
         s_{m+1}
-         &= \epsilon \cup \eqstep_k \left(
+         &= \epsilon \cup f \left(
                 s_{m-1} \cup \left(
-                    \eqstep_k \left( s^\prime_{m-1} \right) - s_{m-1}
+                    f \left( s^\prime_{m-1} \right) - s_{m-1}
                 \right)
             \right) \\
-         &= \epsilon \cup \eqstep_k \left( s_m \right)
+         &= \epsilon \cup f \left( s_m \right)
     \end{aligned}
     \end{equation*}
-    Finally, we make use of the assumption $s_m =
-    \eqstep^{\star:m}_k(\epsilon)$, followed by Lemma~\ref{so:lem:transitive}
-    to show:
+    Finally, we make use of the assumption $s_m = \closure_m f(\epsilon)$,
+    followed by Lemma~\ref{so:lem:transitive} to show:
     \begin{equation*}
         s_{m+1}
-        = \epsilon \cup \eqstep_k \left(
-            \eqstep^{\star:m}_k(\epsilon)
+        = \epsilon \cup f \left(
+            \closure_m f(\epsilon)
         \right)
-        = \eqstep^{\star:m+1}_k(\epsilon)
+        = \closure_{m+1} f(\epsilon)
     \end{equation*}
-    It is trivial that $s_0 = \epsilon = \eqstep^{\star:0}_k(\epsilon)$, by
-    induction, $s_n = \eqstep^{\star:n}_k(\epsilon)$ thus holds for all $n \in
-    \naturalset$.
+    It is trivial that $s_0 = \epsilon = \closure_0 f(\epsilon)$, by induction,
+    $s_n = \closure_n f(\epsilon)$ thus holds for all $n \in \naturalset$.
 \end{proof}
+
 
 \subsubsection{Pareto Frontier}
 
@@ -439,7 +555,7 @@ Similar to the analysis of accuracy and resource usage, a set of equivalent
 expressions can be computed with semantics. That is, we define structures,
 \ie~sets of equivalent expressions, that can be manipulated with arithmetic
 operators. In our equivalent expressions semantics, an element of
-$\powersetof\exprset$ is used to assign a set of expressions to each node
+$\powersetof\aexprset$ is used to assign a set of expressions to each node
 in an expression parse tree. To begin with, at each leaf of the tree, the
 variable or constant is assigned a set containing itself, as for $x$, the set
 $\epsilon_x$ of equivalent expressions is $\epsilon_x = \{x\}$. After this, we
@@ -448,7 +564,7 @@ using~\eqref{so:eq:equivalence_semantics} defined below:
 \begin{equation}
     \begin{aligned}
         \epsilon_x \circ \epsilon_y &= \frontier\left(
-            \eqstep^\star_k \left(
+            \closure \eqstep_k \left(
                 E_\circ \left( \epsilon_x, \epsilon_y \right)
             \right) \right) \\
         & \text{where~}
@@ -460,9 +576,9 @@ using~\eqref{so:eq:equivalence_semantics} defined below:
     \label{so:eq:equivalence_semantics}
 \end{equation}
 The equation implies that in the propagation procedure, it recursively
-constructs a set of equivalent subexpressions for the parent node from
-two child expressions, and uses the depth limited equivalence function
-$\eqstep^\star_k$ to work out a larger set of equivalent expressions. To reduce
+constructs a set of equivalent subexpressions for the parent node from two
+child expressions, and uses the depth limited equivalence function $\closure
+\eqstep_k$ to work out a larger set of equivalent expressions. To reduce
 computation effort, we select only those expressions on the Pareto frontier
 for the propagation in the DFG\@. Although in worst case the complexity of
 this process is exponential, the selection by Pareto optimality accelerates
@@ -472,12 +588,12 @@ sample expression:
     \begin{aligned}
         \epsilon_a + \epsilon_b
             &= \frontier\left(
-                    \eqstep^\star_k \left(
+                    \closure \eqstep_k \left(
                         E_\circ \left( \epsilon_a, \epsilon_b \right)
                     \right)
                 \right) \\
             &= \frontier\left(
-                    \eqstep^\star_k \left(
+                    \closure \eqstep_k \left(
                         E_\circ \left( \{a\}, \{b\} \right)
                     \right)
                 \right) \\
@@ -549,13 +665,13 @@ subexpressions using a depth-limited search and the propagation of a set of
 subexpressions that are locally Pareto optimal to the parent expressions in a
 bottom-up hierarchy.
 
-The problem with the semantics above is that the time complexity of
-$\eqstep^\star_k$ scales poorly, since the worst case number of subexpressions
-needed to explore increases exponentially with $k$. Therefore an alternative
-method is to optimize it by changing the structure of the DFG slightly, as
-shown in Figure~\ref{so:fig:tree_expr_flow_greedy}. The difference is that at
-each iteration, the Pareto frontier filters the results to decrease the number
-of expressions to process for the next iteration.
+The problem with the semantics above is that the time complexity of $\closure
+\eqstep_k$ scales poorly, since the worst case number of subexpressions needed
+to explore increases exponentially with $k$. Therefore an alternative method
+is to optimize it by changing the structure of the DFG slightly, as shown in
+Figure~\ref{so:fig:tree_expr_flow_greedy}. The difference is that at each
+iteration, the Pareto frontier filters the results to decrease the number of
+expressions to process for the next iteration.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.6]{tree_expr_flow_greedy}

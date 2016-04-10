@@ -10,12 +10,13 @@ computation.
 
 Because of the workload of equivalent expression finding, the underlying
 algorithm is optimized in many ways. First, for each iteration, the relation
-finding function $\eqstep_k$ is only applied to newly discovered expressions
-in the previous iteration. Secondly, results of functions such as $\eqstep_k$,
-$\area$ and $\error$ are cached, since there is a large chance that these
-results from subexpressions are reused several times, subexpressions are also
-maximally shared to eliminate duplication in memory. Thirdly, the computation
-of $\eqstep_k$ is fully multithreaded.
+finding function $\eqstep_k$ is only applied to newly discovered expressions in
+the previous iteration, using the algorithm in Figure~\ref{so:alg:closure}. The
+second optimization is to cache results of function calls such as $\eqstep_k$,
+$\area$ and $\error$, since there is a large chance that these results
+from subexpressions are reused several times, subexpressions are also
+maximally shared to eliminate duplication in memory. Third, the computation of
+$\eqstep_k$ is fully multithreaded.
 
 The resource statistics of operators are provided using FloPoCo~\cite{flopoco}
 and Xilinx Synthesis Technology (XST)~\cite{xst}. Initially, For each
