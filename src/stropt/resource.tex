@@ -1,0 +1,106 @@
+\section{Resource Usage Analysis}
+\label{so:sec:resource}
+
+Here we define similar formal semantics which calculate an approximation to the
+FPGA resource usage of an expression, taking into account common subexpression
+elimination. This is important as, for example, rewriting $a \times b + a
+\times c$ as $a \times (b + c)$ in the larger expression $(a \times b + a
+\times c) + {(a \times b)}^2$ causes the common subexpression $a \times b$ to
+be no longer present in both terms. Our analysis must capture this.
+
+The analysis proceeds by labelling subexpressions. Intuitively, the
+set of labels $\labelset$, is used to assign unique labels to unique
+expressions, so it is possible to easily identify and reuse them. For
+convenience, let the function $\fresh: \aexprset\to\labelset$ assign a
+distinct label to each expression or variable, where $\aexprset$ is the set
+of all expressions.  It is noteworthy that $\fresh$ is a bijection. Before
+we introduce the labeling semantics, we define the environment $\lambda:
+\labelset\to\aexprset\cup\{\bot\}$, which is a function that maps labels to
+expressions, and $\env{}$ denotes the set of such environments. A label $l$ in
+the domain of $\lambda\in\env{}$ that maps to $\bot$ indicates that $l$ does
+not map to an expression. An element $(l, \lambda)\in\labelset\times\env{}$
+stands for the labeling scheme of an expression. Initially, we map all labels
+to $\bot$, then in the mapping $\lambda$, each leaf of an expression is
+assigned a unique label, and the unique label $l$ is used to identify the leaf.
+That is for the leaf variable or constant $x$:
+\begin{equation}
+    (l, \lambda) = (\fresh(x), [\fresh(x)\mapsto{x}])
+\end{equation}
+This equation uses $[\fresh(x)\mapsto{x}]$ to indicate an environment that
+maps the label $\fresh(x)$ to the expression $x$ and all other labels map
+to $\bot$, in other words, if $l = \fresh(x)$ and $l^\prime \neq l$, then
+$\lambda(l) = x$ and $\lambda(l^\prime) = \bot$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.6]{sample_tree}
+    \caption{The DFG for the sample expression.}\label{so:fig:sample_tree}
+\end{figure}
+For example, for the DFG in Figure~\ref{so:fig:sample_tree}, taken from
+Section~\ref{bg:sec:abstract_interpretation} of Chapter~\ref{chp:background},
+we have for the variables $a$ and $b$:
+\begin{equation}
+    \begin{aligned}
+        (l_a, \lambda_a) &= (\fresh(a), [\fresh(a)\mapsto{a}])
+                   = (l_1, [l_1 \mapsto a]) \\
+        (l_b, \lambda_b) &= (l_2, [l_2 \mapsto b])
+    \end{aligned}
+    \label{so:eq:variable_env}
+\end{equation}
+Then the environments are propagated in the flow direction of the DFG, using
+the following formulation of the labeling semantics:
+\begin{equation}
+    \begin{aligned}
+        (l_x, \lambda_x) \circ (l_y, \lambda_y)
+            &= (l, (\lambda_x\odot\lambda_y)
+                      [l\mapsto{l_x \circ l_y}]) \\
+            \text{where~} l &= \fresh(l_x \circ l_y),
+                          \circ\in\{+, -, \times\}
+    \end{aligned}
+    \label{so:eq:labeling_semantics}
+\end{equation}
+Specifically, $\lambda=\lambda_x\odot\lambda_y$ signifies that $\lambda_y$
+is used to update the mapping in $\lambda_x$, if the mapping does not
+exist in $\lambda_x$, and result in a new environment $\lambda$; and
+$\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.  As
+an example, with the expression in Figure~\ref{so:fig:sample_tree}, using
+\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_a$, $l_2 = l_b$, we
+derive for the subexpression $a + b$:
+\begin{equation}
+    \begin{aligned}
+        (l_{a + b}, \lambda_{a + b})
+            &= (l_a, \lambda_a) + (l_b, \lambda_b) \\
+            &= (l_3, (\lambda_a \odot \lambda_b) [l_3\mapsto{l_a + l_b}]) \\
+            &  \text{where~} l_3 = \fresh(l_a + l_b) \\
+            &= (l_3, [l_1\mapsto{a}]\odot
+                     [l_2\mapsto{b}]\odot
+                     [l_3\mapsto{l_1 + l_2}]) \\
+            &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
+    \end{aligned}
+\end{equation}
+\todo{George: I am a little confused by addition here.  What is the definition
+of ``+'' on labels?  If $l_a + l_b$ should be read purely as a syntactic
+construct, why does it need a distinct representation as $l_3$?}
+Finally, for the full expression $(a + b) \times (a + b)$:
+\begin{equation}
+    \begin{aligned}
+        (l, \lambda)
+            &= (l_{a + b}, \lambda_{a + b}) \times
+               (l_{a + b}, \lambda_{a + b}) \\
+            &= (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
+                      l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}])
+    \end{aligned}
+\end{equation}
+From the above derivation, it is clear that the semantics capture the reuse
+of subexpressions. The estimation of area is performed by counting, for an
+expression, the numbers of additions, subtractions and multiplications in
+the final labeling environment, then calculating the number of LUTs used to
+synthesize the expression. If the number of operators is $n_\circ$ where
+$\circ\in\{+,-,\times\}$, then the number of LUTs in total for the expressions
+is estimated as $\sum_{\circ\in\{+,-,\times\}} A_\circ n_\circ$, where the
+value $A_\circ$ denotes the number of LUTs per $\circ$ operator, which is
+dependent on the type of the operator and the floating-point format used to
+generate the operator.
+
+In the following sections, we use the function $\area: \aexprset\to\naturalset$
+to denote our resource usage analysis.

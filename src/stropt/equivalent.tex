@@ -1,123 +1,5 @@
-\section{Novel Semantics}
-\label{so:sec:semantics}
-
-\subsection{Accuracy Analysis}
-
-In Section~\ref{bg:sub:accuracy} of Chapter~\ref{chp:background}, we described
-a technique to analyze the round-off error of evaluating an expression tree.
-Throughout this chapter, we use the function $\error: \aexprset\to\errorset$ to
-represent the above-mentioned analysis of evaluation accuracy, where $\aexprset$
-denotes the set of all arithmetic expressions.
-
-
-\subsection{Resource Usage Analysis}
-
-Here we define similar formal semantics which calculate an approximation to the
-FPGA resource usage of an expression, taking into account common subexpression
-elimination. This is important as, for example, rewriting $a \times b + a
-\times c$ as $a \times (b + c)$ in the larger expression $(a \times b + a
-\times c) + {(a \times b)}^2$ causes the common subexpression $a \times b$ to
-be no longer present in both terms. Our analysis must capture this.
-
-The analysis proceeds by labelling subexpressions. Intuitively, the
-set of labels $\labelset$, is used to assign unique labels to unique
-expressions, so it is possible to easily identify and reuse them. For
-convenience, let the function $\fresh: \aexprset\to\labelset$ assign a
-distinct label to each expression or variable, where $\aexprset$ is the set
-of all expressions.  It is noteworthy that $\fresh$ is a bijection. Before
-we introduce the labeling semantics, we define the environment $\lambda:
-\labelset\to\aexprset\cup\{\bot\}$, which is a function that maps labels to
-expressions, and $\env{}$ denotes the set of such environments. A label $l$ in
-the domain of $\lambda\in\env{}$ that maps to $\bot$ indicates that $l$ does
-not map to an expression. An element $(l, \lambda)\in\labelset\times\env{}$
-stands for the labeling scheme of an expression. Initially, we map all labels
-to $\bot$, then in the mapping $\lambda$, each leaf of an expression is
-assigned a unique label, and the unique label $l$ is used to identify the leaf.
-That is for the leaf variable or constant $x$:
-\begin{equation}
-    (l, \lambda) = (\fresh(x), [\fresh(x)\mapsto{x}])
-\end{equation}
-This equation uses $[\fresh(x)\mapsto{x}]$ to indicate an environment that
-maps the label $\fresh(x)$ to the expression $x$ and all other labels map
-to $\bot$, in other words, if $l = \fresh(x)$ and $l^\prime \neq l$, then
-$\lambda(l) = x$ and $\lambda(l^\prime) = \bot$.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[scale=0.6]{sample_tree}
-    \caption{The DFG for the sample expression.}\label{so:fig:sample_tree}
-\end{figure}
-For example, for the DFG in Figure~\ref{so:fig:sample_tree}, taken from
-Section~\ref{bg:sec:abstract_interpretation} of Chapter~\ref{chp:background},
-we have for the variables $a$ and $b$:
-\begin{equation}
-    \begin{aligned}
-        (l_a, \lambda_a) &= (\fresh(a), [\fresh(a)\mapsto{a}])
-                   = (l_1, [l_1 \mapsto a]) \\
-        (l_b, \lambda_b) &= (l_2, [l_2 \mapsto b])
-    \end{aligned}
-    \label{so:eq:variable_env}
-\end{equation}
-Then the environments are propagated in the flow direction of the DFG, using
-the following formulation of the labeling semantics:
-\begin{equation}
-    \begin{aligned}
-        (l_x, \lambda_x) \circ (l_y, \lambda_y)
-            &= (l, (\lambda_x\odot\lambda_y)
-                      [l\mapsto{l_x \circ l_y}]) \\
-            \text{where~} l &= \fresh(l_x \circ l_y),
-                          \circ\in\{+, -, \times\}
-    \end{aligned}
-    \label{so:eq:labeling_semantics}
-\end{equation}
-Specifically, $\lambda=\lambda_x\odot\lambda_y$ signifies that $\lambda_y$
-is used to update the mapping in $\lambda_x$, if the mapping does not
-exist in $\lambda_x$, and result in a new environment $\lambda$; and
-$\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.  As
-an example, with the expression in Figure~\ref{so:fig:sample_tree}, using
-\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_a$, $l_2 = l_b$, we
-derive for the subexpression $a + b$:
-\begin{equation}
-    \begin{aligned}
-        (l_{a + b}, \lambda_{a + b})
-            &= (l_a, \lambda_a) + (l_b, \lambda_b) \\
-            &= (l_3, (\lambda_a \odot \lambda_b) [l_3\mapsto{l_a + l_b}]) \\
-            &  \text{where~} l_3 = \fresh(l_a + l_b) \\
-            &= (l_3, [l_1\mapsto{a}]\odot
-                     [l_2\mapsto{b}]\odot
-                     [l_3\mapsto{l_1 + l_2}]) \\
-            &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
-    \end{aligned}
-\end{equation}
-\todo{George: I am a little confused by addition here.  What is the definition
-of ``+'' on labels?  If $l_a + l_b$ should be read purely as a syntactic
-construct, why does it need a distinct representation as $l_3$?}
-Finally, for the full expression $(a + b) \times (a + b)$:
-\begin{equation}
-    \begin{aligned}
-        (l, \lambda)
-            &= (l_{a + b}, \lambda_{a + b}) \times
-               (l_{a + b}, \lambda_{a + b}) \\
-            &= (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
-                      l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}])
-    \end{aligned}
-\end{equation}
-From the above derivation, it is clear that the semantics capture the reuse
-of subexpressions. The estimation of area is performed by counting, for an
-expression, the numbers of additions, subtractions and multiplications in
-the final labeling environment, then calculating the number of LUTs used to
-synthesize the expression. If the number of operators is $n_\circ$ where
-$\circ\in\{+,-,\times\}$, then the number of LUTs in total for the expressions
-is estimated as $\sum_{\circ\in\{+,-,\times\}} A_\circ n_\circ$, where the
-value $A_\circ$ denotes the number of LUTs per $\circ$ operator, which is
-dependent on the type of the operator and the floating-point format used to
-generate the operator.
-
-In the following sections, we use the function $\area: \aexprset\to\naturalset$
-to denote our resource usage analysis.
-
-\subsection{Equivalent Expressions Analysis}
-\label{so:sub:equivalent_expressions_analysis}
+\section{Equivalent Expressions Analysis}
+\label{so:sec:equivalent}
 
 In earlier sections, we introduce semantics that define additions and
 multiplications on intervals, then gradually transition to error semantics that
@@ -129,7 +11,7 @@ equivalent expressions, and use these rules to discover equivalent expressions.
 Before this, it is necessary to formally define equivalent expressions and
 functions to discover them.
 
-\subsubsection{Discovering Equivalent Expressions}
+\subsection{Discovering Equivalent Expressions}
 
 From an expression, a set of equivalent expressions can be discovered by our
 \emph{equivalence relation} $\eqrel$ on the set of all arithmetic expressions
@@ -149,11 +31,10 @@ have the following rules in our inference system:
     \label{so:eq:equivalence_relation}
 \end{equation}
 Here, a rule of the form $\inference{a}{b}$ means that if the formula $a$ is
-true, then $b$ also holds.
-
-We extend our inference system with additional arithmetic rules that relate
-equivalent expressions.  Let's define $e_1, e_2, e_3 \in \aexprset$, $v_1, v_2,
-v_3 \in \realset$.  Firstly, we start with a set of associativity rules:
+true, then $b$ also holds.  We extend our inference system with additional
+arithmetic rules that relate equivalent expressions.  Let's define $e_1, e_2,
+e_3 \in \aexprset$, $v_1, v_2, v_3 \in \realset$.  Firstly, we start with a set
+of associativity rules:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Assoc}_1] & \quad &
@@ -202,56 +83,60 @@ The following rule rewrites an expression with subtraction into an addition:
     [\mathrm{Subtract}] \quad
     e_1 - e_2 \eqrel e_1 + (-e_2)
 \end{equation}
-Finally, the reduction rules are as follows, where we define $\binopset = \{ +,
--, \times, / \}$ to be the set of binary operators:
+The following reduction rules propagates constant values in expression
+trees. The $\mathrm{ConstProp}_1$ rule states that if an expression is an
+arithmetic operation of two constant values, then it can be simply evaluated to
+produce the result; whereas $\mathrm{ConstProp}_2$ rewrites an expression that
+has a negation on a constant value into a single constant.
 \begin{equation}
-    \begin{aligned} &
-        \begin{aligned}{}
-            & [\mathrm{Identity}_1] &~&
-                \forall \circ \in \{ \times, / \}:
-                e_1 \circ 1 \eqrel e_1
-                & \quad
-            & [\mathrm{Elim}_1 (-)] &~&
-                e_1 - e_1 \eqrel 0
-                \\
-            & [\mathrm{Identity}_2] &~&
-                \forall \circ \in \{ +, - \}:
-                e_1 \circ 0 \eqrel e_1
-                & \quad
-            & [\mathrm{Elim}_2 (/)] &~&
-                e_1 / e_1 \eqrel 1
-                \\
-            & [\mathrm{ZeroProp} (\times)] &~&
-                0 \times e_1 \eqrel 0
-                & \quad
-            & [\mathrm{DoubleNeg} (-)] &~&
-                -(-e_1) \eqrel e_1
-                \\
-        \end{aligned} \\ &
-        \begin{aligned}{}
-            & [\mathrm{ConstProp_1}] &~&
-            \inference{%
-                (v_3 = v_1 \circ v_2) \wedge
-                (\circ \in \binopset)
-            }{%
-                v_1 \circ v_2 \eqrel v_3
-            } \\
-            & [\mathrm{ConstProp_2} (-)] &~&
-            \inference{%
-                v_2 = -v_1
-            }{%
-                -v_1 \eqrel v_2
-            }
-        \end{aligned}
+    \begin{aligned}{}
+        & [\mathrm{ConstProp_1}] &~&
+        \inference{%
+            (v_3 = v_1 \circ v_2) \wedge
+            (\circ \in \binopset)
+        }{%
+            v_1 \circ v_2 \eqrel v_3
+        } \\
+        & [\mathrm{ConstProp_2} (-)] &~&
+        \inference{%
+            v_2 = -v_1
+        }{%
+            -v_1 \eqrel v_2
+        }
     \end{aligned}
-    \label{so:eq:equivalence_reduction}
+    \label{so:eq:constant_propagation}
 \end{equation}
-The $\mathrm{ConstProp}_1$ rule states that if an expression is an arithmetic
-operation of two constant values, then it can be simply evaluated to produce
-the result; whereas $\mathrm{ConstProp}_2$ rewrites an expression that has a
-negation on a constant value into a single constant. Finally, the following two
-allow structural induction on expression trees, \eg~it is possible to derive
-that $a + (b + c) \eqrel a + (c + b)$ from $b + c \eqrel c + b$:
+Here we define $\binopset = \{ +, -, \times, / \}$ to be the set of binary
+operators.  We also define another set of reduction rules looking for common
+patterns that can be simplified:
+\begin{equation}
+    \begin{aligned}{}
+        & [\mathrm{Identity}_1] &~&
+            \forall \circ \in \{ \times, / \}:
+            e_1 \circ 1 \eqrel e_1
+            & \quad
+        & [\mathrm{Elim}_1 (-)] &~&
+            e_1 - e_1 \eqrel 0
+            \\
+        & [\mathrm{Identity}_2] &~&
+            \forall \circ \in \{ +, - \}:
+            e_1 \circ 0 \eqrel e_1
+            & \quad
+        & [\mathrm{Elim}_2 (/)] &~&
+            e_1 / e_1 \eqrel 1
+            \\
+        & [\mathrm{ZeroProp} (\times)] &~&
+            0 \times e_1 \eqrel 0
+            & \quad
+        & [\mathrm{DoubleNeg} (-)] &~&
+            -(-e_1) \eqrel e_1
+            \\
+    \end{aligned}
+    \label{so:eq:common_reduction}
+\end{equation}
+Finally, the following two allow structural induction on expression trees,
+\eg~it is possible to derive that $a + (b + c) \eqrel a + (c + b)$ from $b + c
+\eqrel c + b$:
 \begin{equation}
     \begin{aligned}
         & [\mathrm{Tree}_1] &~&
@@ -280,7 +165,7 @@ e_1 \times e_2 + e_1 \times e_3$ can be derived by using $\mathrm{Distrib}_1$,
 in tandem with the $\mathrm{Commut}$ rule.
 
 
-\subsubsection{Scalable Methods}
+\subsection{Scalable Methods}
 
 The above rules of equivalence relate an expression with all of its equivalent
 expressions.  In general because of combinatorial explosion, the set of all
@@ -295,9 +180,10 @@ transitivity in~\eqref{so:eq:equivalence_relation} from $\eqrel$, as
 we can have the flexibility to apply $\eqgenrel$ in a series of steps
 to generate equivalent expressions.  Secondly, we further disallow
 symmetry in~\eqref{so:eq:equivalence_relation} for the reduction rules
-in~\ref{so:eq:equivalence_reduction} to reduce the space-time complexity of the
-search space, because often performance metrics, such as accuracy and resource
-usage, improve when the number of terms in the expression is reduced.
+in~\ref{so:eq:constant_propagation}~and~\ref{so:eq:common_reduction} to reduce
+the space-time complexity of the search space, because often performance
+metrics, such as accuracy and resource usage, improve when the number of terms
+in the expression is reduced.
 
 \begin{definition}
     We call a function an \emph{equivalent expression generator} (EEG) function
@@ -502,7 +388,7 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
 \end{proof}
 
 
-\subsubsection{Pareto Frontier}
+\subsection{Pareto Frontier}
 
 Because we optimize expressions in two quality metrics, \ie~the accuracy of
 computation and the estimate of FPGA resource utilization, there is a trade-off
@@ -548,8 +434,13 @@ analyze the magnitudes of error bounds, which is defined as follows:
         \right) = \error(e)
     \end{aligned}
 \end{equation}
+Here we use the function $\error: \aexprset\to\errorset$ to represent the
+analysis of round-off error analysis in an expression tree, described
+in Section~\ref{bg:sub:accuracy} of Chapter~\ref{chp:background}, where
+$\aexprset$ denotes the set of all arithmetic expressions.
 
-\subsubsection{Equivalent Expressions Semantics}
+
+\subsection{Equivalent Expressions Semantics}
 
 Similar to the analysis of accuracy and resource usage, a set of equivalent
 expressions can be computed with semantics. That is, we define structures,

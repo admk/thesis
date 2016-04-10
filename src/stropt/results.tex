@@ -8,19 +8,19 @@ Martel, and has the same time complexity, but we adopted it to generate
 a Pareto frontier from the discovered expressions, instead of only error
 bounds.  This allows us to compare \marteltrace{}, \ie~our implementation
 of Martel's method, against our methods \frontiertrace{} and \greedytrace{}
-discussed in Section~\ref{so:sub:equivalent_expressions_analysis}.
-Figure~\ref{so:fig:martel} optimizes the expression ${(a + b)}^2$ using the
-three methods above, all using depth limit $3$, and the input ranges are
-$a \in [5, 10]$ and $b \in [0, 0.001]$~\cite{martel07}. The IEEE754 single
-precision floating-point format with rounding to nearest was used for the
-evaluation of accuracy and area estimation. The scatter points represent
-different implementations of the original expression that have been explored
-and analyzed, and the (overlapping) lines denote the Pareto frontiers. In this
-example, our methods produce the same Pareto frontier that Martel's method
-could discover, while having up to 50\% shorter run time. Because we consider
-an accuracy/area trade-off, we find that we can not only have the most accurate
-implementation discovered by Martel, but also an option that is only 0.0005\%
-less accurate, but uses 7\% fewer LUTs.
+discussed in Section~\ref{so:sec:equivalent}.  Figure~\ref{so:fig:martel}
+optimizes the expression ${(a + b)}^2$ using the three methods above, all
+using depth limit $3$, and the input ranges are $a \in [5, 10]$ and $b \in [0,
+0.001]$~\cite{martel07}. The IEEE754 single precision floating-point format
+with rounding to nearest was used for the evaluation of accuracy and area
+estimation. The scatter points represent different implementations of the
+original expression that have been explored and analyzed, and the (overlapping)
+lines denote the Pareto frontiers. In this example, our methods produce the
+same Pareto frontier that Martel's method could discover, while having up to
+50\% shorter run time. Because we consider an accuracy/area trade-off, we
+find that we can not only have the most accurate implementation discovered by
+Martel, but also an option that is only 0.0005\% less accurate, but uses 7\%
+fewer LUTs.
 
 We go beyond the optimization of a small expression, by generating results in
 Figure~\ref{so:fig:multi_expr_32} to show that the same technique is applicable
