@@ -1,15 +1,18 @@
 \section{High-Level Synthesis}
 \label{bg:sec:high_level_synthesis}
 
+\subsection{Overview}
+\label{bg:sub:hls_overview}
+
 High-level synthesis (HLS) is the process of compiling a high-level
 representation of an application (usually in C, C++ or MATLAB) into
-register-transfer-level (RTL) implementation for FPGA~\cite{coussy, gajski}.
-HLS tools enable us to work in a high-level language, as opposed to facing
-labor-intensive tasks such as optimizing timing, designing control logic in
-the RTL implementation. This allows application designers to instead focus on
-the algorithmic and functional aspects of their implementation~\cite{coussy},
-without concerning themselves with the above intricate details of manual RTL
-designs.
+register-transfer-level (RTL) implementation for digital circuit
+designs~\cite{coussy, gajski}.  HLS tools enable us to work in a high-level
+language, as opposed to facing labor-intensive tasks such as optimizing timing,
+and designing control logic in the RTL implementation. This allows application
+designers to focus instead on the algorithmic and functional aspects of their
+implementation~\cite{coussy}, without concerning themselves with the above
+intricate details of manual RTL designs.
 
 Another advantage of using HLS tools is that they are in general more
 productive and less error-prone to work with, when compared with traditional
@@ -33,3 +36,9 @@ HLS tools are now with similar performance when compared with hand-crafted RTL
 implementations~\cite{bdti}.  Xilinx now incorporates a sophisticated HLS flow
 into its Vivado design suite~\cite{vivado_hls} and the open-source HLS tool,
 LegUp~\cite{legup}, is gaining significant traction in the research community.
+
+
+\subsection{Compilation Stages}
+\label{bg:sub:compilation_stages}
+
+

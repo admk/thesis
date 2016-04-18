@@ -1,0 +1,54 @@
+The main focus of this thesis is to devise optimization methods to efficiently
+rewrite numerical programs by automatically varying the structure of their
+control- and data-paths for an improved trade-off relationship among numerical
+accuracy, throughput and resource utilization for high-level synthesis (HLS).
+This chapter therefore provides a review of recent developments in related work
+and various concepts that closely relate to the foundation of these methods.
+This section serves to highlight these main research topics to be discussed in
+depth in each section.
+
+Because of the ever-increasing complexity of applications designed
+into circuits, low-level approaches such as RTL design become humanly
+intractable~\cite{gajski}, a gradual adoption of HLS tools has been
+observed in the FPGA community in recent years.  For this reason, in
+Section~\ref{bg:sec:high_level_synthesis}, we review the current state and
+advantages of HLS, and describe the stages in these tools to compile a program
+in a high-level language into digital circuits.  These tools aim to schedule
+loops as efficiently as possible by pipelining them and run time is also one of
+our optimization objective, hence using LegUp~\cite{legup}, an open-source HLS
+tool, as an example, we further examine the scheduling stage in greater detail.
+
+Intermediate representations (IRs) are often used to facilitate program
+optimization.  Section~\ref{bg:sec:intermediate} we therefore study in detail
+the existing IRs designed for program optimization.
+
+In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
+interpretation~\cite{cousot77}, a theory to approximate mathematical objects
+that are not directly computable---because they are undecidable, intractable or
+both---in order to compute an approximation to them efficiently.  We informally
+introduce this theory, by way of reviewing Martel's approach~\cite{martel07} to
+statically analyze numerical accuracy in programs.
+
+In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work on
+restructuring numerical programs to discover their equivalences efficiently.
+Due to the full set of equivalent programs of an initial program is often
+computationally intractable, these methodologies make extensive use of abstract
+interpretation introduced in Section~\ref{bg:sec:abstract_interpretation}, in
+order to compute an under-approximation (a potentially smaller set) of the set
+of all equivalent programs.  Besides methods based on abstract interpretation
+proposed in the research community, we also look at existing optimization
+passes in HLS tools.  Since HLS tools are LLVM-based and compile C or C++
+programs, they borrow the concept from LLVM of including optimization passes
+that may improve performance of floating-point computations, while potentially
+sacrificing numerical accuracies.  We thus further examine the effect of these
+passes on numerical programs in this section.
+
+Section~\ref{bg:sec:wordlength} explores alternative methods, known as
+\emph{word-length optimization}, to trade-off accuracy for other performance
+metrics, for instance, area, throughput and power.  Instead of restructuring
+the arithmetic expression to be synthesized, such as the approaches in
+Section~\ref{bg:sec:discovering_equivalent_programs}, these methods focus on
+varying the precisions of individual arithmetic operators in a data-path, as
+some operators compute values that do not require high precisions and often
+their precisions can often be reduced to optimize other desirable objectives,
+while satisfying a given error budget.
