@@ -174,14 +174,14 @@ logic removal~\cite{quartus}.  The following stage, place \& route, utilizes a
 heuristic placement algorithm, which takes as it inputs the netlist, together
 with a device map showing the location of each of its functional units, in
 order to select a legal location on the FPGA for each functional block in the
-netlist, such that the routing of these blocks is optimized~\cite{betz08}.  In
-general, synthesis tools allow some freedom in the user's preference of the
-placement of circuit.  Additional optimizations can be applied to improve
-performance.  For example, Quartus II has the option to enable \emph{register
-retiming}~\cite{quartus}, which allows registers to move across combinational
-logic to reduce critical path delay, \ie~the longest delay required for
-an output of any source register to propagate to the input of any target
-register in the circuit.  The end result of this step is a preliminary circuit
+netlist, such that the routing of these blocks is optimized~\cite{betz08}.
+In general, synthesis tools allow some freedom in the user's preference of
+the placement of circuit.  Additional automated optimizations can be applied
+to improve performance.  For example, Quartus II has the option to enable
+\emph{register retiming}~\cite{quartus}, which allows registers to move across
+combinational logic to reduce critical path delay, \ie~the longest delay
+required for an output of any source register to propagate to the input of
+any target register in the circuit.  The end result of this step is a circuit
 schematic on the target FPGA\@; in the next step, the tool thus computes
 the longest delay of all critical paths, which determines the frequency at
 which the application can run.  Users can also inspect the list of critical

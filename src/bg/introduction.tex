@@ -1,3 +1,6 @@
+\section{Introduction}
+\label{bg:sec:introduction}
+
 The main focus of this thesis is to devise optimization methods to efficiently
 rewrite numerical programs by automatically varying the structure of their
 control- and data-paths for an improved trade-off relationship among numerical
@@ -7,16 +10,25 @@ and various concepts that closely relate to the foundation of these methods.
 This section serves to highlight these main research topics to be discussed in
 depth in each section.
 
+We introduce various computing architectures, and explain the pros and cons
+of each one in Section~\ref{bg:sec:fpga}.  We then explain in detail how
+field-programmable gate arrays can be used as an alternative to general-purpose
+processors such as CPUs and GPUs to accelerate computational-intensive
+applications, by drawing comparisons of architectural differences to
+processors.  This is then followed by an overview of how a traditional
+synthesis tool flow compiles RTL implementations into circuits by taking Altera
+Quartus II~\cite{quartus} as an example.
+
 Because of the ever-increasing complexity of applications designed
 into circuits, low-level approaches such as RTL design become humanly
 intractable~\cite{gajski}, a gradual adoption of HLS tools has been
 observed in the FPGA community in recent years.  For this reason, in
 Section~\ref{bg:sec:high_level_synthesis}, we review the current state and
 advantages of HLS, and describe the stages in these tools to compile a program
-in a high-level language into digital circuits.  These tools aim to schedule
-loops as efficiently as possible by pipelining them and run time is also one of
-our optimization objective, hence using LegUp~\cite{legup}, an open-source HLS
-tool, as an example, we further examine the scheduling stage in greater detail.
+in a high-level language into digital circuits.  Because run time is one of our
+optimization objective, we use LegUp~\cite{legup}, an open-source HLS tool, as
+an example, to further examine in greater detail how its scheduling stage can
+make loops to run as efficiently as possible by pipelining them.
 
 Intermediate representations (IRs) are often used to facilitate program
 optimization.  Section~\ref{bg:sec:intermediate} we therefore study in detail

@@ -1,29 +1,31 @@
 \section{High-Level Synthesis}
 \label{bg:sec:high_level_synthesis}
 
-\subsection{Overview}
-\label{bg:sub:hls_overview}
-
 High-level synthesis (HLS) is the process of compiling a high-level
-representation of an application (usually in C, C++ or MATLAB) into
-register-transfer-level (RTL) implementation for digital circuit
-designs~\cite{coussy, gajski}.  HLS tools enable us to work in a high-level
-language, as opposed to facing labor-intensive tasks such as optimizing timing,
-and designing control logic in the RTL implementation. This allows application
+representation of an application (usually in C, C++ or MATLAB) into a
+register-transfer-level (RTL) implementation~\cite{coussy, gajski}.  By
+using the design flow discussed in Section~\ref{bg:sub:rtl_design}, this
+RTL design can then be synthesized into a circuit, which in turn can be
+programmed onto the FPGA device.
+
+The major advantage of HLS is that HLS tools enable us to work in a high-level
+language, as opposed to facing labor-intensive tasks such as optimizing timing
+and designing control logic in the RTL design process.  This allows application
 designers to focus instead on the algorithmic and functional aspects of their
 implementation~\cite{coussy}, without concerning themselves with the above
 intricate details of manual RTL designs.
 
 Another advantage of using HLS tools is that they are in general more
 productive and less error-prone to work with, when compared with traditional
-RTL tools.  The reasons are two-fold.  First, a C description is smaller than a
-traditional RTL description by a factor of 10~\cite{coussy, bdti}.  Second, C
-code can be easily tested on an ordinary microprocessor, debug and verification
-tools for C are relatively more abundant when compared to RTL counterparts.
+RTL tools.  The reasons are two-fold.  First, a C description is smaller than
+a traditional RTL description by a factor of 10~\cite{coussy, bdti}.  Second,
+RTL design can be notoriously difficult to debug, whereas C code can be easily
+tested on an ordinary microprocessor, and mature debug and analysis tools for C
+are freely accessible~\cite{canis13}.
 
-HLS tools benefit us in their ability to automatically search the design
-space with a reasonable design cost~\cite{bdti}, explore a large number of
-trade-offs between performance, cost and power~\cite{mcfarland}, which is
+HLS tools further benefit us in their ability to automatically search the
+design space with a reasonable design cost~\cite{bdti}, explore a large number
+of trade-offs between performance, cost and power~\cite{mcfarland}, which is
 generally much more difficult to achieve in RTL tools.  Our thesis proposes
 a natural extension to HLS tools by automatically exploring the space of
 rewrites of floating-point numerical C programs, which are equivalent in real
@@ -31,14 +33,47 @@ arithmetic, but could trade off accuracy, throughput and resource utilization
 when synthesized into circuits.
 
 With recent advancements in this area, HLS tools has received a resurgence of
-interest, particularly in the FPGA community, and circuits synthesized with
-HLS tools are now with similar performance when compared with hand-crafted RTL
-implementations~\cite{bdti}.  Xilinx now incorporates a sophisticated HLS flow
-into its Vivado design suite~\cite{vivado_hls} and the open-source HLS tool,
-LegUp~\cite{legup}, is gaining significant traction in the research community.
+interest, particularly in the FPGA community, and some applications synthesized
+with HLS tools are now with similar performance when compared with hand-crafted
+RTL implementations~\cite{bdti}.  Xilinx now incorporates a sophisticated HLS
+flow into its Vivado design suite~\cite{vivado_hls} and the open-source HLS
+tool, LegUp~\cite{legup}, is gaining significant traction in the research
+community.
 
 
-\subsection{Compilation Stages}
-\label{bg:sub:compilation_stages}
+\subsection{HLS Design Flow}
+\label{bg:sub:hls_design}
+
+In this section, we provide an overview of the stages taken by HLS tool to
+compile a C program into RTL implementation, by using LegUp~\cite{legup,
+canis13} as our example.  LegUp is an HLS tool which compiles programs to run
+on a hybrid software/hardware architecture, and its design flow consists of
+three major stages.
+
+The first stage is to determine which parts of an application on the
+function-level are suitable candidates to be synthesized into hardware
+circuits, whereas the others can be run on a processor.  This stage starts by
+compiling a C source program into a software executable targeting an FPGA-based
+MIPS processor.  This processor has additional circuitries designed to profile
+the software implementation of the original application.  By running the
+compiled application on this processor, this profiling ability allows the
+processor to use statistics such as number of clock cycles, power and cache
+misses to identify parts of the program at the function level that will benefit
+from a hardware redesign, so that the power efficiency and run time could be
+improved~\cite{canis13}.
+
+After identifying functions of the application to be implemented as part of a
+hardware architecture, the next stage is then to synthesize hardware designs
+from these functions.  LegUp's synthesis toolchain is based on the (low-level
+virtual machine) LLVM compiler infrastructure~\cite{llvm}, and it compiles
+C functions into circuits in a series of steps.  It starts by translating a
+C function into LLVM IR~\cite{llvm_ir}, a platform-independent intermediate
+representation in static single assignment (SSA) form~\cite{cytron91}.
+
+
+
+
+\subsection{Obstacles in Adoption}
+\label{sub:obstacles_in_adoption}
 
 
