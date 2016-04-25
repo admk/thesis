@@ -88,18 +88,17 @@ steps: allocation, scheduling, binding and RTL generation.  The first
 step, allocation, extracts information from the application and user
 requirements to be used in subsequent stages, \eg~modules and RAM blocks to
 be synthesized on the target device.  This is then followed by scheduling,
-which assigns the start and end states to each LLVM instruction in a finite
-state machine~\cite{legup}, using a scheduling algorithm based on the
-formulation of system of difference constraints (SDC)~\cite{legup, canis13,
-cong06}.  Many applications spend most of their time in loops, a scheduling
-technique, known as \emph{loop pipelining}, is therefore used in HLS tools
-to make them run efficiently.  This technique admits greater parallelism
-of computation by allowing instructions in consecutive loop iterations to
-overlap as much as possible.  LegUp uses an algorithm, known as modulo SDC
-scheduling~\cite{canis14}, to minimize the wall-clock time of a pipelined
-loop.  Because program run time is one of our main objectives to optimize, in
-Section~\ref{bg:sub:loop_pipelining}, we will cover the modulo SDC scheduling
-algorithm in detail.  The third logical step, binding, assigns each operator
+which assigns the start and end states to each LLVM instruction in a
+finite state machine~\cite{legup}, using a scheduling algorithm based on
+the formulation of system of difference constraints (SDC)~\cite{legup,
+canis13, cong06}.  Many applications spend most of their time in loops, a
+scheduling technique, known as \emph{loop pipelining}, is therefore used
+in HLS tools to make them run efficiently.  This technique admits greater
+parallelism of computation by allowing instructions in consecutive loop
+iterations to overlap as much as possible.  LegUp uses an algorithm,
+known as modulo SDC scheduling~\cite{canis14}, which we will cover in
+Section~\ref{bg:sub:modulo_sdc_scheduling}, to minimize the wall-clock time
+of a pipelined loop.  The third logical step, binding, assigns each operator
 in the program to functional units to be synthesized into hardware, and maps
 program variables to registers.  The rationale behind this step is that
 operators such as multipliers and dividers that tend to use a lot of LUTs and
@@ -123,28 +122,82 @@ accelerators in runtime.  This modified source code can then be compiled into a
 MIPS binary to be executed on the FPGA.
 
 
-\subsection{Loop Pipelining}
-\label{bg:sub:loop_pipelining}
+\subsection{Modulo SDC Scheduling}
+\label{bg:sub:modulo_sdc_scheduling}
 
-In this section, we explain the concept of loop pipelining, and how arithmetic
-rules, when combined with other program transformations, can trade-off
-accuracy, run time and resource utilization.
+Loop parallelism, and subsequently, program run time is part of the main
+optimization objectives we optimize later in Chapter~\ref{chp:latopt}, hence
+in this subsection the concept of loop pipelining is introduced.  We consider
+our example program in Figure~\ref{bg:lst:dotprod}, which computes the
+dot-product, \verb|d|, of two arrays \verb|A| and \verb|B| of floating-point
+values.  A trivial way to schedule this loop is to allow each iteration to
+complete, before starting the next iteration.  This is however not very
+efficient, as we will see below, with a good schedule, operations across loop
+iterations can often temporally overlap, giving way to parallelism and improve
+performance of the loop execution.  This schedule must satisfy the constraints
+imposed by the data dependence and the amount of resources available, and such
+constraints make scheduling an NP-hard problem which is difficult to solve
+optimally and efficiently~\cite{hwang91}.  A technique known as modulo SDC
+scheduling~\cite{zhang13, canis14} is used in LegUp to efficiently attack the
+scheduling problem, and is further discussed below.
 
-To start, we synthesize in Vivado HLS the following program in
-Figure~\ref{bg:fig:dotprod} for calculating the dot-product, \verb|d|, of two
-arrays, \verb|A| and \verb|B|, of single-precision floats bounded by $[0, 1]$.
 \begin{figure}[ht]
-\begin{lstlisting}
-  float d = 0.0f;
-  for (int i = 0; i < 1024; i++) {
-      d = d + A[i] * B[i];
-  }
-\end{lstlisting}
+    \centering
+    \begin{minipage}{0.7\textwidth}
+    \begin{lstlisting}
+    float d = 0.0f;
+    for (int i = 0; i < 1024; i++)
+    {
+        d = d + A[i] * B[i];
+    }
+    \end{lstlisting}
+    \end{minipage}
     \caption{%
         A simple dot-product example which calculates the dot-product of two
-        arrays \texttt{A} and \texttt{B}, each with 1024 elements.}
-    \label{bg:fig:dotprod}
+        arrays \texttt{A} and \texttt{B}, each with 1024 elements.
+    }\label{bg:lst:dotprod}
 \end{figure}
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \node (ai)  at (0,0) {\texttt{A[i]}};
+        \node (bi)  [right=of ai, xshift=5mm] {\texttt{B[i]}};
+        \node (mul) [below right=of ai, xshift=-5mm, yshift=5mm]
+            {$\times$};
+        \node (sum) [left=of mul, xshift=-10mm] {\texttt{d}};
+        \node (add) [below right=of sum, xshift=-4mm, yshift=5mm] {$+$};
+        \draw[->] (ai)  -- node[near start, below=1pt]{1} (mul);
+        \draw[->] (bi)  -- node[near start, below=1pt]{1} (mul);
+        \draw[->] (mul) -- node[near start, below=1pt]{7} (add);
+        \draw[->] (sum) -- node[near start, below=1pt]{0} (add);
+        \draw[->,dashed]
+            (add) to[out=-135, in=180] node[left=3pt]{10 (1)} (sum);
+    \end{tikzpicture}
+    \caption{%
+        The dependence graph formed by the data dependences in the loop body of
+        the dot-product example in Figure~\ref{bg:lst:dotprod}.
+    }\label{bg:fig:dotprod_depgraph}
+\end{figure}
+
+To start, dependence relations are extracted from the body of this loop, which
+form a dependence graph, where vertices are operations, and edges between
+pairs of vertices indicate dependence relations.  Here we assume an array
+access has a latency of one cycle, floating-point multiplier and adder uses
+$7$ and $10$ cycles respectively.  Dependence edges in the graph are assigned
+with attributes latency values accordingly.  At the end of each iteration,
+the variable \verb|d| is updated with a new value, which is then immediately
+read in the next iteration, thus there is a data dependence on \verb|d|
+across iterations; and we call this kind of dependences \emph{inter-iteration
+dependences}.  We further describe that this dependence has a \emph{dependence
+distance} of $1$, as there is a $1$ iteration difference between each pair
+of value updates and their corresponding use.  Therefore, in the dependence
+graph, we add an edge from the output of the addition to the variable \verb|d|.
+This edge is then further assigned an attribute $10 (1)$ which signifies that
+the adder has a latency of $10$ cycles, and this dependence has a distance
+$1$.  Finally, the complete dependence graph of the loop body can be found in
+Figure~\ref{bg:fig:dotprod_depgraph}.
+
+The next step is to compute ....
 
 Vivado HLS seek to optimize this loop by overlapping its iterations in a
 process called pipelining.  By synthesizing this loop, we have obtained the
@@ -168,60 +221,6 @@ there are $10$ cycles between the starts of consecutive loop iterations, as
 enforced by the data dependences, this value is known as the \emph{initiation
 interval}.  Finally, the loop runs for $1024$ iterations (the \emph{trip
 count}, $N$), so its overall latency is $((N-1)\times \II) + D = 10250$ cycles.
-
-\begin{figure}[ht]
-\begin{lstlisting}
-  float d = 0.0f;
-  for (int i = 0; i < 1024; i += 2) {
-      d = (d + A[i]*B[i]) + A[i+1]*B[i+1];
-  }
-\end{lstlisting}
-    \caption{Partially unrolled version of the original dot-product example.}
-    \label{bg:fig:dotprod_unroll}
-\end{figure}
-Observe that the trip count can be halved by partial unrolling, as shown in
-Figure~\ref{bg:fig:dotprod_unroll}.  Since we did not change data-paths by
-unrolling, the data dependences remain unchanged, the resulting schedule
-and the total latency stay the same.  However, by further exploiting the
-associativity of addition, we can delay reading \verb|d| until later in each
-iteration (Figure~\ref{bg:fig:dotprod_optimized}).
-\begin{figure}[ht]
-\begin{lstlisting}
-  float d = 0.0f;
-  for (int i = 0; i < 1024; i += 2) {
-      d = d + (A[i]*B[i] + A[i+1]*B[i+1]);
-  }
-\end{lstlisting}
-    \caption{Partially unrolled code optimized by applying associativity.}
-    \label{bg:fig:dotprod_optimized}
-\end{figure}
-
-The program now admits the schedule in
-Figure~\ref{bg:fig:sample_schedule_after}, which yields a loop latency
-of $((512-1)\times 10) + 30 = 5140$ cycles---roughly half the original
-latency. This optimized program, which is discovered automatically by our tool,
-also reduces round-off errors by 50\% (as a result of the round-off errors
-being accumulated in a different order) but increases LUT count by about 35\%
-(because more operations are performed in each iteration).
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\linewidth]{sample_schedule_after}
-    \caption{%
-        The resulting schedule of the optimized code in
-        Figure~\ref{bg:fig:dotprod_optimized}.}
-    \label{bg:fig:sample_schedule_after}
-\end{figure}
-
-To accurately analyze the run time of a loop in a numerical program, it is
-necessary to generate the schedule of the loop.  Algorithms for this, however,
-tend to be computationally expensive, and exacerbated by the fact that we
-need to apply this algorithm to each rewritten loops that we have discovered
-using transformation rules.  For this we make use of the first few steps of a
-scheduling technique known as \emph{iterative modulo scheduling}~\cite{rau94},
-to efficiently compute a lower bound on the initiation interval as an
-approximation to the actual value, and subsequently, the estimated run time of
-the loop.
 
 
 \subsection{Obstacles in Adoption}
