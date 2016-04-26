@@ -125,22 +125,18 @@ MIPS binary to be executed on the FPGA.
 \subsection{Modulo SDC Scheduling}
 \label{bg:sub:modulo_sdc_scheduling}
 
+\subsubsection{Loop Pipelining}
+
 Loop parallelism, and subsequently, program run time is part of the main
 optimization objectives we optimize later in Chapter~\ref{chp:latopt}, hence
-in this subsection the concept of loop pipelining is introduced.  We consider
-our example program in Figure~\ref{bg:lst:dotprod}, which computes the
-dot-product, \verb|d|, of two arrays \verb|A| and \verb|B| of floating-point
-values.  A trivial way to schedule this loop is to allow each iteration to
-complete, before starting the next iteration.  This is however not very
-efficient, as we will see below, with a good schedule, operations across loop
-iterations can often temporally overlap, giving way to parallelism and improve
-performance of the loop execution.  This schedule must satisfy the constraints
-imposed by the data dependence and the amount of resources available, and such
-constraints make scheduling an NP-hard problem which is difficult to solve
-optimally and efficiently~\cite{hwang91}.  A technique known as modulo SDC
-scheduling~\cite{zhang13, canis14} is used in LegUp to efficiently attack the
-scheduling problem, and is further discussed below.
-
+in this subsection we first introduce the concept of loop pipelining, and
+then modulo SDC scheduling to efficiently pipeline loops.  We consider our
+example program in Figure~\ref{bg:lst:dotprod}, which computes the dot-product,
+\verb|d|, of two arrays \verb|A| and \verb|B| of floating-point values.  Here
+we assume both \verb|A| and \verb|B| are stored in the same RAM, and this RAM
+has one read port and one write port, and accessing this RAM has a one cycle
+latency.  We further assume floating-point multiplier and adder are both fully
+pipelined, and use $7$ and $10$ cycles respectively to produce outputs.
 \begin{figure}[ht]
     \centering
     \begin{minipage}{0.7\textwidth}
@@ -157,6 +153,72 @@ scheduling problem, and is further discussed below.
         arrays \texttt{A} and \texttt{B}, each with 1024 elements.
     }\label{bg:lst:dotprod}
 \end{figure}
+
+A trivial way to schedule this loop is to allow each iteration to complete,
+before starting the next iteration; this is however not very efficient.
+As we can see in Figure~\ref{bg:fig:sample_schedule_before}, with a good
+schedule, operations across loop iterations can often temporally overlap,
+giving way to parallelism and improve performance of the loop execution.  In
+Figure~\ref{bg:fig:sample_schedule_before}, iterations are laid out in rows,
+each clock cycle is a column, \textbf{mul} and \textbf{add} are multiplication
+and addition respectively, \verb|A[0]| and \verb|B[0]| are reads from the two
+arrays, and the arrows indicate the data-flow of \verb|d| across iterations.
+This schedule allows consecutive iterations to start every 10 cycles; and this
+number of clock cycles between the start of consecutive iterations is known
+as the \emph{initiation interval} ($\II$).  Loop iterations in this schedule
+repeat for $1024$ times (the \emph{trip count}, $N$), and each iteration
+requires $19$ cycles (the \emph{depth}, $D$, of the loop), as a result the
+overall latency $L$ of this loop is $(N - 1) \times \II + D = (1024 - 1) \times
+10 + 19 = 10,249$ cycles.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{sample_schedule_before}
+    \caption{The resulting schedule of the example program in generated}
+    \label{bg:fig:sample_schedule_before}
+\end{figure}
+
+Any valid schedule of this loop must satisfy the constraints imposed by data
+dependences.  For instance in our example, it is clear that in the loop body,
+multiplication of \verb|A[i]| and \verb|B[i]| must precede addition of the
+result of multiplication and \verb|d|.  Furthermore, in the $(i + 1)$-th
+iteration, access to the variable \verb|d| must wait until \verb|d| is updated
+with a new value in the $i$-th iteration, data dependences therefore also exist
+on \verb|d| across loop iterations.  We call the former kind of dependences
+\emph{intra-iteration dependences} and the latter \emph{inter-iteration
+dependences}.
+
+Besides data dependence constraints, the amount of resources available also
+affects loop scheduling.  For instance, under our assumption the RAM can only
+be read once per cycle, our schedule thus should avoid reading from the same
+RAM in the same clock cycle.  Limits on resource availability, along with data
+dependence constraints, make scheduling an NP-hard problem which is difficult
+to solve optimally and efficiently~\cite{hwang91}.  A heuristic technique
+known as modulo SDC scheduling~\cite{zhang13, canis14} is used in LegUp to
+efficiently attack the scheduling problem, and is further discussed below.
+
+
+\subsubsection{Modulo SDC Scheduling}
+
+Initially, dependence relations are extracted from the body of this loop, which
+form a dependence graph, where vertices are operations, and edges between pairs
+of vertices indicate dependence relations.  Figure~\ref{bg:fig:depgraph} shows
+the complete dependence graph of the loop in our Figure~\ref{bg:lst:dotprod}
+example.
+
+Intra-iteration dependence edges in the graph are labelled with latency value
+in cycles accordingly, signifying that the number of clock cycles that must
+elapse between the start of the predecessor and the successor operations.  To
+illustrate, the edge between the multiplier ``$\times$'' and adder ``$+$'' has
+a value of $7$, because ``$\times$'' takes 7 cycles to generate an output.
+
+We further describe that this dependence has a \emph{dependence distance}
+of $1$, as there is a $1$ iteration difference between each pair of value
+updates and their corresponding use.  Therefore, in the dependence graph, we
+add an edge from the output of the addition to the variable \verb|d|.  This
+edge is then further assigned an attribute $10 (1)$ which signifies that
+the adder has a latency of $10$ cycles, and this dependence has a distance
+$1$.
+
 \begin{figure}[ht]
     \centering
     \begin{tikzpicture}
@@ -174,53 +236,18 @@ scheduling problem, and is further discussed below.
             (add) to[out=-135, in=180] node[left=3pt]{10 (1)} (sum);
     \end{tikzpicture}
     \caption{%
-        The dependence graph formed by the data dependences in the loop body of
-        the dot-product example in Figure~\ref{bg:lst:dotprod}.
+        The dependence graph formed by the data dependences in the loop body
+        of the dot-product example in Figure~\ref{bg:lst:dotprod}.  The dashed
+        edge highlights the inter-iteration dependence.
     }\label{bg:fig:dotprod_depgraph}
 \end{figure}
 
-To start, dependence relations are extracted from the body of this loop, which
-form a dependence graph, where vertices are operations, and edges between
-pairs of vertices indicate dependence relations.  Here we assume an array
-access has a latency of one cycle, floating-point multiplier and adder uses
-$7$ and $10$ cycles respectively.  Dependence edges in the graph are assigned
-with attributes latency values accordingly.  At the end of each iteration,
-the variable \verb|d| is updated with a new value, which is then immediately
-read in the next iteration, thus there is a data dependence on \verb|d|
-across iterations; and we call this kind of dependences \emph{inter-iteration
-dependences}.  We further describe that this dependence has a \emph{dependence
-distance} of $1$, as there is a $1$ iteration difference between each pair
-of value updates and their corresponding use.  Therefore, in the dependence
-graph, we add an edge from the output of the addition to the variable \verb|d|.
-This edge is then further assigned an attribute $10 (1)$ which signifies that
-the adder has a latency of $10$ cycles, and this dependence has a distance
-$1$.  Finally, the complete dependence graph of the loop body can be found in
-Figure~\ref{bg:fig:dotprod_depgraph}.
-
-The next step is to compute ....
+The next step is to compute the recurrence-based minimum initiation interval.
 
 Vivado HLS seek to optimize this loop by overlapping its iterations in a
 process called pipelining.  By synthesizing this loop, we have obtained the
-following schedule, in which iterations are laid out in rows, each clock cycle
-is a column, \textbf{mul} and \textbf{add} are multiplication and addition
-respectively, \verb|A[0]| and \verb|B[0]| are reads from the two arrays, and
-the arrows indicate the data flow of \verb|d| across iterations, as shown in
+following schedule, , as shown in
 Figure~\ref{bg:fig:sample_schedule_before}.
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\linewidth]{sample_schedule_before}
-    \caption{The resulting schedule of the example program in generated}
-    \label{bg:fig:sample_schedule_before}
-\end{figure}
-
-Here we see that each iteration requires $18$ cycles, this value is known as
-the \emph{depth}, $D$, of the loop.  Because in each iteration, we must wait
-for the addition from previous iteration to complete before reading the value
-of \verb|d|, \emph{data dependences} exist across iterations.  For this reason,
-there are $10$ cycles between the starts of consecutive loop iterations, as
-enforced by the data dependences, this value is known as the \emph{initiation
-interval}.  Finally, the loop runs for $1024$ iterations (the \emph{trip
-count}, $N$), so its overall latency is $((N-1)\times \II) + D = 10250$ cycles.
 
 
 \subsection{Obstacles in Adoption}
