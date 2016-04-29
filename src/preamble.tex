@@ -182,14 +182,14 @@
 \newcommand{\assignstmt}[2]{\ensuremath{#1}\assign{#2}}
 \newcommand{\skipstmt}{\ensuremath\mathtt{skip}}
 \newcommand{\ifstmt}[2]{%
-\ensuremath\iflit \left(#1\right) \thenlit \left(#2\right)}
+    \ensuremath\iflit\left(#1\right)\thenlit\left(#2\right)}
 \newcommand{\ifelsestmt}[3]{%
-    \ensuremath\iflit \left(#1\right) \thenlit \left(#2\right)
-    \elselit \left(#3\right)}
+    \ensuremath\iflit\left(#1\right)\thenlit\left(#2\right)
+    \elselit\left(#3\right)}
 \newcommand{\whilestmt}[2]{%
-    \ensuremath\whilelit \left(#1\right) \dolit \left(#2\right)}
+    \ensuremath\whilelit\left(#1\right)\dolit\left(#2\right)}
 \newcommand{\forstmt}[2]{%
-    \ensuremath\forlit \left(#1\right) \dolit \left(#2\right)}
+    \ensuremath\forlit\left(#1\right)\dolit\left(#2\right)}
 
 % metasemantic syntax
 \newcommand{\binopset}{\ensuremath\mathbf{BinOp}}
@@ -238,9 +238,9 @@
 
 % latency
 \newcommand\II{\mathit{II}}
-\newcommand\MII{\mathit{II}_{\rm min}}
-\newcommand\RecMII{\mathit{II}_{\rm min}^{\rm rec}}
-\newcommand\ResMII{\mathit{II}_{\rm min}^{\rm res}}
+\newcommand\MII{\mathit{MII}}
+\newcommand\RecMII{\mathit{RecMII}}
+\newcommand\ResMII{\mathit{ResMII}}
 
 \newcommand\opsymbol{\otimes}
 

@@ -1,5 +1,5 @@
 %% cleanthesis.sty
-%% Copyright 2015 R. Langner
+%% Copyright 2016 R. Langner
 %
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -29,7 +29,7 @@
 %
 % **************************************************
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{cleanthesis}[2015/08/26 v0.3.1 Clean-looking thesis style inspired by Apple's user guide documents]
+\ProvidesPackage{cleanthesis}[2015/08/26 v0.3.1 A clean LaTeX style for thesis documents]
 %
 % **************************************************
 % Package options
@@ -92,6 +92,10 @@
 \define@choicekey*[ct]{cthesis}{bibstyle}[\val\bibstylenr]{alphabetic,numeric,authoryear}[alphabetic]{\def\cthesis@bibstyle{#1}}
 \setkeys[ct]{cthesis}{bibstyle=alphabetic}
 
+% OPTION wrapfooter
+% --> values = true|false
+\define@boolkey[ct]{cthesis}{wrapfooter}[false]{}
+\setkeys[ct]{cthesis}{wrapfooter=false}
 
 \DeclareOptionX*{
     \PackageWarning{cleanthesis}{Unknown option ‘\CurrentOption’}%
@@ -99,6 +103,8 @@
 
 \ProcessOptionsX[ct]<cthesis>
 
+% Checks if bib file exists, if not we throw an error
+\IfFileExists{\cthesis@bibfile.bib}{}{\PackageError{cleanthesis}{Unable to find BibTeX file \cthesis@bibfile.bib!}{Please provide the name of your BibTeX file to the cleanthesis package parameter bibfile.}}
 
 % **************************************************
 % Color Definitions
@@ -228,10 +234,10 @@
 % **************************************************
 % Load Packages
 % **************************************************
-\RequirePackage{fixltx2e}           % packages provides fixes to LaTeX2e
 \RequirePackage{microtype}          % typographic tuning
 \RequirePackage{setspace}           % for line spacing, e.g. \onehalfspacing
 \RequirePackage[]{graphicx}         % graphics import features
+\RequirePackage{tabularx}           % table features
 \RequirePackage{fancyhdr}           % for header and footer modifications
 \RequirePackage{enumitem}           % for simple list modifications
 \RequirePackage{blindtext}      % package for blind text
@@ -277,7 +283,6 @@
 %
 \RequirePackage[                    % use biblatex for bibliography
     backend=\cthesis@bibsys,        %   - use biber backend (bibtex replacement) or bibtex
-    bibencoding=utf8,               %   - use auto file encode
     style=\cthesis@bibstyle,        %   - use alphabetic (or numeric) bib style
     natbib=true,                    %   - allow natbib commands
     hyperref=true,                  %   - activate hyperref support
@@ -301,9 +306,9 @@
 % \setstretch{1.2}                    % value for line spacing, use \setstretch{} or \singlespacing or \onehalfspacing or \doublespacing
 \doublespacing{}
 \setlength{\parindent}{0em}         % value for paragraph indentation
-\clubpenalty = 10000                % prevent single lines at the beginning of a paragraph
-\widowpenalty = 10000               % prevent single lines at the end of a paragraph
-\displaywidowpenalty = 10000        %
+% \clubpenalty = 10000                % prevent single lines at the beginning of a paragraph
+% \widowpenalty = 10000               % prevent single lines at the end of a paragraph
+% \displaywidowpenalty = 10000        %
 
 % **************************************************
 % List Definitions
@@ -355,9 +360,14 @@
 \renewcommand{\chaptermark}[1]{%
     \markboth{%
         \footnotesize%
-        {\color{ctcolorfootermark}\textbf{\chaptername\ \thechapter}}%
+        % use \@chapapp instead of \chaptername to avoid 'Chapter A Appendix ...', thanks to @farbverlust (issue #47)
+        {\color{ctcolorfootermark}\textbf{\@chapapp\ \thechapter}}%
         \quad%
-        {\color{ctcolorfootertitle}#1}%
+        \ifct@cthesis@wrapfooter%
+            {\color{ctcolorfootertitle}\protect\parbox[t]{.7\textwidth}{#1}}%
+        \else%
+            {\color{ctcolorfootertitle}#1}%
+        \fi%
     }{}%
 }
 \renewcommand{\sectionmark}[1]{%
@@ -365,7 +375,11 @@
         \footnotesize%
         {\color{ctcolorfootermark}\textbf{\thesection}}%
         \quad%
-        {\color{ctcolorfootertitle}#1}%
+        \ifct@cthesis@wrapfooter%
+            {\color{ctcolorfootertitle}\protect\parbox[t]{.7\textwidth}{#1}}%
+        \else%
+            {\color{ctcolorfootertitle}#1}%
+        \fi%
     }%
 }
 %
@@ -577,6 +591,12 @@
 % The tocloft package enables us to control the typographic design of the
 % table of contents, list of figures and list of tables
 \RequirePackage{tocloft}
+% - fixes wrong fonts in the toc, thanks to magnucki
+\renewcommand{\cftchapfont}{\usefont{T1}{bch}{b}{n}\selectfont}
+\renewcommand{\cfttoctitlefont}{\thesischapterfont}
+\renewcommand{\cftloftitlefont}{\thesischapterfont}
+\renewcommand{\cftlottitlefont}{\thesischapterfont}
+%
 %
 % > adjusts the indention for figure and table entries (lof and lot)
 %   -- \cftsetindents{entry}{indent}{numwidth} sets the entry's indent to
