@@ -57,7 +57,6 @@ is immediately used in the next iteration \verb|i+1|.  Similarly, we also add
 new edges for reads and writes to the same variable, which can be treated as a
 special array with only one element. Our analysis yields the following MIR\@:
 \begin{equation}
-\newcommand\pair[2]{\footnotesize $#1,#2$}
     \label{lo:eq:array_example_latency}
     \begin{tikzpicture}[mir, inner sep=0pt]
         \node[mirnode] (var_A) at (0,0) {\texttt{A}};

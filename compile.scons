@@ -29,6 +29,7 @@ Depends(thesis, graffle_files)
 # Other dependencies
 Depends(thesis, files_with_ext('.pdf'))
 Depends(thesis, files_with_ext('.tex'))
+Depends(thesis, files_with_ext('.sty'))
 
 env.Alias('graffle', graffle_files)
 env.Alias('thesis', thesis)

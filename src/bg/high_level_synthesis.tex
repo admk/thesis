@@ -130,10 +130,11 @@ optimization objectives we optimize later in Chapter~\ref{chp:latopt}, hence
 in this subsection we first introduce the concept of loop pipelining.  We
 consider our example program in Figure~\ref{bg:lst:dotprod}, which computes the
 dot-product, \verb|d|, of two arrays \verb|A| and \verb|B| of floating-point
-values.  Here we assume both \verb|A| and \verb|B| are stored in the same RAM,
-and this RAM has one read port, and accessing this RAM has a one cycle latency.
-We further assume floating-point multiplier and adder are both fully pipelined,
-and use $7$ and $10$ cycles respectively to produce outputs.
+values.  We assume both arrays are stored in the same RAM, which has one read
+port, and accessing this RAM has a one cycle latency.  We further assume
+no limits on the number of arithmetic operators that can by allocated,
+floating-point multiplier and adder are both fully pipelined, and use $7$ and
+$10$ cycles respectively to produce outputs.
 \begin{figure}[ht]
     \centering
     \begin{minipage}{0.7\textwidth}
@@ -175,28 +176,29 @@ overall latency $L$ of this loop is $(N - 1) \times \II + D = (1024 - 1) \times
     }\label{bg:fig:sample_schedule_before}
 \end{figure}
 
-Any valid schedule of this loop must satisfy the constraints imposed by data
-dependences.  For instance in our example, it is clear that in a \emph{single}
-iteration, in the loop body, multiplication of \verb|A[i]| and \verb|B[i]|
-must precede addition of \verb|d| and the multiplied result.  Furthermore, in
-the $(i + 1)$-th iteration, access to the variable \verb|d| must wait until
-\verb|d| is updated with a new value in the $i$-th iteration, data dependences
-therefore also exist on \verb|d| \emph{across} loop iterations.  We call the
-former kind of dependences \emph{intra-iteration dependences} and the latter
-\emph{inter-iteration dependences}.
+Any valid schedule of this loop must satisfy the constraints imposed by
+data-dependences.  For instance in our example, it is clear that in a
+\emph{single} iteration, in the loop body, multiplication of \verb|A[i]|
+and \verb|B[i]| must precede addition of \verb|d| and the multiplied
+result.  Furthermore, in the $(i + 1)$-th iteration, access to the variable
+\verb|d| must wait until \verb|d| is updated with a new value in the $i$-th
+iteration, data-dependences therefore also exist on \verb|d| \emph{across}
+loop iterations.  We call the former kind of dependences \emph{intra-iteration
+dependences} and the latter \emph{inter-iteration dependences}.
 
-Besides data-dependence constraints, the amount of resources available also
-affects loop scheduling.  For instance, under our assumption the RAM can only
-be read once per cycle, our schedule thus should avoid reading from the same
-RAM in the same clock cycle.  We say a schedule is optimal, in the sense that
-the overall latency $L = (N - 1) \times \II + D$, is minimized, while none
-of the constraints are violated.  However with a much more complex program,
-finding the optimal schedule is often an intractable task.  Limits on resource
-availability, along with dependence constraints, make scheduling an NP-hard
-problem which is difficult to solve optimally and efficiently~\cite{hwang91}.
-In the following part of this section, we discuss a heuristic technique known
-as \emph{modulo SDC scheduling}~\cite{zhang13, canis14} used in LegUp to
-efficiently attack the scheduling problem.
+Besides data-dependence constraints, the amount of resources available
+also affects loop scheduling.  For instance, under our assumption in
+Figure~\ref{bg:lst:dotprod} the RAM can only be read once per cycle, our
+schedule thus should avoid reading from the same RAM in the same clock cycle.
+We say a schedule is optimal, in the sense that the overall latency $L = (N -
+1) \times \II + D$, is minimized, while none of the constraints are violated.
+However with a much more complex program, finding the optimal schedule is
+often an intractable task.  Limits on resource availability, along with
+dependence constraints, make scheduling an NP-hard problem which is difficult
+to solve optimally and efficiently~\cite{hwang91}.  In the following part
+of this section, we discuss a heuristic technique known as \emph{modulo SDC
+scheduling}~\cite{zhang13, canis14} used in LegUp to efficiently attack the
+scheduling problem.
 
 
 \subsection{Modulo SDC Scheduling}
@@ -206,19 +208,20 @@ Many algorithms exist that can schedule loops efficiently.  For example,
 Fan~\etal~\cite{fan08} proposed that a schedule can be found by formulating
 the constraints into a satisfiability modulo theory (SMT) problem and use
 an SMT solver to modulo schedule operations.  A technique, Iterative Modulo
-Scheduling (IMS)~\cite{rau94}, has been a widely adopted by compilers
-that use software pipelining to schedule instructions for Very Long
-Instruction Word (VLIW) processors~\cite{mcnairy03}.  This method has also
-been widely adopted in HLS tools such as PICO-NPA~\cite{schreiber02},
-Trident~\cite{tripp05} and LegUp~\cite{canis13, canis14}.  A new method, the
-modulo SDC scheduling algorithm, has recently gained traction and has been used
-by Canis~\etal~\cite{canis14} in their LegUp and Zhang~\etal~\cite{zhang13},
-because an SDC formulation can perform operator chaining, \ie~allowing
-operations with combinational logics to be carried out in the same clock cycle.
-In contrast, IMS in its initial form~\cite{rau94}, did not consider operator
-chaining, and Schreiber~\etal~\cite{schreiber02} found this to be non-trivial
-in IMS and requires static timing analysis of chained operations.  Modulo SDC
-scheduling is therefore explained in more detail below.
+Scheduling (IMS)~\cite{rau94}, has been a widely adopted by compilers that use
+software pipelining to schedule instructions for Very Long Instruction Word
+(VLIW) processors~\cite{mcnairy03}.  This method has also been widely adopted
+in HLS tools such as PICO-NPA~\cite{schreiber02}, Trident~\cite{tripp05} and
+LegUp~\cite{canis13, canis14}.  IMS for software pipelining~\cite{rau94},
+however did not consider operator chaining, \ie~allowing operations
+with combinational logics to be carried out in the same clock cycle.
+Schreiber~\etal~\cite{schreiber02} in their adoption of IMS in HLS, found
+operator chaining to be non-trivial in IMS and requires static timing analysis
+of combinational components~\cite{canis14}.  A new method, the modulo SDC
+scheduling algorithm, has recently gained traction and has been used by
+Canis~\etal~\cite{canis14} in their LegUp and Zhang~\etal~\cite{zhang13},
+because an SDC formulation is more suited to model the effect of chaining
+operators, and modulo SDC scheduling is thus explained in more detail below.
 
 \subsubsection{Constructing the Data-Dependence Graph}
 
@@ -238,15 +241,15 @@ example.
             {$\times$};
         \node (sum) [left=of mul, xshift=-10mm] {\texttt{d}};
         \node (add) [below right=of sum, xshift=-4mm, yshift=5mm] {$+$};
-        \draw[->] (ai)  -- node[near start, below=1pt]{1} (mul);
-        \draw[->] (bi)  -- node[near start, below=1pt]{1} (mul);
-        \draw[->] (mul) -- node[near start, below=1pt]{7} (add);
-        \draw[->] (sum) -- node[near start, below=1pt]{0} (add);
+        \draw[->] (ai)  -- node[auto]{\pair10} (mul);
+        \draw[->] (bi)  -- node[auto]{\pair10} (mul);
+        \draw[->] (mul) -- node[auto]{\pair70} (add);
+        \draw[->] (sum) -- node[auto]{\pair00} (add);
         \draw[->,dashed]
-            (add) to[out=-135, in=180] node[left=3pt]{10 (1)} (sum);
+            (add) to[out=-135, in=180] node[left=3pt]{\pair{10}{1}} (sum);
     \end{tikzpicture}
     \caption{%
-        The dependence graph formed by the data dependences in the loop body
+        The dependence graph formed by the data-dependences in the loop body
         of the dot-product example in Figure~\ref{bg:lst:dotprod}.  The dashed
         edge highlights the inter-iteration dependence.
     }\label{bg:fig:depgraph}
@@ -289,15 +292,15 @@ following equation:
     \MII = \max\left(\RecMII, \ResMII\right).
 \end{equation}
 
-Firstly, we compute $\ResMII$, by finding the most constrained resources in the
-loop, as these limits impact the $\ResMII$ value.  For example, we consider
-our example loop in Figure~\ref{bg:lst:dotprod}, we do not impose limits on
-the number of floating-point operators that can be allocated, but assume
-there is a constraint which restricts the rate of memory accesses, \ie~only
-one read is allowed in each clock cycle.  Because each iteration requires
-two accesses to the same memory, a $\ResMII = 2$ will thus fully occupy the
-RAM throughput.  To generalize this to all loops, we consider for each type
-of operations $\mathrm{op}$ being used in the loop, the number of available
+Firstly, we compute $\ResMII$, by finding the most constrained resources
+in the loop, as these limits impact the $\ResMII$ value.  For example,
+our example in Figure~\ref{bg:lst:dotprod} does not impose limits on the
+number of floating-point operators that can be allocated, but assumes there
+is a constraint which restricts the rate of memory accesses, \ie~only one
+read is allowed in each clock cycle.  Because each iteration requires two
+accesses to the same memory, a $\ResMII = 2$ will thus fully occupy the RAM
+throughput.  To generalize this to all loops, we consider for each type of
+operations $\mathrm{op}$ being used in the loop, the number of available
 resources $r_\mathrm{op}$ for $\mathrm{op}$ and the number of occurrences
 $n_\mathrm{op}(G)$ of $\mathrm{op}$ in the loop dependence graph $G$, to
 evaluate $\left\lceil n_\mathrm{op}(G) / r_\mathrm{op} \right\rceil$, the
@@ -338,9 +341,9 @@ Equivalently, we can derive an equation for $\RecMII$ for the graph $G$:
 For example, in the dependence graph (Figure~\ref{bg:fig:depgraph}) of our
 simple program (Figure~\ref{bg:lst:dotprod}), one cycle,
 \tikz[baseline=-0.65ex]{%
-    \node(d) at (0, 0) {$d$};
+    \node(d) at (0, 0) {\texttt{d}};
     \node(plus) at (5ex, 0) {$+$};
-    \draw[->] (d) -- (plus);
+    \draw[->] (d)-- (plus);
     \draw[->,dashed] (plus) to[out=115, in=65] (d);
 },
 exists and the sums of latencies and dependence distances along this cycle are
@@ -358,23 +361,109 @@ discussed in Chapter~\ref{chp:latopt}, Section~\ref{lo:sub:latency_analysis}.
 
 \subsubsection{Scheduling Operations}
 
-In module SDC scheduling, we aim to assign each operation, corresponding
-to each vertex $v$ in the graph, to a time slot $s_v$ when it begins its
-operation.  While in this process, the scheduling must ensure that all
-assignments do not violate data-dependence and resource constraints.  For
-instance if a multiply operation is allocated with a time slot in the second
-clock cycle, in each iteration it will start computation in the second clock
-cycle of that iteration.
+After assuming a tentative constant $\II$, in module SDC scheduling, we try to
+construct an SDC problem in order to solve for the schedule.  We aim to assign
+each operation, corresponding to each vertex $v$ in the graph, to a time slot
+$s_v$ when it begins its operation.  While in this process, the scheduling
+must ensure that all assignments do not violate data-dependence and resource
+constraints.  For instance if a multiply operation is allocated with a time
+slot in the second clock cycle, in each iteration it will start computation in
+the second clock cycle of that iteration.
 
-To begin, we ignore the resource limits for now and formulate a SDC problem for
-the dependence constraints.  For each dependence edge $u \xrightarrow{\langle
-l, d \rangle} v$ from vertex $u$ to vertex $v$ in the graph, it is possible to
-write down the following inequality, where $s_u$ and $s_v$ are respectively the
-time slots for vertices $u$ and $v$:
-
+To begin, we ignore the resource limits for now and formulate an SDC
+problem for the dependence constraints.  For each dependence edge $u
+\xrightarrow{\langle l, d \rangle} v$ from vertex $u$ to vertex $v$ in the
+graph, it is possible to write down the following inequality, where $s_u$ and
+$s_v$ are respectively the time slots for vertices $u$ and $v$:
 \begin{equation}
-    s_u - s_v \leq \II \times d - l
+    s_u - s_v \leq \II \times d - l.
 \end{equation}
+For instance, the edge $\times \xrightarrow{\langle 7, 0 \rangle} +$ is an
+intra-iteration dependence, hence $\II$ does not constraint the scheduling
+relation between these two operations and we substitute $d$ with $0$ and $l$
+with $7$, and the $\II$ term vanishes, to derive~\eqref{bg:eq:sdc_intra} below,
+whereas the back-edge $+ \xrightarrow{\langle 10, 1 \rangle} \mathtt{d}$
+produces the following inequality in~\eqref{bg:eq:sdc_inter}:
+\begin{align}
+    s_\times - s_+ &\leq -7,
+    \label{bg:eq:sdc_intra} \\
+    s_+ - s_\mathtt{d} &\leq \II - 10.
+    \label{bg:eq:sdc_inter}
+\end{align}
+
+Besides dependence constraints, additional constraints are used to limit the
+length of critical paths in combinational logics, such that for instance, a
+long chain of additions can be broken down into multiple cycles to guarantee
+the frequency requirement.  For all paths $u \rightarrow \cdots \rightarrow
+v$ between inter-iteration dependent vertices $u$ and $v$ consisting of
+only combinational logics, it is possible to compute a critical path delay
+$\mathrm{delay}(u, v)$.  This critical path delay is defined as the largest sum
+of propagation delays of each intermediate operation along any combinational
+path from $u$ to $v$.  For a pair of dependent vertices $u$ and $v$ such
+that $\mathrm{delay}(u, v) > T_\mathrm{clk}$, where $T_\mathrm{clk} =
+\frac{1}{f_\mathrm{clk}}$ and $f_\mathrm{clk}$ is the target clock frequency,
+we can create the following constraint~\cite{cong06}:
+\begin{equation}
+    s_u - s_v \leq - \left\lceil
+        \frac{
+            \mathrm{delay}(u, v)
+        }{
+            T_\mathrm{clk}
+        }
+    \right\rceil + 1.
+\end{equation}
+This inequality ensures that for any the critical path delay between $u$
+and $v$ greater than $T_\mathrm{clk}$, this path cannot be scheduled within
+one clock cycle and it should be split into at least $ \left\lceil \frac{
+\mathrm{delay}(u, v) }{ T_\mathrm{clk} } \right\rceil $ cycles.
+
+The rationale of using the SDC formulation to model data-dependence constraints
+is that the feasibility of an SDC system and the corresponding solution, if
+exists, can be found efficiently.  More precisely, using the Bellman-Ford
+algorithm~\cite{schrijver05}, it can run in $\Theta(l n)$ time, where
+$l$ is the number of constraint inequalities and $n$ is the number of
+variables~\cite{zhang13}.  Additionally, an SDC problem can be incrementally
+solved, \ie~a new solution, if exists, can be updated in $O(m + n \log n)$
+time when a constraint is added or removed, by using the algorithm presented
+by Ramalingam~\etal~\cite{ramalingam99}.  In contrast, traditional ILP
+scheduling techniques make use of $O(mn)$ variables to represent a scheduling
+problem, where $m$ is the number of time slots and $n$ is the number of
+operations~\cite{hwang91}, and solving this ILP problem often demands expensive
+branch-and-bound procedures~\cite{zhang13}.
+
+Unfortunately, resources constraints, because of their non-linearity, cannot
+be easily expressed as SDC constraints.  Therefore, a data structure called
+\emph{modulo reservation table} (MRT) is used to keep track of resource
+constraints as the loop is incrementally scheduled~\cite{canis14}.  The MRT
+has $\II$ columns and each row tracks an available resource.  When a certain
+resource is used in the time slot $s_u$, the MRT records an entry for this
+resource in column $s_u \mod \II$ and the corresponding row of this resource.
+To illustrate, consider our example in Figure~\ref{bg:lst:dotprod}, which
+assumes a single read to the memory in one cycle for both arrays.  The MRT thus
+has $\II = 10$ columns, and $1$ row for accessing the memory.  If \verb|A[i]|
+is assigned with a time slot $0$, then a schedule assigning \verb|B[i]| to the
+same time slot must be invalid, because a record exists for \verb|A[i]| in row
+$1$ column $0$, and thus \verb|B[i]|, which is competing for the same resource,
+hence must be scheduled in a later time slot.
+
+A typical modulo SDC scheduling algorithm begins with a schedule without
+resource constraints.  A priority function, is then used to sort all
+resource-constrained operations by perturbation, which is to give greater
+importance to operations that have a greater impact on the schedule when they
+are moved~\cite{canis14}.  For each operator $u$ in this sorted list, if $u$ is
+currently scheduled at time slot $t_u$ and does not have a resource conflict
+in the MRT, a new constraint $s_u = t_u$ is constructed, otherwise a different
+constraint $s_u \geq t_u + 1$ is used to ensure the operation $u$ is scheduled
+one cycle later, so that it does not compete for the resource in time slot
+$t_u$.  This newly created constraint is then tentatively added to the SDC
+problem.  For a feasible resulting SDC problem, a new solution can be found
+incrementally, otherwise the algorithm backtracks to a latest feasible SDC
+formulation and try to schedule other operators before $u$.  A time budget can
+also be used to limit the number of attempts to schedule resource-constrained
+operators; if a valid schedule cannot be found under the given budget,
+the $\II$ can be incrementing by $1$ to relax the dependence and resource
+constraints, and the above mentioned procedure can be repeated until a valid
+schedule is found.
 
 
 \subsection{Obstacles in Adoption}
