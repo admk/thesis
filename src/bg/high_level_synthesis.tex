@@ -3,17 +3,16 @@
 
 High-level synthesis (HLS) is the process of compiling a high-level
 representation of an application (usually in C, C++ or MATLAB) into a
-register-transfer-level (RTL) implementation~\cite{coussy, gajski}.  By
-using the design flow discussed in Section~\ref{bg:sub:rtl_design}, this
-RTL design can then be synthesized into a circuit, which in turn can be
-programmed onto the FPGA device.
+register-transfer-level (RTL) implementation~\cite{coussy, gajski}.  In turn,
+this RTL design can be synthesized into a circuit and programmed onto the FPGA
+device.
 
-The major advantage of HLS is that HLS tools enable us to work in a high-level
-language, as opposed to facing labor-intensive tasks such as optimizing timing
-and designing control logic in the RTL design process.  This allows application
-designers to focus instead on the algorithmic and functional aspects of their
-implementation~\cite{coussy}, without concerning themselves with the above
-intricate details of manual RTL designs.
+The major advantage of HLS tools is that they enable us to work in a high-level
+language (HLL), as opposed to facing labor-intensive tasks such as optimizing
+timing and designing control logic in the RTL design process.  This allows
+application designers to focus instead on the algorithmic and functional
+aspects of their implementation~\cite{coussy}, without concerning themselves
+with the above intricate details of manual RTL designs.
 
 Another advantage of using HLS tools is that they are in general more
 productive and less error-prone to work with, when compared with traditional
@@ -23,14 +22,14 @@ RTL design can be notoriously difficult to debug, whereas C code can be easily
 tested on an ordinary microprocessor, and mature debug and analysis tools for C
 are freely accessible~\cite{canis13}.
 
-HLS tools further benefit us in their ability to automatically search the
-design space with a reasonable design cost~\cite{bdti}, explore a large number
-of trade-offs between performance, cost and power~\cite{mcfarland}, which is
-generally much more difficult to achieve in RTL tools.  Our thesis proposes
-a natural extension to HLS tools by automatically exploring the space of
-rewrites of floating-point numerical C programs, which are equivalent in real
-arithmetic, but could trade off accuracy, throughput and resource utilization
-when synthesized into circuits.
+HLS tools further benefit us in their ability to automatically search
+the design space with a reasonable design cost~\cite{bdti}, potentially
+explore a large number of trade-offs between performance, cost and
+power~\cite{mcfarland}, which is generally much more difficult to achieve
+in RTL tools.  Our thesis proposes a natural extension to HLS tools by
+automatically exploring the space of rewrites of floating-point numerical
+C programs, which are equivalent in real arithmetic, but could trade off
+accuracy, throughput and resource utilization when synthesized into circuits.
 
 With recent advancements in this area, HLS tools has received a resurgence of
 interest, particularly in the FPGA community, and some applications synthesized
@@ -78,10 +77,9 @@ synthesizes C functions into circuits in a series of steps.
 
 It starts by using the LLVM front-end to compile a C function into LLVM IR,
 a platform-independent intermediate representation (IR) that is capable of
-cleanly representing high-level languages~\cite{llvm_ir}, conventional and
-HLS-focused compiler optimization passes are used to transform the IR program,
-such that the result when synthesized will have better performance when
-running on the FPGA\@.
+cleanly representing HLLs~\cite{llvm_ir}, conventional and HLS-focused compiler
+optimization passes are used to transform the IR program, such that the result
+when synthesized will have better performance when running on the FPGA\@.
 
 This is then followed by the HLS tool flow, which consists of four logical
 steps: allocation, scheduling, binding and RTL generation.  The first
@@ -221,7 +219,8 @@ of combinational components~\cite{canis14}.  A new method, the modulo SDC
 scheduling algorithm, has recently gained traction and has been used by
 Canis~\etal~\cite{canis14} in their LegUp and Zhang~\etal~\cite{zhang13},
 because an SDC formulation is more suited to model the effect of chaining
-operators, and modulo SDC scheduling is thus explained in more detail below.
+operators, and therefore in this subsection an overview is provided for their
+modulo SDC scheduling approach.
 
 \subsubsection{Constructing the Data-Dependence Graph}
 
@@ -417,8 +416,13 @@ and $v$ greater than $T_\mathrm{clk}$, this path cannot be scheduled within
 one clock cycle and it should be split into at least $ \left\lceil \frac{
 \mathrm{delay}(u, v) }{ T_\mathrm{clk} } \right\rceil $ cycles.
 
-The rationale of using the SDC formulation to model data-dependence constraints
-is that the feasibility of an SDC system and the corresponding solution, if
+Besides dependence and frequency constraints, Zhang~\etal~\cite{zhang13}
+further introduces optional ones, such as lifetime constraints, which aim to
+minimize the register requirements, and relative timing constraints, which can
+be used to satisfy the timing requirement of user-specified I/O protocols.
+
+The rationale of using the SDC formulation to model constraints is that
+the feasibility of an SDC system and the corresponding solution, if it
 exists, can be found efficiently.  More precisely, using the Bellman-Ford
 algorithm~\cite{schrijver05}, it can run in $\Theta(l n)$ time, where
 $l$ is the number of constraint inequalities and $n$ is the number of
@@ -429,7 +433,7 @@ by Ramalingam~\etal~\cite{ramalingam99}.  In contrast, traditional ILP
 scheduling techniques make use of $O(mn)$ variables to represent a scheduling
 problem, where $m$ is the number of time slots and $n$ is the number of
 operations~\cite{hwang91}, and solving this ILP problem often demands expensive
-branch-and-bound procedures~\cite{zhang13}.
+branch-and-bound procedures~\cite{zhang13} as ILP is NP-complete~\cite{karp10}.
 
 Unfortunately, resources constraints, because of their non-linearity, cannot
 be easily expressed as SDC constraints.  Therefore, a data structure called
@@ -469,4 +473,77 @@ schedule is found.
 \subsection{Obstacles in Adoption}
 \label{sub:obstacles_in_adoption}
 
+High-level synthesis, with its development-cost advantage over traditional RTL
+design paradigm, is gaining traction in the circuit design community.  It is
+however in its early phase, and these tools still pose challenges in terms of
+using them as early adopters.
 
+HLS tools may have limited support for HLL constructs.  For instance,
+Vivado HLS requires pointer arrays to reference values or arrays of values,
+platform-specific functions such as \verb|memcpy()| and \verb|memset()|
+are supported but \verb|const| values must be used, and finally, while
+tail-recursive functions written with C++ template constructs can be
+transformed into loops in compile time, recursion in general cannot be
+implemented~\cite{vivado_hls}.  Additionally, software programs often rely
+on libraries, many of which are platform-specific, whereas in HLS\@, these
+libraries may not be appropriate and may likely be unavailable.  These above
+limitations make migrating existing software source code to a functional HLS
+design a demanding task.
+
+Optimizing C code for HLS could be a laborious process and requires expertise
+in hardware design.  Although software compilers face similar challenges to
+make programs run faster, experienced software programmers can often manually
+fine-tune software implementations for performance, whereas currently only
+engineers with an RTL-design background may be able to tailor source code
+for the best circuit performance.  Winterstein~\etal~\cite{felix13} compared
+manual RTL designs with HLS implementations of K-means clustering algorithms,
+and discovered that with extensive manual code transformations, Vivado HLS can
+still be persuaded to produce an efficient circuit.  When compared to the RTL
+counterparts, their HLS designs achieved up to 40\% of the performance in terms
+of area-time product.  Zhang~\etal~\cite{zhang15} implemented a convolutional
+neural network (CNN) accelerator in Vivado HLS, they optimized their design by
+program transformations techniques such as loop interchange, tiling, pipelining
+and unrolling, and noticed that by enumerating combinations of loop tile sizes,
+loop nest ordering and unroll factors, they were able to select the best
+implementation by analytically estimating the throughput of each.  Similarly,
+Suda~\etal~\cite{suda16} explored the design space of their CNN accelerator
+by solving a resource-constrained throughput optimization problem, in order
+to generate a high-performance CNN accelerator to be synthesized in Altera
+OpenCL compiler~\cite{aoc}.  HLS tools can provide some syntactic constructs
+to automate lower-level code transformations such as instruction parallelism,
+loop pipelining and unrolling.  It is however up to the engineer to decide
+how to utilize these transformations, and laboriously determine if they will
+improve their design.  Higher-level optimizations such as the manual design
+space exploration explained in earlier examples, if automated, may allow tools
+to vastly improve the performance of HLS applications.  Making use of these
+techniques in HLS, however, remains a significant challenge.
+
+HLS tools can often make use techniques such as loop pipelining discussed in
+Section~\ref{bg:sub:modulo_sdc_scheduling} to detect and exploit parallelism at
+the instruction-level.  Coarser-grain parallelism, which is tightly associated
+with the algorithmic details, is however much more complex~\cite{nane15},
+and many optimization opportunities are not yet exploited by HLS tools.  For
+instance, unlike the CPU, which has a monolithic storage and thus their
+performance is often limited by the memory wall, the FPGA has dedicated RAM
+blocks in the logic fabric to distribute memory bandwidth via data reuse.  HLLs
+such as C were designed with a mindset of the von Neumann architecture, and the
+source code in C typically do not specify how the memory hardware is utilized.
+For this reason, HLS tools must be able to intelligently partition a monolithic
+memory into smaller chunks that can be accessed in parallel, in order to
+maximize performance; how to attain this is still a challenging research
+area~\cite{cong11, cong12, wang13, felix15}.
+
+Circuits produced by HLS tools are expected to be semantic-preserving.  It
+means that they should be functional equivalent to the original C programs; in
+other words, for any given program inputs, the tools should guarantee that the
+computed outputs from the original C code and the synthesized circuit should
+be identical.  A different class of optimizations, which we call \emph{lossy
+optimization}, break this promise by optimizing data-paths in a way that may
+impact numerical accuracy.  HLS tools could benefit from these optimizations
+in the future, which bring further performance improvements that can not
+be attained by traditional optimizations alone.  Because these approaches
+could affect numerical accuracy, performance optimization and round-off error
+analysis may be carried out simultaneously.  We will further discuss lossy
+optimization methods such as expression balancing employed by Vivado HLS and
+LegUp in Section~\ref{bg:sec:discovering_equivalent_programs} and word-length
+optimization in Section~\ref{bg:sec:wordlength}.
