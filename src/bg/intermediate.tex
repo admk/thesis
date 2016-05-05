@@ -82,11 +82,11 @@ instruction:
 \end{lstlisting}\vspace{-16.5pt}
 This instruction directs the control-flow to BB1 or BB2, and the variable
 \verb|%exitcond| in the terminator instruction decides which branch is taken.
-Finally, the complete CFG is shown in Figure~\ref{bg:fig:dotprod_cfg}.  It
-is noteworthy that BB2 has two edges that leads to either \verb|BB1| or
-\verb|BB2| itself.  If \verb|%exitcond| evaluates to false ($\bot$), then
-another iteration of BB2 will commence, otherwise ($\top$) the exit condition
-is satisfied and will lead the control-flow to \verb|BB1|.
+Finally, the complete CFG is shown in Figure~\ref{bg:fig:dotprod_cfg}.  It is
+noteworthy that BB2 has two edges that leads to either \verb|BB1| or \verb|BB2|
+itself.  If \verb|%exitcond| evaluates to false (\textbf{ff}), then another
+iteration of BB2 will commence, otherwise (\textbf{tt}) the exit condition is
+satisfied and will lead the control-flow to \verb|BB1|.
 \begin{figure}[ht]
     \centering
     \tikzstyle{block} = [
@@ -98,19 +98,20 @@ is satisfied and will lead the control-flow to \verb|BB1|.
         \node [block, below of=entry, node distance=4em] (bb0) {\texttt{BB0}};
         \node [block, below of=bb0, node distance=4em] (bb1) {\texttt{BB1}};
         \node [block, below of=bb1, node distance=4em] (bb2) {\texttt{BB2}};
-        \node [tmp, left of=bb1, node distance=10em] (bb1tl) {};
-        \node [tmp, right of=bb1, node distance=10em] (bb1tr) {};
-        \node [tmp, left of=bb2, node distance=10em] (bb2tl) {};
+        \node [tmp, right of=bb1, node distance=5em] (bb1tr) {};
+        \node [tmp, left of=bb2, node distance=8em] (bb2tl) {};
+        \node [tmp, right of=bb2, node distance=8em] (bb2tr) {};
         \node [below of=bb2, node distance=4em] (exit) {Exit};
         \draw [->] (entry) -- (bb0);
         \draw [- ] (bb0)    to[out=0, in=90]    (bb1tr);
         \draw [->] (bb1tr)  to[out=-90, in=0]   (bb2);
         \draw [- ] (bb1)    to[out=180, in=90]  (bb2tl);
         \draw [->] (bb2tl)  to[out=-90, in=180] (exit);
-        \draw [->] (bb2) -- node[auto, swap]{$\top$} (bb1);
-        \draw [->] (bb2) to[out=-150, in=150, loop] node[auto]{$\bot$} (bb2);
+        \draw [->] (bb2) -- node[auto, swap]{\textbf{tt}} (bb1);
+        \draw [->] (bb2) to[out=-150, in=150, loop]
+            node[auto, swap]{\textbf{ff}} (bb2);
     \end{tikzpicture}
-    \caption{The CFG of Figure~\ref{bg:lst:dotprod_ll}.
+    \caption{The CFG of the LLVM IR code in Figure~\ref{bg:lst:dotprod_ll}.
     }\label{bg:fig:dotprod_cfg}
 \end{figure}
 
@@ -122,15 +123,15 @@ The sequence of instructions that assigns to \verb|%3|-\verb|%9| in
 Figure~\ref{bg:lst:dotprod_ll} carries out most of the computations in the
 program.  It starts by reading \verb|A[i]| and \verb|B[i]|, multiplying them
 together, then add the result with \verb|d| to form a new variable, and
-finally, the iteration value is accumulated by $1$.  It may seem unusual
-that both the accumulated sum of products and the iteration value are not
-assigned to \verb|d| and \verb|i| respectively.  We can imagine two BBs, one
-initializes \verb|d| and \verb|i| to zeros, the other accumulates these two
-variables in a loop.  As all variables must be assigned once only, one of the
-BBs must use other names for these two variables.  When the control-flow of
-these two BBs join, we must introduce a way to read from the variables that are
+finally, the iteration value is accumulated by $1$.  It may seem unusual that
+both the accumulated sum of products and the iteration value are not assigned
+to \verb|d| and \verb|i| respectively.  We can imagine two BBs, one initializes
+\verb|d| and \verb|i| to zeros, the other accumulates these two variables in
+a loop.  As all variables must be assigned once only, one of the BBs should
+use different names for these two variables.  When the control-flow of these
+two BBs join, we must introduce a way to read from the variables that are
 assigned in the two BBs in the succeeding BB\@.  A new instruction, called the
-$\phi$-function is therefore introduced for our purpose.  The $\phi$-function
+$\phi$-function is therefore defined for our purpose.  The $\phi$-function
 accepts two variable names as its inputs, and produce the value of either
 variable as its output, determined by which preceding BB the control-flow came
 from.  For example, in LLVM IR, the instruction:
@@ -154,7 +155,7 @@ opportunities of parallelism~\cite{cytron87}, and finding equivalent parts in
 the program~\cite{alpern88}.
 
 
-\subsection{Others}
+\subsection{TODO}
 
 \todo{Migrate old stuff from below.}
 The structural optimization of general numerical programs is much more complex

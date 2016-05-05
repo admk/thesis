@@ -30,16 +30,17 @@ optimization objective, we use LegUp~\cite{legup}, an open-source HLS tool, as
 an example, to further examine in greater detail how its scheduling stage can
 make loops to run as efficiently as possible by pipelining them.
 
+\todo{Expand this?}
 Intermediate representations (IRs) are often used to facilitate program
-optimization.  Section~\ref{bg:sec:intermediate} we therefore study in detail
-the existing IRs designed for program optimization.
+optimization and program analysis.  Section~\ref{bg:sec:intermediate} we
+therefore study in detail the existing IRs designed for program optimization.
 
 In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
 interpretation~\cite{cousot77}, a theory to approximate mathematical objects
 that are not directly computable---because they are undecidable, intractable or
 both---in order to compute an approximation to them efficiently.  We informally
-introduce this theory, by way of reviewing Martel's approach~\cite{martel07} to
-statically analyze numerical accuracy in programs.
+introduce this theory, by way of reviewing existing techniques to statically
+analyze numerical applications.
 
 In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work on
 restructuring numerical programs to discover their equivalences efficiently.
