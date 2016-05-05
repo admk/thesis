@@ -3,9 +3,11 @@
 
 High-level synthesis (HLS) is the process of compiling a high-level
 representation of an application (usually in C, C++ or MATLAB) into a
-register-transfer-level (RTL) implementation~\cite{coussy, gajski}.  In turn,
-this RTL design can be synthesized into a circuit and programmed onto the FPGA
-device.
+register-transfer-level (RTL) implementation~\cite{coussy, gajski}.  In
+turn, this RTL design can be synthesized into a circuit and programmed onto
+the FPGA device.  With modern HLS tools, some applications synthesized with
+them are now with similar performance when compared with hand-crafted RTL
+implementations~\cite{bdti}.
 
 The major advantage of HLS tools is that they enable us to work in a high-level
 language (HLL), as opposed to facing labor-intensive tasks such as optimizing
@@ -31,13 +33,15 @@ automatically exploring the space of rewrites of floating-point numerical
 C programs, which are equivalent in real arithmetic, but could trade off
 accuracy, throughput and resource utilization when synthesized into circuits.
 
-With recent advancements in this area, HLS tools has received a resurgence of
-interest, particularly in the FPGA community, and some applications synthesized
-with HLS tools are now with similar performance when compared with hand-crafted
-RTL implementations~\cite{bdti}.  Xilinx now incorporates a sophisticated HLS
-flow into its Vivado design suite~\cite{vivado_hls} and the open-source HLS
-tool, LegUp~\cite{legup}, is gaining significant traction in the research
-community.
+With recent advancements in this area, HLS tools has received a resurgence
+of interest. Many commercial tools are released, such as Catapult
+High-Level Synthesis~\cite{catapultc}, Impulse C~\cite{impulsec} and
+PICO~\cite{schreiber02}, to meet the burgeoning demand from the FPGA
+community.  Xilinx now incorporates a sophisticated HLS flow named Vivado HLS
+into its Vivado design suite~\cite{vivado_hls}.  Besides commercial tools,
+many open-source HLS tools have also been released in recent years, such as
+ROCCC~\cite{roccc}, Trident~\cite{tripp05} and LegUp~\cite{legup}, and LegUp is
+gaining significant traction in the research community.
 
 
 \subsection{HLS Design Flow}
@@ -59,7 +63,7 @@ below.
 
 The first stage is to determine which parts of an application on the
 function-level are suitable candidates to be synthesized into hardware
-circuits, whereas the others can be run on a processor.  This stage starts by
+circuits, while the rest can be run on a processor.  This stage starts by
 compiling a C source program into a software executable targeting an FPGA-based
 MIPS processor.  This processor has additional circuitries designed to profile
 the software implementation of the original application.  By running the
@@ -137,10 +141,15 @@ $10$ cycles respectively to produce outputs.
     \centering
     \begin{minipage}{0.7\textwidth}
     \begin{lstlisting}
-    float d = 0.0f;
-    for (int i = 0; i < 1024; i++)
+    #define N 1024
+    float dotprod(float A[N], float B[N])
     {
-        d = d + A[i] * B[i];
+        float d = 0.0f;
+        for (int i = 0; i < N; i++)
+        {
+            d = d + A[i] * B[i];
+        }
+        return d;
     }
     \end{lstlisting}
     \end{minipage}
@@ -150,28 +159,28 @@ $10$ cycles respectively to produce outputs.
     }\label{bg:lst:dotprod}
 \end{figure}
 
-A trivial way to schedule this loop is to allow each iteration to complete,
-before starting the next iteration; this is however not very efficient.
-As we can see in Figure~\ref{bg:fig:sample_schedule_before}, with a good
-schedule, operations across loop iterations can often temporally overlap,
+A trivial way to schedule the loop in Figure~\ref{bg:lst:dotprod} is to allow
+each iteration to complete before starting the next iteration; this is however
+not very efficient.  As we can see in Figure~\ref{bg:fig:schedule}, with a
+good schedule, operations across loop iterations can often temporally overlap,
 giving way to parallelism and improve performance of the loop execution.  In
-Figure~\ref{bg:fig:sample_schedule_before}, iterations are laid out in rows,
-each clock cycle is a column, \textbf{mul} and \textbf{add} are multiplication
-and addition respectively, \verb|A[0]| and \verb|B[0]| are reads from the two
-arrays, and the arrows indicate the data-flow of \verb|d| across iterations.
-This schedule allows consecutive iterations to start every 10 cycles; and this
-number of clock cycles between the start of consecutive iterations is known
-as the \emph{initiation interval} ($\II$).  Loop iterations in this schedule
-repeat for $1024$ times (the \emph{trip count}, $N$), and each iteration
-requires $19$ cycles (the \emph{depth}, $D$, of the loop), as a result the
-overall latency $L$ of this loop is $(N - 1) \times \II + D = (1024 - 1) \times
-10 + 19 = 10,249$ cycles.
+Figure~\ref{bg:fig:schedule}, iterations are laid out in rows, each clock cycle
+is a column, \textbf{mul} and \textbf{add} are multiplication and addition
+respectively, \verb|A[0]| and \verb|B[0]| are reads from the two arrays, and
+the arrows indicate the data-flow of \verb|d| across iterations.  This schedule
+allows consecutive iterations to start every 10 cycles; and this number of
+clock cycles between the start of consecutive iterations is known as the
+\emph{initiation interval} ($\II$).  Loop iterations in this schedule repeat
+for $1024$ times (the \emph{trip count}, $N$), and each iteration requires $19$
+cycles (the \emph{depth}, $D$, of the loop), as a result the overall latency
+$L$ of this loop is $(N - 1) \times \II + D = (1024 - 1) \times 10 + 19 =
+10,249$ cycles.
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{sample_schedule_before}
+    \includegraphics[width=0.8\linewidth]{bg/fig/schedule}
     \caption{%
         The resulting schedule of the example program in generated.
-    }\label{bg:fig:sample_schedule_before}
+    }\label{bg:fig:schedule}
 \end{figure}
 
 Any valid schedule of this loop must satisfy the constraints imposed by
@@ -292,26 +301,26 @@ following equation:
 \end{equation}
 
 Firstly, we compute $\ResMII$, by finding the most constrained resources
-in the loop, as these limits impact the $\ResMII$ value.  For example,
-our example in Figure~\ref{bg:lst:dotprod} does not impose limits on the
-number of floating-point operators that can be allocated, but assumes there
-is a constraint which restricts the rate of memory accesses, \ie~only one
-read is allowed in each clock cycle.  Because each iteration requires two
-accesses to the same memory, a $\ResMII = 2$ will thus fully occupy the RAM
-throughput.  To generalize this to all loops, we consider for each type of
-operations $\mathrm{op}$ being used in the loop, the number of available
-resources $r_\mathrm{op}$ for $\mathrm{op}$ and the number of occurrences
-$n_\mathrm{op}(G)$ of $\mathrm{op}$ in the loop dependence graph $G$, to
-evaluate $\left\lceil n_\mathrm{op}(G) / r_\mathrm{op} \right\rceil$, the
-maximum ratio constitutes the final $\ResMII$, or equivalently:
+in the loop, as these limits impact the $\ResMII$ value.  For example, our
+example in Figure~\ref{bg:lst:dotprod} does not impose limits on the number
+of floating-point operators that can be allocated, but assumes there is a
+constraint which restricts the rate of memory accesses, \ie~only one read is
+allowed in each clock cycle.  Because each iteration requires two accesses to
+the same memory, a $\ResMII = 2$ will thus fully occupy the RAM throughput.
+To generalize this to all loops, we consider for each type of operations
+$\opsymbol$ being used in the loop, the number of available resources
+$r_\opsymbol$ for $\opsymbol$ and the number of occurrences $n_\opsymbol(G)$
+of $\opsymbol$ in the loop dependence graph $G$, to evaluate $\left\lceil
+n_\opsymbol(G) / r_\opsymbol \right\rceil$, the maximum ratio constitutes the
+final $\ResMII$, or equivalently:
 \begin{equation}
-    \ResMII = \max_{\mathrm{op}~\in~\mathrm{OpTypes}}
+    \ResMII = \max_{\opsymbol~\in~\mathrm{OpTypes}}
         \left\lceil
-            \frac{n_\mathrm{op}(G)}{r_\mathrm{op}}
+            \frac{n_\opsymbol(G)}{r_\opsymbol}
         \right\rceil,
 \end{equation}
-where $\mathrm{OpTypes}$ is a set of all types of operations, \eg~array
-accesses, arithmetic units, and others.
+where $\mathrm{OpTypes}$ is the set of all types of operations, \eg~array
+accesses, arithmetic units, and others, used in the loop.
 
 The second step is to evaluate $\RecMII$ by ensuring for all cycles $c$ in the
 graph $G$ the following inequalities hold:
@@ -381,8 +390,8 @@ For instance, the edge $\times \xrightarrow{\langle 7, 0 \rangle} +$ is an
 intra-iteration dependence, hence $\II$ does not constraint the scheduling
 relation between these two operations and we substitute $d$ with $0$ and $l$
 with $7$, and the $\II$ term vanishes, to derive~\eqref{bg:eq:sdc_intra} below,
-whereas the back-edge $+ \xrightarrow{\langle 10, 1 \rangle} \mathtt{d}$
-produces the following inequality in~\eqref{bg:eq:sdc_inter}:
+and the back-edge $+ \xrightarrow{\langle 10, 1 \rangle} \mathtt{d}$ produces
+the following inequality in~\eqref{bg:eq:sdc_inter}:
 \begin{align}
     s_\times - s_+ &\leq -7,
     \label{bg:eq:sdc_intra} \\
@@ -493,7 +502,7 @@ design a demanding task.
 Optimizing C code for HLS could be a laborious process and requires expertise
 in hardware design.  Although software compilers face similar challenges to
 make programs run faster, experienced software programmers can often manually
-fine-tune software implementations for performance, whereas currently only
+fine-tune software implementations for performance, while currently only
 engineers with an RTL-design background may be able to tailor source code
 for the best circuit performance.  Winterstein~\etal~\cite{felix13} compared
 manual RTL designs with HLS implementations of K-means clustering algorithms,
