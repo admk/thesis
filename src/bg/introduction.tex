@@ -35,13 +35,6 @@ Intermediate representations (IRs) are often used to facilitate program
 optimization and program analysis.  Section~\ref{bg:sec:intermediate} we
 therefore study in detail the existing IRs designed for program optimization.
 
-In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
-interpretation~\cite{cousot77}, a theory to approximate mathematical objects
-that are not directly computable---because they are undecidable, intractable or
-both---in order to compute an approximation to them efficiently.  We informally
-introduce this theory, by way of reviewing existing techniques to statically
-analyze numerical applications.
-
 In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work on
 restructuring numerical programs to discover their equivalences efficiently.
 Due to the full set of equivalent programs of an initial program is often
@@ -65,3 +58,10 @@ varying the precisions of individual arithmetic operators in a data-path, as
 some operators compute values that do not require high precisions and often
 their precisions can often be reduced to optimize other desirable objectives,
 while satisfying a given error budget.
+
+In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
+interpretation~\cite{cousot77}, a theory to approximate mathematical objects
+that are not directly computable---because they are undecidable, intractable or
+both---in order to compute an approximation to them efficiently.  We informally
+introduce this theory, by way of reviewing existing techniques to statically
+analyze numerical applications.

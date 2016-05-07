@@ -5,8 +5,8 @@ High-level synthesis (HLS) is the process of compiling a high-level
 representation of an application (usually in C, C++ or MATLAB) into a
 register-transfer-level (RTL) implementation~\cite{coussy, gajski}.  In
 turn, this RTL design can be synthesized into a circuit and programmed onto
-the FPGA device.  With modern HLS tools, some applications synthesized with
-them are now with similar performance when compared with hand-crafted RTL
+the FPGA device.  With modern HLS tools, some applications synthesized
+with them now have similar performance when compared with hand-crafted RTL
 implementations~\cite{bdti}.
 
 The major advantage of HLS tools is that they enable us to work in a high-level
@@ -33,15 +33,18 @@ automatically exploring the space of rewrites of floating-point numerical
 C programs, which are equivalent in real arithmetic, but could trade off
 accuracy, throughput and resource utilization when synthesized into circuits.
 
-With recent advancements in this area, HLS tools has received a resurgence
-of interest. Many commercial tools are released, such as Catapult
+With recent advancements in this area, HLS tools have received a resurgence
+of interest.  Many commercial tools are released, such as Catapult
 High-Level Synthesis~\cite{catapultc}, Impulse C~\cite{impulsec} and
-PICO~\cite{schreiber02}, to meet the burgeoning demand from the FPGA
-community.  Xilinx now incorporates a sophisticated HLS flow named Vivado HLS
-into its Vivado design suite~\cite{vivado_hls}.  Besides commercial tools,
-many open-source HLS tools have also been released in recent years, such as
-ROCCC~\cite{roccc}, Trident~\cite{tripp05} and LegUp~\cite{legup}, and LegUp is
-gaining significant traction in the research community.
+PICO~\cite{schreiber02}, to meet the burgeoning demand from the FPGA community.
+Xilinx incorporates a sophisticated HLS flow for C/C++ named Vivado HLS into
+its Vivado design suite~\cite{vivado_hls}, and their SDAccel Development
+Environment~\cite{sdaccel} for C/C++/OpenCL allows data centers to leverage
+FPGAs.  Altera's HLS solution is their Altera SDC for OpenCL~\cite{aoc} which
+accelerates OpenCL applications on their FPGA devices.  Besides commercial
+tools, many open-source HLS tools have also been released in recent years, such
+as ROCCC~\cite{roccc}, Trident~\cite{tripp05} and LegUp~\cite{legup}, and LegUp
+is now gaining significant traction in the research community.
 
 
 \subsection{HLS Design Flow}
@@ -88,30 +91,30 @@ when synthesized will have better performance when running on the FPGA\@.
 This is then followed by the HLS tool flow, which consists of four logical
 steps: allocation, scheduling, binding and RTL generation.  The first
 step, allocation, extracts information from the application and user
-requirements to be used in subsequent stages, \eg~modules and RAM blocks to
-be synthesized on the target device.  This is then followed by scheduling,
-which assigns the start and end states to each LLVM instruction in a finite
-state machine~\cite{legup}, using a scheduling algorithm based on the
-formulation of \emph{system of difference constraints} (SDC)~\cite{legup,
-canis13, cong06}.  Many applications spend most of their time in loops, a
-scheduling technique, known as \emph{loop pipelining}, is therefore used
-in HLS tools to make them run efficiently.  This technique admits greater
-parallelism of computation by allowing instructions in consecutive loop
-iterations to overlap as much as possible.  LegUp uses an algorithm, known
-as \emph{modulo SDC scheduling}~\cite{canis14}, which we will cover in
-Section~\ref{bg:sub:modulo_sdc_scheduling}, to minimize the wall-clock time
-of a pipelined loop.  The third logical step, binding, assigns each operator
-in the program to functional units to be synthesized into hardware, and maps
-program variables to registers.  The rationale behind this step is that
-operators such as multipliers and dividers that tend to use a lot of LUTs and
-DSP blocks can be shared temporally.  Sharing these functional units requires
-multiplexers, which is relatively expensive to implement in FPGA\@.  Each
-assignment of an operator to a functional unit is thus associated with a cost.
-The problem of minimizing this cost is called the assignment problem, which
-is efficiently solved in LegUp with a polynomial time complexity using the
-Hungarian algorithm~\cite{canis13, kuhn10}.  Finally, the RTL generation step
-gathers information produced from the previous three steps, to generate Verilog
-source code corresponding to the C function being compiled.
+requirements to be used in subsequent stages, \eg~modules and RAM blocks to be
+synthesized on the target device.  This is then followed by scheduling, which
+assigns the start and end states to each LLVM instruction in a finite state
+machine~\cite{legup}, using a scheduling algorithm based on the formulation
+of \emph{system of difference constraints} (SDC)~\cite{legup, canis13,
+cong06}.  Many applications spend most of their time in loops, a scheduling
+technique, known as \emph{loop pipelining}, is therefore used in HLS tools
+to make them run efficiently.  This technique admits greater parallelism of
+computation by allowing instructions in consecutive loop iterations to overlap
+as much as possible.  LegUp uses an algorithm, known as \emph{modulo SDC
+scheduling}~\cite{canis14}, which we will cover in Section~\ref{bg:sub:sdc},
+to minimize the wall-clock time of a pipelined loop.  The third logical
+step, binding, assigns each operator in the program to functional units to
+be synthesized into hardware, and maps program variables to registers.  The
+rationale behind this step is that operators such as multipliers and dividers
+that tend to use a lot of LUTs and DSP blocks can be shared temporally.
+Sharing these functional units requires multiplexers, which is relatively
+expensive to implement in FPGA\@.  Each assignment of an operator to a
+functional unit is thus associated with a cost.  The problem of minimizing this
+cost is called the assignment problem, which is efficiently solved in LegUp
+with a polynomial time complexity using the Hungarian algorithm~\cite{canis13,
+kuhn10}.  Finally, the RTL generation step gathers information produced from
+the previous three steps, to generate Verilog source code corresponding to the
+C function being compiled.
 
 The third, and also the final stage, is to integrate software and hardware
 components of the application onto the FPGA device, which is explained as
@@ -125,7 +128,7 @@ then be compiled into a MIPS binary to be executed on the FPGA\@.
 
 
 \subsection{Loop Pipelining}
-\label{bg:sub:loop_pipelining}
+\label{bg:sub:pipelining}
 
 Loop parallelism, and subsequently, program run time is part of the main
 optimization objectives we optimize later in Chapter~\ref{chp:latopt}, hence
@@ -209,7 +212,7 @@ scheduling problem.
 
 
 \subsection{Modulo SDC Scheduling}
-\label{bg:sub:modulo_sdc_scheduling}
+\label{bg:sub:sdc}
 
 Many algorithms exist that can schedule loops efficiently.  For example,
 Fan~\etal~\cite{fan08} proposed that a schedule can be found by formulating
@@ -480,7 +483,7 @@ schedule is found.
 
 
 \subsection{Obstacles in Adoption}
-\label{sub:obstacles_in_adoption}
+\label{bg:sub:obstacles_in_adoption}
 
 High-level synthesis, with its development-cost advantage over traditional RTL
 design paradigm, is gaining traction in the circuit design community.  It is
@@ -500,44 +503,45 @@ limitations make migrating existing software source code to a functional HLS
 design a demanding task.
 
 Optimizing C code for HLS could be a laborious process and requires expertise
-in hardware design.  Although software compilers face similar challenges to
-make programs run faster, experienced software programmers can often manually
-fine-tune software implementations for performance, while currently only
-engineers with an RTL-design background may be able to tailor source code
-for the best circuit performance.  Winterstein~\etal~\cite{felix13} compared
-manual RTL designs with HLS implementations of K-means clustering algorithms,
-and discovered that with extensive manual code transformations, Vivado HLS can
-still be persuaded to produce an efficient circuit.  When compared to the RTL
-counterparts, their HLS designs achieved up to 40\% of the performance in terms
-of area-time product.  Zhang~\etal~\cite{zhang15} implemented a convolutional
-neural network (CNN) accelerator in Vivado HLS, they optimized their design by
-program transformations techniques such as loop interchange, tiling, pipelining
-and unrolling, and noticed that by enumerating combinations of loop tile sizes,
-loop nest ordering and unroll factors, they were able to select the best
-implementation by analytically estimating the throughput of each.  Similarly,
-Suda~\etal~\cite{suda16} explored the design space of their CNN accelerator
-by solving a resource-constrained throughput optimization problem, in order
-to generate a high-performance CNN accelerator to be synthesized in Altera
-OpenCL compiler~\cite{aoc}.  HLS tools can provide some syntactic constructs
-to automate lower-level code transformations such as instruction parallelism,
-loop pipelining and unrolling.  It is however up to the engineer to decide
-how to utilize these transformations, and laboriously determine if they will
-improve their design.  Higher-level optimizations such as the manual design
-space exploration explained in earlier examples, if automated, may allow tools
-to vastly improve the performance of HLS applications.  Making use of these
+in hardware design.  Although software compilers face similar challenges
+to make programs run faster, experienced software programmers can often
+manually fine-tune software implementations for performance.  Because of
+the flexibility of HLLs, currently it is difficult for designers to apply
+common intuitions, and the quality of the synthesis result may be difficult
+to predict~\cite{gupta04}.  Winterstein~\etal~\cite{felix13} implemented
+K-means clustering algorithms in HLS, and discovered that with extensive
+manual code transformations and \verb|#pragma| statements that are specific to
+Vivado HLS, the tool can be persuaded to produce an efficient circuit.  When
+compared to the RTL counterparts, their HLS designs achieved up to 40\% of
+the performance in terms of area-time product.  Zhang~\etal~\cite{zhang15}
+implemented a convolutional neural network (CNN) accelerator in Vivado HLS,
+they optimized their design by program transformations techniques such as loop
+interchange, tiling, pipelining and unrolling, and noticed that by enumerating
+combinations of loop tile sizes, loop nest ordering and unroll factors, they
+were able to select the best implementation by analytically estimating the
+throughput of each.  Similarly, Suda~\etal~\cite{suda16} explored the design
+space of their CNN accelerator by solving a resource-constrained throughput
+optimization problem, in order to generate a high-performance CNN accelerator
+to be synthesized in Altera OpenCL compiler~\cite{aoc}.  HLS tools can provide
+some syntactic constructs to automate lower-level code transformations such
+as instruction parallelism, loop pipelining and unrolling.  It is however up
+to the engineer to decide how to utilize these transformations, and determine
+if they will improve the design.  Higher-level optimizations such as the
+manual design space exploration explained in earlier examples, may allow tools
+to vastly improve the performance of HLS applications.  Automating these
 techniques in HLS, however, remains a significant challenge.
 
-HLS tools can often make use techniques such as loop pipelining discussed in
-Section~\ref{bg:sub:modulo_sdc_scheduling} to detect and exploit parallelism at
-the instruction-level.  Coarser-grain parallelism, which is tightly associated
-with the algorithmic details, is however much more complex~\cite{nane15},
-and many optimization opportunities are not yet exploited by HLS tools.  For
-instance, unlike the CPU, which has a monolithic storage and thus their
-performance is often limited by the memory wall, the FPGA has dedicated RAM
-blocks in the logic fabric to distribute memory bandwidth via data reuse.  HLLs
-such as C were designed with a mindset of the von Neumann architecture, and the
-source code in C typically do not specify how the memory hardware is utilized.
-For this reason, HLS tools must be able to intelligently partition a monolithic
+HLS tools can often make use techniques such as loop pipelining discussed
+in Section~\ref{bg:sub:sdc} to detect and exploit parallelism at the
+instruction-level.  Coarser-grain parallelism, which is tightly associated with
+the algorithmic details, is however much more complex~\cite{nane15}, and many
+optimization opportunities are not yet exploited by HLS tools.  For instance,
+unlike the CPU, which has a monolithic storage and thus their performance is
+often limited by the memory wall, the FPGA has dedicated RAM blocks in the
+logic fabric to distribute memory bandwidth via data reuse.  HLLs such as C
+were designed with a mindset of the von Neumann architecture, and the source
+code in C typically do not specify how the memory hardware is utilized.  For
+this reason, HLS tools must be able to intelligently partition a monolithic
 memory into smaller chunks that can be accessed in parallel, in order to
 maximize performance; how to attain this is still a challenging research
 area~\cite{cong11, cong12, wang13, felix15}.

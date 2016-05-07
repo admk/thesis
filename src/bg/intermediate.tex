@@ -146,18 +146,142 @@ The rationale of SSA is that we can abstract away anti- and output dependences
 by never assigning to the same variable twice, while only true data-flow
 dependences remain.  Anti-dependence is a dependence relation when a read
 operation must precede a write to the same variable, and output dependence is
-when two writes refer to the same location.  By removing these two kinds of
-dependences from the program representation, certain analyses on the program
-to run much more efficiently.  Analyses that may benefit from this include
+when two writes refer to the same location.  By removing these dependences
+and deferring the analysis of them, certain program optimization analyses
+can run much more efficiently.  Analyses that may benefit from this include
 scheduling~\cite{rau94}, and liveness analysis (figure out the life time
 of variables to reduce register requirements)~\cite{cytron91}, detecting
 opportunities of parallelism~\cite{cytron87}, and finding equivalent parts in
 the program~\cite{alpern88}.
 
+In a cyclic CFG, the control-flow could potentially revisit a BB, and
+instructions in this BB will inevitably assign a different value to the
+same variable, which forms anti- and output dependences, which could have a
+detrimental effect on efficient loop pipelining in some computing machines.  An
+alternative IR, the \emph{dynamic single assignment} (DSA) form~\cite{rau92}
+can therefore be used in place of the SSA to address this issue.  The DSA
+defines a linear sequence of virtual registers for each variable, such that
+every time the variable is assigned in a dynamic execution path, a new virtual
+register is used.
+
+There are a number of alternative IRs that are similar in construction to
+the SSA and CFG approach in LLVM IR\@.  For instance, the data-dependence
+graph~\cite{rau94} introduced in Section~\ref{bg:sub:sdc} are designed
+for the purpose of capturing data-flow dependences in polyhedral methods.
+\emph{Data-flow graph} (DFG) is a popular alternative to SSA, which is often
+a directed acyclic graph (DAG) that do not contain cyclic paths.  In general,
+a DFG's vertices are input, output and operation nodes, and the edges capture
+the dependences between these nodes.  Both of them, however, generally do
+not preserve enough information for us to reconstruct a program from the
+graph itself.  A group of data structures, known as \emph{control/data flow
+graphs} (CDFGs)~\cite{orailoglu86}, is commonly used to represent programs in
+HLS tools, \eg~SPARK~\cite{gupta04}.  A CDFG resembles a CFG such as the one
+used in LLVM IR, but in lieu of using sequential instructions in SSA form in
+graph vertices, each vertex contains a \emph{data-flow graph} (DFG), where no
+SSA temporary variables are used and data-flow dependences can by explicitly
+identified by edges.
+
+
+\subsection{Equality Saturation}
+\label{bg:sub:equality_saturation}
+
+The IRs we discussed above are all used to analyze and transform the underlying
+program structure, so as to produce a new representation of the optimized
+program.  In a conventional optimizing compiler, program optimization is
+often carried out in a sequence of transformation passes, where each pass
+accepts a program, often written in a certain IR, and produces an optimized
+program in the IR\@.  The traditional practice is to always apply these
+optimization phases in a fixed order, but a good ordering of these phases
+is crucial to achieve a good optimized result, and the optimal ordering
+varies across applications being compiled~\cite{almagor04}.  The process of
+finding the optimal ordering is known as the \emph{phase-ordering problem},
+which is in general undecidable~\cite{touati06} and hence is a difficult
+problem.  Moreover, programs running CPUs or GPUs usually care only about
+their throughput, in contrast, designs on FPGAs concern us with additional
+objectives besides run time, such as power consumption and resource utilization
+that impact the quality of synthesized circuit.  Multiple designs that
+trade-off these objectives could exist, and which design to choose relies
+on the specifics of the use case.  It is therefore sensible to explore the
+design space by optimizing multiple objectives simultaneously.  For the
+above reasons, it is desirable to have an IR and the associated optimization
+procedures to efficiently discover equivalent structures that lead to different
+implementations of the original program.
+
+In software, a novel approach called \emph{equality saturation} is proposed
+in~\cite{tate09} to tackle the phase-ordering problem.  It creates a new
+graph-based IR, \emph{program expression graph} (PEG), to encode the effects
+of executing the program.  To begin, we review the structure of the PEG, by
+considering a simple loop example in Figure~\ref{bg:fig:factorial}.
+\begin{figure}[ht]
+    \newsavebox{\factlstbox}
+    \begin{lrbox}{\factlstbox}
+    \begin{lstlisting}
+x = 1;
+y = 1;
+while (y <= 10)
+{
+    x = y * x;
+    y = y + 1;
+}
+    \end{lstlisting}
+    \end{lrbox}
+    \centering
+    \subfloat[The original program.]{%
+        \begin{minipage}{0.4\textwidth}
+            \usebox{\factlstbox}
+        \end{minipage}\label{bg:lst:factorial_c}
+    }
+    \subfloat[The resulting PEG.]{%
+        \begin{minipage}{0.5\textwidth}
+            \includegraphics[width=\textwidth]{bg/fig/factorial_peg.png}
+        \end{minipage}\label{bg:fig:factorial_peg}
+    }
+    \caption{%
+        A simple loop which computes the factorial of 10, and the resulting
+        PEG\@.  This example is taken from~\cite{tate09}.
+    }\label{bg:fig:factorial}
+\end{figure}
+
+In addition, transformation passes are expressed as procedures to manipulate
+the PEG into another PEG that is equivalent to the original.  By applying these
+passes to the PEG, their approach detects the incremental modifications, and
+append these changes to the original PEG\@.  The new changes, represented as
+extra structures in the PEG, are linked to their corresponding equivalent nodes
+by equivalence edges.  These edges indicate a pair subgraphs are equivalent in
+the original PEG\@.  This above process forms a PEG with equivalent structures,
+or named E-PEG, that could capture multiple PEGs in the same structure.
+By repeatedly applying all possible passes to the E-PEG, this graph will
+eventually saturate, \ie~no more equivalent structure can be added to the graph
+because all possible equivalences are now discovered.  This process and the
+resulting E-PEG is more efficient than discovering all possible PEGs along the
+path, because E-PEG encourages sharing, even among equivalent subgraphs.  This
+saturated graph can always be produced regardless of in what order we apply
+the passes, hence eliminating the phase-ordering problem.  Furthermore, E-PEG
+defers the decision of whether an optimization should be committed until we
+have reached full saturation, allowing the global optima to be discovered.
+In contrast, because optimization passes in a conventional compiler are
+performed once, the compilers make this decision immediately after applying the
+optimization, which consequently often results in local optima.
+
 
 \subsection{TODO}
 
 \todo{Migrate old stuff from below.}
+The differences between PEG and what is required by us is that, instead of using
+graphs with cycles in them to represent \whilelit~loops, we must use a
+directed acyclic graph to encode programs and use a \emph{fixpoint} operator
+to define recursive functions which can be used to represent loops.  Cycles in
+graphs require reanalyzing a large proportion of the IR whenever a structural
+modification is made, whereas a tree structure can be reasoned in a bottom-up
+hierarchy.  This has significant implications on program transformation.
+First, for the above reason, their approach does not use semantics to optimize
+for numerical accuracy, while we want our method to reason about semantics
+and utilize them to steer optimization.  Moreover, tree structure allows us
+to easily support partial loop unrolling by simply extending the equivalence
+relations while avoiding re-evaluation.  In contrast, like~\cite{martel09}
+and~\cite{damouche15}, equality saturation is unable to perform partial loop
+unrolling.
+
 The structural optimization of general numerical programs is much more complex
 than that of arithmetic expressions.  The reasons are two-fold.  First,
 during program execution, variables are often updated with new values.  Our
@@ -199,32 +323,3 @@ latency and accuracy characteristics.  In practice, it is desirable to
 eliminate as much as possible the need for these syntactic rewrites that do not
 affect our performance metrics, so that the search space of equivalent programs
 is greatly reduced.
-
-For this, we typically use an alternative representation of the original
-program, which are called \emph{intermediate representations} (IRs).  These
-representations include \emph{static} and \emph{dynamic single assignment
-forms} (SSA, DSA)~\cite{rau92, cytron91}, and \emph{control and data flow
-graphs} (CDFG)~\cite{gajski94}.  These IRs are however less suitable for
-our work because they are all statement-based and do not identify as many
-equivalent programs as MIRs do.  Dependence graphs~\cite{rau94}, on the other
-hand, are designed for the purpose of capturing data-flow dependences in
-polyhedral methods, but they generally do not preserve enough information for
-us to reconstruct a program from the graph itself.
-
-In software, \emph{equality saturation} is proposed in~\cite{tate09}.  It
-creates a new intermediate representation, PEG, to encode the effects of
-executing the program, and used to discover equivalent structures.  The
-differences between PEG and what is required by us is that, instead of using
-graphs with cycles in them to represent \whilelit~loops, we must use a
-directed acyclic graph to encode programs and use a \emph{fixpoint} operator
-to define recursive functions which can be used to represent loops.  Cycles in
-graphs require reanalyzing a large proportion of the IR whenever a structural
-modification is made, whereas a tree structure can be reasoned in a bottom-up
-hierarchy.  This has significant implications on program transformation.
-First, for the above reason, their approach does not use semantics to optimize
-for numerical accuracy, while we want our method to reason about semantics
-and utilize them to steer optimization.  Moreover, tree structure allows us
-to easily support partial loop unrolling by simply extending the equivalence
-relations while avoiding re-evaluation.  In contrast, like~\cite{martel09}
-and~\cite{damouche15}, equality saturation is unable to perform partial loop
-unrolling.

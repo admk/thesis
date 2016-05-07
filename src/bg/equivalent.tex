@@ -21,8 +21,8 @@ restructured to improve loop parallelism, which allows more computation
 across loop iterations to overlap, and in turn faster programs.  Tree height
 reduction~\cite{nicolau91} aims to balance an arithmetic expression tree using
 associativity and distributivity.  Xilinx's Vivado HLS has a similar feature
-called \emph{expression balancing}~\cite{vivado_hls}.  Both of these methods do
-not produce optimal loop pipelining, as they do not examine the implications
+called \emph{expression balancing}~\cite{vivado_hls}.  Neither of these methods
+produces optimal loop pipelining, as they do not examine the implications
 of loop-carried dependences.  Canis \etal~\cite{canis14} propose a similar
 approach called \emph{recurrence minimization}. They specifically tackle
 loop pipelining by incrementally restructuring dependence graphs to minimize
@@ -33,24 +33,24 @@ Vivado HLS only apply associativity in their restructuring.
 Most importantly, none of the above mentioned techniques and tools aim to
 minimize, or even analyze, the impact of their transformations on resource
 usage and accuracy. In many numerically sensitive programs, small round-off
-errors would result in catastrophic inaccurate results.  HLS tools therefore
-generally disable this feature by default for floating-point computations.
-There are also academic tools that perform precision-performance trade-off by
-optimizing word-lengths of data paths~\cite{constantinides}; and this safely
-bounds round-off errors.  However, no existing HLS tools can perform the
-trade-off optimization among accuracy, resource usage and latency by varying
-the \emph{structure} of numerical programs.
+errors would result in catastrophically inaccurate results.  HLS tools
+therefore generally disable this feature by default for floating-point
+computations.  There are also academic tools that perform precision-performance
+trade-off by optimizing word-lengths of data paths~\cite{constantinides};
+and this safely bounds round-off errors.  However, no existing HLS tools can
+perform the trade-off optimization among accuracy, resource usage and latency
+by varying the \emph{structure} of numerical programs.
 
-A further handful of techniques were proposed to minimizes resources, and none
+A further handful of techniques were proposed to minimize resources, but none
 of these considers accuracy implications.  Hosangadi~\etal~\cite{hosangadi}
 propose an algorithm for the factorization of polynomials to reduce
 addition and multiplication counts, but this method is only suitable for
 factorization and it is not possible to choose different optimization
 levels. Peymandoust~\etal~\cite{peymandoust} present an approach that
-only deals with the factorization of polynomials in HLS using Gr\"obner
+only deals with the factorization of polynomials in HLS using Gr{\"o}bner
 bases. The shortcomings of this are its dependence on a set of library
-expressions~\cite{hosangadi} and the high computational complexity of Gr\"obner
-bases.
+expressions~\cite{hosangadi} and the high computational complexity of
+Gr{\"o}bner bases.
 
 Even in the software community, there are only a few existing techniques
 for optimizing expressions by transformation, none of which consider
@@ -74,8 +74,9 @@ related by rules of equivalence. However it restricts itself to only a handful
 of these rules to avoid combinatorial explosion of the structure and there are
 no options for tuning its optimization level.
 
-The tool, \soap{}, proposed in this thesis was therefore designed to be the
-only tool that could trade off area and accuracy in this category.
+\todo{irrelevant} The tool, \soap{}, proposed in this thesis was therefore
+designed to be the only tool that could trade off area and accuracy in this
+category.
 
 
 \subsection{Numerical Programs}
@@ -95,5 +96,5 @@ their approach, as we have discussed in Section~\ref{bg:sec:intermediate}.
 Martel~\cite{martel09} and Damouche~\etal~\cite{damouche15} optimize
 numerical accuracy only, and both do not optimize across basic blocks.
 Furthermore, Martel found that frequently their technique produces much slower
-implementations, while we also consider performance, by improving accuracy,
-latency and the resource usage of programs.
+implementations, \todo{irrelevant} while we also consider performance, by
+improving accuracy, latency and the resource usage of programs.
