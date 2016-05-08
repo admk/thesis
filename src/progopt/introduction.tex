@@ -1,42 +1,33 @@
 \section{Introduction}
 \label{po:sec:introduction}
 
-Our previous chapter introduced a new methodology to efficiently restructure
+The previous chapter introduced a new methodology to efficiently restructure
 arithmetic expressions for the optimized trade-off between two performance
 metrics, \ie~numerical accuracy when evaluated and area usage in synthesized
 FPGA implementations.  This method however has a substantial limitation when
 applied to general numerical programs, that is, it can only be applied to
 straight-line codes without control structures such as branches and loops.
 
-\todo{Fix this.}
-We explored in Section~\ref{bg:sec:intermediate} of
-Chapter~\ref{chp:background} various intermediate representations designed for
-program transformation, 
-
-In this chapter, we therefore provide a solution to the above limitation, by
-presenting a new intermediate representation to specifically tackle the program
-equivalences.
-
-In the meantime, we propose a new general \emph{program} optimization technique
-for numerical algorithms, which allows \texttt{if} statements as well as
-\texttt{while} loops, and developed its accompanied tool, \newsoap, to enable
-the joint optimization of accuracy and resource usage, as well as the trade-off
-between these performance metrics.  We develop a tool, which we call \newsoap,
-to perform source-to-source optimization of numerical programs targeting FPGAs,
+In this chapter, a new general \emph{program} optimization technique for
+numerical algorithms is therefore proposed, which analyzes and optimizes
+\texttt{if} statements as well as \texttt{while} loops in a numerical program.
+This enables the joint optimization of accuracy and resource usage, as well as
+the trade-off between both performance metrics.  A tool is thus developed to
+perform source-to-source optimization of numerical programs targeting FPGAs,
 and generate implementations that trade off resource usage and numerical
 accuracy.
 
 % floating-point arithmetic has round-off errors, exploit equivalence
 
-Similar to the approach we have proposed in Chapter~\ref{chp:stropt}, we
-exploit equivalence rules such as such as \emph{associativity} $(a + b) +
-c \equiv a + (b + c)$, and \emph{distributivity} $(a + b) \times c \equiv
-a \times c + b \times c$ to automatically optimize implementations for
-the optimal trade-off between resource usage, \ie~the number of LUTs and
-DSP elements utilized, and accuracy when evaluated using floating-point
-computations.  For example, with single precision floating-point format, our
-tool found that give an input $x \in [0, 100]$ and $y \in [0, 2]$, then the
-program:
+Similar to the approach proposed in Chapter~\ref{chp:stropt}, equivalence rules
+such as such as \emph{associativity} $(a + b) + c \equiv a + (b + c)$, and
+\emph{distributivity} $(a + b) \times c \equiv a \times c + b \times c$ are
+exploited to automatically optimize implementations for the optimal trade-off
+between resource usage, \ie~the number of LUTs and DSP elements utilized,
+and accuracy when evaluated using floating-point computations.  This process
+generates a Pareto frontier of optimized numerical programs.  For example, with
+single precision floating-point format, the tool found that give an input $x
+\in [0, 100]$ and $y \in [0, 2]$, then the program:
 \begin{lstlisting}
     if (x < 1) {
         x = (x + y) + 0.1;
@@ -58,18 +49,83 @@ subexpressions are shared and the \iflit~statement is eliminated:
     x = x + (y + 0.1);
 \end{lstlisting}
 
-This kind of optimization generates a Pareto optimal set of implementations,
-which trades off accuracy and area.  A na{\"\i}ve strategy to search for
-the Pareto optimal implementations is to discover all possible equivalent
-expressions.  However, this would result in combinatorial explosion and become
-intractable even for very small expressions~\cite{ioualalen,mouilleron}.  To
-remedy this, in Chapter~\ref{chp:stropt} we proposed a novel approach, known
-as \soap, to significantly reduce the space and time complexity to produce a
-subset of the Pareto frontier. \todo{I should rewrite this.}
+The structural optimization of general numerical programs is much more complex
+than that of arithmetic expressions.  The reasons are three-fold.  First,
+during program execution, variables are often updated with new values.  Our
+optimization should therefore perform static analysis on the values of
+variables, and use the result to optimize specifically for the trade-off
+between accuracy and resource usage.  Second, it is much more difficult to
+formally define program equivalence, and subsequently, to search efficiently
+for optimized equivalent programs.  Finally, the combinatorial explosion of
+expression equivalence, is further exacerbated by the expressiveness of a
+general numerical program.
 
-% program transformation why?
+The difficulty in defining program equivalence is due to the fact that
+two programs can be identical in function, but have distinct syntactic
+structure because of the expressiveness of a HLL\@.  For instance, even
+without the introduction of branches and loops, the following two programs in
+Figure~\ref{bg:fig:equiv_progs} are equivalent, but syntactically, they are
+very different.
+\begin{figure}[ht]
+    \centering
+    \subfloat[$P_1$]{%
+        \shortstack[l]{%
+            \texttt{x = x + 1;} \\
+            \texttt{y = 2 * x;} \\
+            \texttt{x = x + 3;}
+        }
+    } \qquad \qquad
+    \subfloat[$P_2$]{%
+        \shortstack[l]{%
+            \texttt{y = x + 1;} \\
+            \texttt{x = y;} \\
+            \texttt{y = y * 2;} \\
+            \texttt{x = x + 3;}
+        }
+    }
+    \caption{%
+        Two programs that are equivalent but syntactically different.
+    }\label{bg:fig:equiv_progs}
+\end{figure}
 
-Our program optimization flow is \emph{safe}, \emph{semantics-directed} and
+In fact, one can easily imagine infinitely many ways to rewrite numerical
+programs, and often these equivalent programs have identical resource usage,
+latency and accuracy characteristics.  In practice, it is desirable to
+eliminate as much as possible the need for these syntactic rewrites that do not
+affect our performance metrics, so that the search space of equivalent programs
+is greatly reduced.
+
+We explored in Section~\ref{bg:sec:intermediate} of
+Chapter~\ref{chp:background} various intermediate representations designed
+for program transformation, and specifically examined PEGs in closer details,
+because it fits our requirement to abstract away as much irrelevant syntactic
+information as possible.  However, one important shortcoming of the PEG
+is that it is not suited for the optimization of numerical accuracy.  By
+introducing equivalence edges in the graph, the number of elementary cycles
+in the graph could increase exponentially in the number of equivalences that
+have been discovered.  Cycles in graphs require analyzing a large proportion
+of the IR, whereas a tree structure can be reasoned in a bottom-up hierarchy.
+This has significant implications on program transformation.  First, for the
+above reason, their approach does not use semantics to optimize for numerical
+accuracy, while we wish to reason about semantics and utilize them to steer
+optimization.  Moreover, tree structure allows us to easily support partial
+loop unrolling by simply extending the equivalence relations while avoiding
+re-evaluation.  In contrast, like~\cite{martel09} and~\cite{damouche15},
+equality saturation is unable to perform partial loop unrolling.  In this
+chapter, a solution to the above limitations of PEGs is therefore proposed,
+by introducing a new tree-based intermediate representation with fixpoint
+constructs to specifically tackle the problem of program equivalences.
+
+Additionally, as none of the methods in
+Section~\ref{bg:sec:discovering_equivalent_programs} of
+Chapter~\ref{chp:background} looks at the multiple-objective optimization of
+numerical programs, this thesis is the first to propose a tool that performs
+a semantics-directed and truly restructuring program transformation, which
+optimizes not only arithmetic expressions, but also numerical programs.  The
+tool optimizes for the trade-off between numerical accuracy and resource usage
+when synthesized to FPGAs.
+
+The program optimization flow is \emph{safe}, \emph{semantics-directed} and
 \emph{flexible}. \emph{Safety} means that because we make use of formal
 mathematics to optimize programs, our approach can be proved correct, in
 the sense that when executed using exact real arithmetic, the transformed
@@ -88,14 +144,6 @@ and loop splitting, which can create more opportunity for minimizing round-off
 errors, hence further increases range of options in the Pareto frontier of
 trade-offs.  Finally, our method naturally subsumes constant propagation,
 redundant code elimination, and also branch and loop fusions.
-
-As none of the methods in Section~\ref{bg:sec:discovering_equivalent_programs}
-of Chapter~\ref{chp:background} looks at the multiple-objective optimization
-of numerical programs, we are the first to propose a tool that performs a
-semantics-directed and truly restructuring program transformation, which
-optimizes not only arithmetic expressions, but also numerical programs, for the
-trade-off between numerical accuracy and resource usage when synthesized to
-FPGAs.
 
 % Our tool fits in the familiar setting of the high-level synthesis tool flow, as a front-end that performs the source-to-source optimization of
 
