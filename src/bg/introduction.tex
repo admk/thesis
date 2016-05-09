@@ -30,10 +30,20 @@ optimization objective, we use LegUp~\cite{legup}, an open-source HLS tool, as
 an example, to further examine in greater detail how its scheduling stage can
 make loops to run as efficiently as possible by pipelining them.
 
-\todo{Expand this?}
+In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
+interpretation~\cite{cousot77}, a theory to approximate mathematical objects
+that are not directly computable---because they are undecidable, intractable or
+both---in order to compute an approximation to them efficiently.  We informally
+introduce this theory, by way of reviewing existing techniques to statically
+analyze numerical applications.
+
 Intermediate representations (IRs) are often used to facilitate program
 optimization and program analysis.  Section~\ref{bg:sec:intermediate} we
 therefore study in detail the existing IRs designed for program optimization.
+We take a closer at how the SSA and CFG approach of LLVM~\cite{llvm_ir} encodes
+a simple program example.  In addition, a novel approach known as equality
+saturation~\cite{tate09} which uses a data structure to represent multiple
+optimization candidates, is further examined.
 
 In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work on
 restructuring numerical programs to discover their equivalences efficiently.
@@ -58,10 +68,3 @@ varying the precisions of individual arithmetic operators in a data-path, as
 some operators compute values that do not require high precisions and often
 their precisions can often be reduced to optimize other desirable objectives,
 while satisfying a given error budget.
-
-In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
-interpretation~\cite{cousot77}, a theory to approximate mathematical objects
-that are not directly computable---because they are undecidable, intractable or
-both---in order to compute an approximation to them efficiently.  We informally
-introduce this theory, by way of reviewing existing techniques to statically
-analyze numerical applications.

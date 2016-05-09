@@ -282,17 +282,17 @@ values computed iteratively by the node's subgraph.  The first value in the
 list, is the computed result of $\iota$, which we name $i$, and values in
 the rest of the sequence are iteratively computed by $\mathrm{func}$.  In
 functional programming, this is similar to iteratively computing the fixpoint
-$\fixpoint{F}$ of an initial list $[i]$, which is defined as:
+$\mathbf{fix}\,F$ of an initial list $[i]$, which is defined as:
 \begin{equation}
-    \fixpoint{F} ([i]) = \lim_{n \to \infty} F^n ([i]),
+    \mathbf{fix}\,F ([i]) = \lim_{n \to \infty} F^n ([i]),
     \quad\text{where~}
     F(v) = \mathrm{prepend}\left(
-        \iota, \mathrm{map}\left( \mathrm{func}, v \right)
+        i, \mathrm{map}\left( \mathrm{func}, v \right)
     \right)
 \end{equation}
 here, $\mathrm{map}(\mathrm{func}, v)$ applies the subgraph computation
-$\mathrm{func}$ to all elements in the list $v$, and $\mathrm{prepend}(\iota,
-v^\prime)$ prepends the element $\iota$ to the list $v^\prime$.
+$\mathrm{func}$ to all elements in the list $v$, and $\mathrm{prepend}(i,
+v^\prime)$ prepends the element $i$ to the list $v^\prime$.
 
 For example, the following subgraph in Figure~\ref{bg:fig:factorial_peg}
 evaluates to the sequence $[1, 2, 3, 4, \mathellipsis]$:

@@ -8,38 +8,109 @@ loops---supersede arithmetic expressions, we start by introducing optimization
 methods of expressions, followed by those of general numerical programs.
 
 
-\subsection{Arithmetic Expressions}
+\subsection{Improving Performance by Rewriting Arithmetic Expressions}
 \label{bg:sub:arithmetic_expressions}
 
-LLVM-based HLS tools such as Vivado HLS and LegUp usually have some
-traditional static analysis-based optimization passes such as constant
-propagation and alias analysis.  These optimization passes, however, limit
-themselves by producing circuits that do not impact numerical accuracy,
-\ie~they compute the same output given identical inputs.  For this reason,
-new optimization passes are designed to allow dependence graphs to be
-restructured to improve loop parallelism, which allows more computation
-across loop iterations to overlap, and in turn faster programs.  Tree height
-reduction~\cite{nicolau91} aims to balance an arithmetic expression tree using
-associativity and distributivity.  Xilinx's Vivado HLS has a similar feature
-called \emph{expression balancing}~\cite{vivado_hls}.  Neither of these methods
-produces optimal loop pipelining, as they do not examine the implications
-of loop-carried dependences.  Canis \etal~\cite{canis14} propose a similar
-approach called \emph{recurrence minimization}. They specifically tackle
-loop pipelining by incrementally restructuring dependence graphs to minimize
-longest paths of recurrences.  Their method is subsequently incorporated in
-LegUp~\cite{legup}, an open-source academic HLS tool.  However, both LegUp and
-Vivado HLS only apply associativity in their restructuring.
+\subsubsection{Conventional Software Compilers}
 
-Most importantly, none of the above mentioned techniques and tools aim to
-minimize, or even analyze, the impact of their transformations on resource
-usage and accuracy. In many numerically sensitive programs, small round-off
-errors would result in catastrophically inaccurate results.  HLS tools
-therefore generally disable this feature by default for floating-point
-computations.  There are also academic tools that perform precision-performance
-trade-off by optimizing word-lengths of data paths~\cite{constantinides};
-and this safely bounds round-off errors.  However, no existing HLS tools can
-perform the trade-off optimization among accuracy, resource usage and latency
-by varying the \emph{structure} of numerical programs.
+It is common knowledge to software programmers that a typical optimizing
+compiler, such as GCC~\cite{gcc} and Clang~\cite{clang}, has some traditional
+static analysis-based optimization passes such as dead code elimination, loop
+strength reduction and constant propagation.  These optimization passes,
+however, limit themselves by producing implementations that do not impact
+numerical accuracy, \ie~they compute the same output given identical inputs.
+
+A less well-known fact about these compilers is that they also support a
+variety of optimization passes that are not enabled by default.  These options,
+when enabled, allow the compiler to yield faster software implementations for
+programs with a large proportion of floating-point arithmetic computations.
+These optimization passes rewrite arithmetic expressions into more efficient
+alternative forms which are equivalent to the originals in real arithmetic,
+but when executed on a machine they compute different results.  The reason
+for the differences is that arithmetic in machines has finite precision,
+computed results must be rounded to the nearest representable values.  These
+discrepancies, when accumulated, could potentially result in wildly inaccurate
+outputs.
+
+There are a number of compiler options in GCC~\cite{gcc} that specifically
+performs the above optimizations.  For example, the following options exist to
+enable expression-rewriting heuristics:
+\begin{itemize}
+
+    \item \verb|-fassociative-math| enables arithmetic expression rewriting by
+    associativity, one of the heuristics applied is to perform exponentiation
+    by squaring, \eg~an expression \verb|x*x*x*x| which requires 3
+    multiplications, can be optimized as \verb|(x*x)*(x*x)|, reducing the
+    number of multiplications to 2 by sharing the value of the subexpression
+    \verb|x*x|;
+
+    \item \verb|-freciprocal-math| can be used to rewrite $x / y$ into $x * (1
+    / y)$, if $1 / y$ can be commonly shared among subexpressions; and
+
+    \item \verb|-fno-signed-zeros| ignores the signedness of floating point
+    zeros, for example, \verb|0.0f| and \verb|-0.0f| are identical, so that
+    \verb|0.0f*x| can be simplified to \verb|0.0| without concerning us with
+    the signedness of the result.
+
+\end{itemize}
+
+An additional optimization option, which encompasses the above options,
+can be used to enable them all together; it further highlights
+the \emph{unsafe} nature of these transformations in its name,
+\ie~\verb|-funsafe-math-optimizations|.  Besides GCC, Clang, which uses the
+LLVM framework, provides a similar option, \verb|-enable-unsafe-fp-math| to use
+arithmetic equivalences to reduce the number of floating-point operations in a
+program, by possibly sacrificing numerical accuracy.
+
+% To give an example, the value $\sqrt{2}$, being irrational, can not be
+% represented exactly in single-precision floating point, and thus must be
+% rounded.
+
+\subsubsection{Hardware Techniques}
+
+In addition to the unsafe arithmetic expression rewriting heuristics inherited
+from the LLVM framework, Vivado HLS~\cite{vivado_hls} and LegUp~\cite{legup},
+which are both LLVM-based, can make use of hardware-specific optimization
+passes to allow greater parallelism in synthesized circuit, thus improving
+throughput.  The newly designed transformation to allow data-flow graphs to be
+restructured to improve loop parallelism, which allows more computation across
+loop iterations to overlap, and subsequently faster programs.  Xilinx's Vivado
+HLS has a similar feature called \emph{expression balancing}~\cite{vivado_hls},
+which aims to balance an arithmetic expression tree using associativity.  Tree
+height reduction~\cite{nicolau91} further incorporates distributivity and
+control-flow rewriting.  However, neither of these methods produces optimal
+loop pipelining, as they do not examine the implications of loop-carried
+dependences.  For example, a loop body:
+\begin{lstlisting}
+    sum = ((sum + A[i]) + B[i]) + C[i];
+\end{lstlisting}\vspace{-15pt}
+when synthesized in Vivado HLS with expression balancing, will produce a
+schedule which corresponds to the following:
+\begin{lstlisting}
+    sum = (sum + A[i]) + (B[i] + C[i]);
+\end{lstlisting}\vspace{-15pt}
+This loop is more efficient than the original, because it has a delay of $2$
+adders between consecutive iterations, instead of the original $3$-adder delay,
+in the inter-iteration dependences of \verb|sum|.  However, as we will see
+below, there is still room for improvement.
+
+Canis~\etal~\cite{canis14} propose a similar approach called \emph{recurrence
+minimization}.  They specifically tackle loop pipelining by incrementally
+restructuring dependence graphs to minimize longest paths of recurrences.
+Their method is subsequently incorporated in LegUp~\cite{legup}.  For instance,
+by synthesizing the same original loop in LegUp, it detects that there are
+inter-iteration dependences between each pair of \verb|sum| from consecutive
+iterations.  The tool will therefore minimize the latency between these
+dependences by using associativity to restructure the expression.  This
+optimization produces a schedule which corresponds to the following loop body:
+\begin{lstlisting}
+    sum = sum + ((A[i] + B[i]) + C[i]);
+\end{lstlisting}\vspace{-15pt}
+It is notable that, by further delaying the addition of \verb|sum|, the loop
+now has only a delay of $1$ adder between consecutive iterations.  This
+technique can greatly reduce the run time of pipelined loops, especially if the
+inter-iteration dependences has a long chain of additions.  However, similar to
+Vivado HLS, they only apply associativity in their restructuring.
 
 A further handful of techniques were proposed to minimize resources, but none
 of these considers accuracy implications.  Hosangadi~\etal~\cite{hosangadi}
@@ -51,6 +122,35 @@ only deals with the factorization of polynomials in HLS using Gr{\"o}bner
 bases. The shortcomings of this are its dependence on a set of library
 expressions~\cite{hosangadi} and the high computational complexity of
 Gr{\"o}bner bases.
+
+
+\subsubsection{Shortcomings}
+
+The above approaches utilize a number of heuristics to rewrite expressions, and
+do not explore all possible rewrites in full by taking into account additional
+equivalence relations.  This could limit their applicability to a small number
+of special cases.  The implementation obtained therefore is often likely to
+be suboptimal, as further improvements are possible.  Moreover, as all these
+optimizations have unknown impact on numerical accuracy, which could make them
+difficult to use correctly.  It is therefore in general a good practice to
+avoid them.
+
+% Later we will discuss techniques that can reason about and optimize numerical
+% accuracy in programs.
+
+\subsection{Arithmetic Expressions}
+\label{bg:sub:arithmetic_expressions}
+
+Most importantly, none of the above mentioned techniques and tools aim to
+minimize, or even analyze, the impact of their transformations on resource
+usage and accuracy. In many numerically sensitive programs, small round-off
+errors would result in catastrophically inaccurate results.  HLS tools
+therefore generally disable this feature by default for floating-point
+computations.  There are also academic tools that perform precision-performance
+trade-off by optimizing word-lengths of data paths~\cite{constantinides};
+and this safely bounds round-off errors.  However, no existing HLS tools can
+perform the trade-off optimization among accuracy, resource usage and latency
+by varying the \emph{structure} of numerical programs.
 
 Even in the software community, there are only a few existing techniques
 for optimizing expressions by transformation, none of which consider
@@ -73,6 +173,8 @@ sized structure to represent an exponential number of equivalent expressions
 related by rules of equivalence. However it restricts itself to only a handful
 of these rules to avoid combinatorial explosion of the structure and there are
 no options for tuning its optimization level.
+
+\todo{Herbie}
 
 \todo{irrelevant} The tool, \soap{}, proposed in this thesis was therefore
 designed to be the only tool that could trade off area and accuracy in this
