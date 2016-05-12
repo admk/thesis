@@ -47,6 +47,11 @@
 \define@boolkey[ct]{cthesis}{sansserif}[true]{}
 \setkeys[ct]{cthesis}{sansserif=false}
 
+% OPTION line spacing
+% --> values = bluemagenta|bluegreen
+\define@choicekey*[ct]{cthesis}{linespacing}[\val\linespacingnr]{singlespacing,onehalfspacing, doublespacing}[onehalfspacing]{\def\cthesis@linespacing{\linespacingnr}}
+\setkeys[ct]{cthesis}{linespacing=onehalfspacing}
+
 % OPTION hangfigurecaption
 % --> values = true|false
 \define@boolkey[ct]{cthesis}{hangfigurecaption}[true]{}
@@ -304,8 +309,20 @@
 % Text Format
 % **************************************************
 % \setstretch{1.2}                    % value for line spacing, use \setstretch{} or \singlespacing or \onehalfspacing or \doublespacing
-% \doublespacing{}
-\onehalfspacing{}
+\ifcase\cthesis@linespacing
+    % case 0 (singlespacing)
+    \singlespacing
+\or
+    % case 1 (onehalfspacing)
+    \onehalfspacing
+\or
+    % case 2 (double spacing)
+    \doublespacing
+\else
+    % default
+    \onehalfspacing
+\fi
+
 \setlength{\parindent}{0em}         % value for paragraph indentation
 % \clubpenalty = 10000                % prevent single lines at the beginning of a paragraph
 % \widowpenalty = 10000               % prevent single lines at the end of a paragraph

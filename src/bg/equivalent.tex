@@ -165,7 +165,7 @@ being compiled.
 
 In many numerically sensitive programs, small round-off errors, when
 accumulated, would result in catastrophically inaccurate results.  In
-particular, Panchekha~\etal~\cite{panchekha15} show that inaccurate
+particular, Panchekha \etal~\cite{panchekha15} show that inaccurate
 computations, due to round-off errors, resulted in the retraction of scientific
 articles~\cite{altman99}, and even wild discrepancies in stock market
 indices~\cite{mccullough99}.  In response, the software community has seen an
@@ -204,12 +204,11 @@ provided for two distinct approaches, APEG and Herbie.
 
 The APEG proposed by Ioualalen~\etal~\cite{ioualalen} was inspired by E-PEG,
 originally introduced by Tate~\etal~\cite{tate09}\footnote{E-PEG and equality
-saturation is discussed in Section~\ref{bg:sub:equality_saturation}}.
-E-PEGs, originally intended to discover equivalent structure in programs
-but not arithmetic expressions, nevertheless include equivalence rules
-that are similar to the ones that exist in real arithmetic.  For instance,
-distributivity can by applied over nodes such as $\theta$ and $\mathrm{eval}$
-nodes.
+saturation is discussed in Section~\ref{bg:sub:equality_saturation}.}.  E-PEGs,
+originally intended to discover equivalent structure in programs but not
+arithmetic expressions, nevertheless include equivalence rules that are similar
+to the ones that exist in real arithmetic.  For instance, distributivity can by
+applied over nodes such as $\theta$ and $\mathrm{eval}$ nodes.
 
 The APEG is similar in construction to the E-PEG, which is also a graph-based
 structure, and promotes the maximal sharing of common subtrees.  The major
@@ -223,7 +222,7 @@ encode exponential number of equivalent expressions within a polynomial space,
 it further introduces two different kinds of nodes that efficiently model
 equivalences.
 
-Firstly, the APEG defines a node that contains an \emph{abstraction box},
+Firstly, the APEG defines a node containing an \emph{abstraction box},
 \fbox{$\opsymbol, \left(p_1, p_2, \mathellipsis, p_n\right)$}\,, where
 $\opsymbol$ is a commutative associative operator such as addition $+$ and
 multiplication $\times$, and $p_1, p_2, \mathellipsis, p_n$ are the children of
@@ -264,20 +263,20 @@ abstraction box \fbox{$+, (a, a, b)$}\, can therefore model the equivalent
 parsings of it.
 
 Despite the compactness of APEGs, searching for the most accurate expression
-within an APEG is still exponentially complex.  For instance, consider an APEG
-with $n$ equivalent classes, each contains $2$ different choices, in the worst
-case, this may amount to a search of $2^n$ distinct equivalent expressions, so
-as to determine the optimal solution.  To resolve this problem, the authors
-of~\cite{ioualalen} employs a depth-limited search heuristic to reduce the size
-of the search space.\footnote{The exact technique is not explained in their
-original contribution.}  Additionally, as it was explained earlier, the time
-complexity to search for the optimal parsing of an abstraction box is double
-factorial.  They hence make use of another heuristic, which greedily pairs up
-terms in an abstraction box $B = \text{\fbox{$+, \left(p_1, p_2, \mathellipsis,
-p_n\right)$}}$\,.  To begin, the method searches for a pair of child subtrees
-$p_i$ and $p_j$ in $B$, such that the expression $p_i \opsymbol p_j$ computes
-with the smallest round-off error.  The nodes $p_i$ and $p_j$ are subsequently
-removed from $B$, and a new subtree
+within an APEG is still exponentially complex.  For instance, consider an
+APEG with $n$ equivalent classes, each contains $2$ different choices, in
+the worst case, this may amount to a search of $2^n$ distinct equivalent
+expressions, so as to determine the optimal solution.  To resolve this problem,
+Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic
+to reduce the size of the search space.\footnote{The exact technique is
+not explained in their original contribution.}  Additionally, as it was
+explained earlier, the time complexity to search for the optimal parsing of an
+abstraction box is double factorial.  They hence make use of another heuristic,
+which greedily pairs up terms in an abstraction box $B = \text{\fbox{$+,
+\left(p_1, p_2, \mathellipsis, p_n\right)$}}$\,.  To begin, the method searches
+for a pair of child subtrees $p_i$ and $p_j$ in $B$, such that the expression
+$p_i \opsymbol p_j$ computes with the smallest round-off error.  The nodes
+$p_i$ and $p_j$ are subsequently removed from $B$, and a new subtree
 \tikz[baseline=-2.3ex]{%
     \newcommand{\edgelength}{3.6ex}
     \node(op) at (0, 0) {\small $\opsymbol$};
@@ -286,11 +285,142 @@ removed from $B$, and a new subtree
     \draw(op)--(pi);
     \draw(op)--(pj);
 }
-is then added to $B$.  The above procedure is then iteratively repeated
-until finally one node is left in $B$; this last node is therefore the
-expression obtained by the greedy iterative search by pairing.  The above
-heuristics utilize the static analysis of floating-point errors introduced in
-Section~\ref{bg:sec:abstract_interpretation}.
+is then added to $B$.  The above greedy pairing procedure is then iteratively
+repeated until finally one node is left in $B$; this last node is therefore
+the expression with an improved numerical accuracy obtained in the process.
+The above heuristics utilize the static analysis of floating-point errors
+introduced in Section~\ref{bg:sec:abstract_interpretation}.
+
+Ioualalen~\etal~\cite{ioualalen} found their APEG approach can reduce round-off
+errors in expressions by up to 50\%.
+
+\subsubsection{Herbie}
+
+Unlike the APEG approach which focuses on building an IR which can
+represent exponentially many equivalent expressions, Herbie, introduced by
+Panchekha \etal~\cite{panchekha15}, on the other hand, place emphasis on
+building an algorithm to efficiently improve numerical accuracy by arithmetic
+rewrite rules.
+
+Initially, for a given expression $e$, Herbie samples a randomized set of
+input values used to evaluate it, and we use $I$ to denote this set.  In the
+optimization process, Herbie analyzes the discrepancy between evaluating
+an expression exactly, and in a given floating-point format with precision
+$\hat{p}$, due to round-off errors, for a common input $i \in I$.  However,
+because expressions contain irrational computations such as square roots,
+and transcendental functions, \eg~trigonometry, logarithm and~\etc, exact
+computation is generally unattainable as it could require infinite precision
+in floating-point.  Instead, Herbie resorts to the \emph{multiple-precision
+floating-point reliability} (MPFR) library, and iteratively increases the
+precision used to compute the approximate results for $e$, until the leading
+64 bits in the result remain identical across iteration for all randomly
+sampled inputs $i \in I$.  Evaluating $e$ in the final precision $p$, therefore
+produces an \emph{almost exact} (AE)\footnote{%
+    The original paper~\cite{panchekha15} uses ``exact'' to describe what is in
+    fact a floating-point value with a precision $p$, which approximates the
+    exact value.  Because this could potentially mislead, ``almost exact'' is
+    used here instead.
+}
+result for $e$.  It is notable that in formulae, the glyph $\hat{\,}$ is used
+to denote approximation, whereas the absence of $\hat{\,}$ indicates an AE
+result.
+
+An iterative accuracy refinement procedure is then carried out to optimize an
+initial expression $e_0$.  This process identifies operators in the expression
+$e_0$ which contribute the largest round-off errors, and specifically apply
+arithmetic rewriting to these operators, and repeats the process for the
+resulting expressions.  This procedure is carried out for a predetermined
+number $N$ of repeats (Herbie uses $N = 3$) as follows.
+
+To begin, for each operator in an original expression $e$, we accumulate all
+round-off errors for all sample inputs $i \in I$.  For instance, consider
+a binary operator $+$ which accepts two input arguments $e_1$ and $e_2$,
+where each argument are subexpressions.  To guarantee the correctness of
+the round-off error analysis of $+$, its subexpressions are evaluated
+into respective AE values $v_1$ and $v_2$ for a given input $i$.  Using
+$v_1$ and $v_2$ as inputs, the operator $+$ is then evaluated twice, in
+precision $\hat{p}$ and in AE precision $p$ to produce $\hat{v}_i$ and $v_i$
+respectively.  The error between $x = \hat{v}_+$ and $y = v_+$ is defined
+as follows~\cite{panchekha15, schkufza14}, which counts the number of
+floating-point values between the approximate and exact results\footnote{%
+    $\mathsf{FP}$ is the set of floating-point values in a precision which was
+    not mentioned by the original author~\cite{panchekha15}.
+}:
+\begin{equation}
+    \mathcal{E}(x, y) = \log_2 \left| \left\{
+        z \in \mathsf{FP} \mid \min(x, y) \leq z \leq \max(x, y)
+    \right\} \right|,
+\end{equation}
+The $\mathcal{E}(\hat{v}_i, v_i)$ is then accumulated for all sample inputs $i
+\in I$, and the final sum is the total error measure for the operator $+$, or
+equivalently:
+\begin{equation}
+    \mathrm{Error} = \sum_{i \in I} \mathcal{E}(\hat{v}_i, v_i).
+\end{equation}
+The top $M$ (Panchekha~\etal~\cite{panchekha15} uses $M = 4$) operators with
+the largest errors are then selected to be rewritten in the next stage.
+
+The second step is to rewrite the arithmetic expression, using the information
+gathered in the previous step about the largest local errors in the expression.
+The authors of Herbie identify that if subexpression of the selected operators
+are rewritten, transforming the selected operators' expression tree can provide
+greater chances of cancelling terms, hence significantly reduce the round-off
+errors.  The rewriting process therefore performs a recursively bottom-up
+transformation, which first rewrites the smaller subexpressions, then apply
+transformation rules to the selected operators.  In contrast to APEGs, Herbie
+does not restrict its database of rewrites to the basic arithmetic rules such
+as associativity and distributivity, as they also admit expressions with
+fractions, square roots, exponentiation, logarithm and trigonometry functions,
+additional rules thus must be provided for their corresponding algebraic
+identities.  In addition, Herbie has rules for special polynomial patterns,
+such as $a^3 + b^3 \equiv (a + b)(a^2 - ab + b^2)$, that are difficult to infer
+from using associativity, commutativity and distributivity alone.
+
+The third step is to further simplify the expression generated from the
+rewriting step.  In this step, a set of simplification rules are applied to the
+expression for a small number of iterations, which transforms the original into
+a new expression.  However, unlike step 2, as new expressions are discovered,
+an equivalence graph is gradually constructed.  An expression, with the
+smallest tree structure, can then be extracted from the graph as the simplified
+result.
+
+Herbie further identifies that some of these expressions, when evaluated,
+could produce highly inaccurate outcomes near zero or infinity.  In the fourth
+step, it will then substitute the expression with a series expansion, which
+may no longer suffer from this problem.  This series expansion can be further
+restructured in future iterations of refinement.
+
+As the above process produce multiple candidate expressions, in the next
+iteration of the accuracy refinement procedure, the four steps above are
+applied to all candidate expressions, and these steps will be repeated
+$N$ times in total, generating a set of accurate expressions that are
+mathematically equivalent to the original.  Finally, because different
+candidate expressions may be excel on different input conditions, a dynamic
+programming algorithm, is therefore applied to split the input space into
+multiple parts, where each part can be computed by different optimized
+expressions.  As an example, consider the following formula for finding a root
+of the quadratic equation $ax^2 + bx + c = 0$~\cite{panchekha15}:
+\begin{equation}
+    x_1 = \frac{-b - \sqrt{b^2 - 4ac}}{2a}.
+\end{equation}
+Their technique can optimize this expression to generate a scheme of
+expressions to be evaluated under different conditions, to improve the
+numerical accuracy of $x_1$, when evaluated with double-precision:
+\begin{equation}
+    x_1 = \left\{ \begin{aligned}
+            & \frac{4ac}{-b + \sqrt{b^2 - 4ac}} / {2a} \qquad
+                && \text{if~} b < 0, \\
+            & \left( -b - \sqrt{b^2 - 4ac} \right) \frac{1}{2a}
+                && \text{if~} 0 \leq b \leq 10^{127}, \\
+            & - \frac{b}{a} + \frac{c}{b}
+                && \text{if~} 10^{127} < b.
+    \end{aligned} \right.
+\end{equation}
+
+Panchekha~\etal~\cite{panchekha15} discovered that their tool can improve the
+numerical accuracy of a suite of benchmark examples from~\cite{hamming86},
+by recovering up to 60 bits of floating-point precision, with a performance
+overhead of 40\% for the generated expressions.
 
 
 \subsection{Numerical Programs}
@@ -298,27 +428,41 @@ Section~\ref{bg:sec:abstract_interpretation}.
 
 The technique we have explored so far has only been limited to individual
 arithmetic expressions; for a complete numerical program transformation, not
-only is it necessary to support sequential execution of straight-line code,
-but also control-flow structures such as conditional branches and loops.
-Methods has been developed by Tate~\etal~\cite{tate09}, Martel~\cite{martel09}
-and Damouche~\etal~\cite{damouche15} to utilize program semantics and
-abstract interpretation~\cite{cousot77}.  However, all of these techniques
-can neither unroll loops partially, nor optimize across loop boundaries.
-Tate~\etal~\cite{tate09} specifically target discovering equivalent structures
-only, it is however difficult to optimize for numerical accuracy using
-their approach, as we have discussed in Section~\ref{bg:sec:intermediate}.
-Martel~\cite{martel09} and Damouche~\etal~\cite{damouche15} optimize
-numerical accuracy only, and both do not optimize across basic blocks.
-Furthermore, Martel found that frequently their technique produces much slower
-implementations, \todo{irrelevant} while we also consider performance, by
-improving accuracy, latency and the resource usage of programs.
+only is it necessary to support sequential execution of straight-line code, but
+also control-flow structures such as conditional branches and loops.
+
+Tate~\etal~\cite{tate09} with their E-PEGs, enable equivalent programs to be
+discovered efficiently.  However their method do not consider the implications
+of rewriting arithmetic expressions in the data-flow on numerical accuracy.
+
+% The structure of the PEG makes it a difficult task to analyze the graph for
+% numerical accuracy, as the $\theta$ node generates an infinite sequence, and
+% it is not clear how this sequence can be intelligently pruned to a finite
+% sequence for numerical analysis purposes.  The cyclic nature of PEGs further
+% aggravates the obstacles of analysis, as often any modifications to a cycle
+% would necessitate a local re-analysis.
+
+Damouche~\etal~\cite{damouche15} developed a new semantics-based method, built
+on top of the foundation of APEGs from Ioualalen~\etal~\cite{ioualalen}, for
+the purpose of accuracy optimization in general numerical programs.  Their
+method formally defines a set of inference rules for rewriting a sequent,
+which encode the original program, into another, representing an optimized
+program.  To summarize from an informal standpoint, the inference rules
+analyze the basic blocks in the numerical program, which consist of arithmetic
+operations and variable assignments, into standard arithmetic expressions.
+These arithmetic expressions can then be analyzed and optimized by constructing
+APEGs and extracting an optimized expression from the APEGs.  Because they
+only focus on the basic blocks of the program, containing only data-flows,
+their approach is not able to optimize across control-flow boundaries such as
+\iflit~statements and \whilelit~loops.  Their method can improve numerical
+accuracy by approximately 20\% for simple loop examples.
 
 
-\subsection{Word-length Optimization}
-\label{bg:sub:wordlength}
+% \subsection{Word-length Optimization}
+% \label{bg:sub:wordlength}
 
-There are also academic tools that perform precision-performance trade-off by
-optimizing word-lengths of data-paths~\cite{constantinides}; and this safely
-bounds round-off errors.  However, no existing HLS tools can perform the
-trade-off optimization among accuracy, resource usage and latency by varying
-the \emph{structure} of numerical programs.
+% There are also academic tools that perform precision-performance trade-off by
+% optimizing word-lengths of data-paths~\cite{constantinides}; and this safely
+% bounds round-off errors.  However, no existing HLS tools can perform the
+% trade-off optimization among accuracy, resource usage and latency by varying
+% the \emph{structure} of numerical programs.

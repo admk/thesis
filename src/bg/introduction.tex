@@ -6,9 +6,9 @@ rewrite numerical programs by automatically varying the structure of their
 control- and data-paths for an improved trade-off relationship among numerical
 accuracy, throughput and resource utilization for high-level synthesis (HLS).
 This chapter therefore provides a review of recent developments in related work
-and various concepts that closely relate to the foundation of these methods.
-This section serves to highlight these main research topics to be discussed in
-depth in each section.
+and various concepts that closely relate to the foundation of this central
+problem.  This section serves to highlight the main research topic to be
+discussed in depth in each section.
 
 We introduce various computing architectures, and explain the pros and cons
 of each one in Section~\ref{bg:sec:fpga}.  We then explain in detail how
@@ -59,12 +59,12 @@ that may improve performance of floating-point computations, while potentially
 sacrificing numerical accuracies.  We thus further examine the effect of these
 passes on numerical programs in this section.
 
-Section~\ref{bg:sec:wordlength} explores alternative methods, known as
-\emph{word-length optimization}, to trade-off accuracy for other performance
-metrics, for instance, area, throughput and power.  Instead of restructuring
-the arithmetic expression to be synthesized, such as the approaches in
-Section~\ref{bg:sec:discovering_equivalent_programs}, these methods focus on
-varying the precisions of individual arithmetic operators in a data-path, as
-some operators compute values that do not require high precisions and often
-their precisions can often be reduced to optimize other desirable objectives,
-while satisfying a given error budget.
+% Section~\ref{bg:sec:wordlength} explores alternative methods, known as
+% \emph{word-length optimization}, to trade-off accuracy for other performance
+% metrics, for instance, area, throughput and power.  Instead of restructuring
+% the arithmetic expression to be synthesized, such as the approaches in
+% Section~\ref{bg:sec:discovering_equivalent_programs}, these methods focus on
+% varying the precisions of individual arithmetic operators in a data-path, as
+% some operators compute values that do not require high precisions and often
+% their precisions can often be reduced to optimize other desirable objectives,
+% while satisfying a given error budget.
