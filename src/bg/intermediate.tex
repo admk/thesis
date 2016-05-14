@@ -94,14 +94,14 @@ satisfied and will lead the control-flow to \verb|BB1|.
     ]
     \tikzstyle{tmp} = [coordinate]
     \begin{tikzpicture}
-        \node [] (entry) {Entry};
+        \node [] (entry) {\textbf{entry}};
         \node [block, below of=entry, node distance=4em] (bb0) {\texttt{BB0}};
         \node [block, below of=bb0, node distance=4em] (bb1) {\texttt{BB1}};
         \node [block, below of=bb1, node distance=4em] (bb2) {\texttt{BB2}};
         \node [tmp, right of=bb1, node distance=5em] (bb1tr) {};
         \node [tmp, left of=bb2, node distance=8em] (bb2tl) {};
         \node [tmp, right of=bb2, node distance=8em] (bb2tr) {};
-        \node [below of=bb2, node distance=4em] (exit) {Exit};
+        \node [below of=bb2, node distance=4em] (exit) {\textbf{exit}};
         \draw [->] (entry) -- (bb0);
         \draw [- ] (bb0)    to[out=0, in=90]    (bb1tr);
         \draw [->] (bb1tr)  to[out=-90, in=0]   (bb2);

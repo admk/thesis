@@ -54,13 +54,13 @@ enable expression-rewriting heuristics:
 
 \end{itemize}
 
-An additional optimization option, which encompasses the above options,
-can be used to enable them all together; it further highlights
-the \emph{unsafe} nature of these transformations in its name,
-\ie~\verb|-funsafe-math-optimizations|.  Besides GCC, Clang, which uses the
-LLVM framework, provides a similar option, \verb|-enable-unsafe-fp-math| to use
-arithmetic equivalences to reduce the number of floating-point operations in a
-program, by possibly sacrificing numerical accuracy.
+An extra optimization option, which encompasses the above options, can be used
+to enable them all together; it further highlights the \emph{unsafe} nature
+of these transformations in its name, \ie~\verb|-funsafe-math-optimizations|.
+Besides GCC, Clang, which uses the LLVM framework, provides a similar option,
+\verb|-enable-unsafe-fp-math| to use arithmetic equivalences to reduce the
+number of floating-point operations in a program, by possibly sacrificing
+numerical accuracy.
 
 % To give an example, the value $\sqrt{2}$, being irrational, can not be
 % represented exactly in single-precision floating point, and thus must be
@@ -181,20 +181,26 @@ commutativity and distributivity, to more sophisticated ones, such as
 trigonometry facts, rules derived from heuristics $x - y = \frac{x^2 - y^2}{x
 + y}$~\cite{panchekha15}, and many more.
 
-As the vastness of the search space prohibits us to explore it fully, authors
-confronting this problem resolve to heuristics.  Darulova~\etal~\cite{darulova}
-use genetic programming to evolve the structure of arithmetic expressions
-into more accurate forms.  However there are several disadvantages with
-metaheuristics, such as convergence can only be proved empirically and
-scalability is difficult to control because there is no definitive method to
-decide how long the algorithm must run until it reaches a satisfactory goal.
+As the vastness of the search space prohibits us to explore it fully,
+existing approaches confronting this problem resolve to heuristics.
+
+Darulova~\etal~\cite{darulova} use genetic programming to evolve the structure
+of arithmetic expressions into more accurate forms.  However there are several
+disadvantages with metaheuristics, such as convergence can only be proved
+empirically and scalability is difficult to control because there is no
+definitive method to decide how long the algorithm must run until it reaches a
+satisfactory goal.
+
 The method proposed by Martel~\cite{martel07} is based on operational semantics
 with abstract interpretation, but even their depth limited strategy is, in
-practice, at least exponentially complex.  Ioualalen~\etal~\cite{ioualalen},
-create a polynomial-size structure, APEG, to represent an exponential number of
-equivalent expressions related by rules of equivalence.  However it restricts
-itself to only a handful of these rules to avoid combinatorial explosion
-of the structure and offers no options for tuning its optimization level.
+practice, at least exponentially complex.
+
+Ioualalen~\etal~\cite{ioualalen}, create a polynomial-size structure, APEG, to
+represent an exponential number of equivalent expressions related by rules of
+equivalence.  However it restricts itself to only a handful of these rules to
+avoid combinatorial explosion of the structure and offers no options for tuning
+its optimization level.
+
 Panchekha~\etal~\cite{panchekha15} present a tool, Herbie, which employs a
 greedy hill-climbing heuristic to iteratively rewrite expressions in locations
 that introduce the largest round-off errors.  Here, detailed overviews are
@@ -249,7 +255,8 @@ E-PEGs.
     \includegraphics[scale=0.4]{bg/fig/apeg.png}
     \caption{%
         An example APEG for the expression $\left( \left( a + a \right) + b
-        \right)$, taken from~\cite{martel12}.}\label{bg:fig:apeg}
+        \right) \times c$, taken from~\cite{martel12}.
+    }\label{bg:fig:apeg}
 \end{figure}
 Take Figure~\ref{bg:fig:apeg} as our example, which not only contains standard
 tree nodes which we would expect from an arithmetic expression tree, but
@@ -262,14 +269,16 @@ as the subexpression $(a + a) + b$ is a summation of multiple elements, an
 abstraction box \fbox{$+, (a, a, b)$}\, can therefore model the equivalent
 parsings of it.
 
-Despite the compactness of APEGs, searching for the most accurate expression
-within an APEG is still exponentially complex.  For instance, consider an
+Despite the compactness of APEGs, searching for the most accurate
+expression within an APEG is still exponentially complex, where the search
+utilizes the static analysis of floating-point errors introduced in
+Section~\ref{bg:sec:abstract_interpretation}.  For instance, consider an
 APEG with $n$ equivalent classes, each contains $2$ different choices, in
 the worst case, this may amount to a search of $2^n$ distinct equivalent
-expressions, so as to determine the optimal solution.  To resolve this problem,
-Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic
-to reduce the size of the search space.\footnote{The exact technique is
-not explained in their original contribution.}  Additionally, as it was
+expressions, so as to determine the optimal solution.  To resolve this
+problem, Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search
+heuristic to reduce the size of the search space.\footnote{The exact technique
+is not explained in their original contribution.}  Additionally, as it was
 explained earlier, the time complexity to search for the optimal parsing of an
 abstraction box is double factorial.  They hence make use of another heuristic,
 which greedily pairs up terms in an abstraction box $B = \text{\fbox{$+,
@@ -288,8 +297,6 @@ $p_i$ and $p_j$ are subsequently removed from $B$, and a new subtree
 is then added to $B$.  The above greedy pairing procedure is then iteratively
 repeated until finally one node is left in $B$; this last node is therefore
 the expression with an improved numerical accuracy obtained in the process.
-The above heuristics utilize the static analysis of floating-point errors
-introduced in Section~\ref{bg:sec:abstract_interpretation}.
 
 Ioualalen~\etal~\cite{ioualalen} found their APEG approach can reduce round-off
 errors in expressions by up to 50\%.
@@ -428,19 +435,14 @@ overhead of 40\% for the generated expressions.
 
 The technique we have explored so far has only been limited to individual
 arithmetic expressions; for a complete numerical program transformation, not
-only is it necessary to support sequential execution of straight-line code, but
-also control-flow structures such as conditional branches and loops.
+only is it necessary to support sequential execution of straight-line code,
+but also control-flow structures such as conditional branches and loops.
+However, the techniques in this research area to optimize numerical accuracy
+are currently not mature enough to be used in compilers and HLS tools.
 
 Tate~\etal~\cite{tate09} with their E-PEGs, enable equivalent programs to be
 discovered efficiently.  However their method do not consider the implications
 of rewriting arithmetic expressions in the data-flow on numerical accuracy.
-
-% The structure of the PEG makes it a difficult task to analyze the graph for
-% numerical accuracy, as the $\theta$ node generates an infinite sequence, and
-% it is not clear how this sequence can be intelligently pruned to a finite
-% sequence for numerical analysis purposes.  The cyclic nature of PEGs further
-% aggravates the obstacles of analysis, as often any modifications to a cycle
-% would necessitate a local re-analysis.
 
 Damouche~\etal~\cite{damouche15} developed a new semantics-based method, built
 on top of the foundation of APEGs from Ioualalen~\etal~\cite{ioualalen}, for
@@ -457,6 +459,12 @@ their approach is not able to optimize across control-flow boundaries such as
 \iflit~statements and \whilelit~loops.  Their method can improve numerical
 accuracy by approximately 20\% for simple loop examples.
 
+% The structure of the PEG makes it a difficult task to analyze the graph for
+% numerical accuracy, as the $\theta$ node generates an infinite sequence, and
+% it is not clear how this sequence can be intelligently pruned to a finite
+% sequence for numerical analysis purposes.  The cyclic nature of PEGs further
+% aggravates the obstacles of analysis, as often any modifications to a cycle
+% would necessitate a local re-analysis.
 
 % \subsection{Word-length Optimization}
 % \label{bg:sub:wordlength}

@@ -227,16 +227,7 @@ We further define a functional $\closure_N: ( \powersetof\aexprset \to
 here, $f$ and $f^\prime$, respectively the input and output of $\closure_N$,
 are both EEG functions.  In the rest of the section, we omit the brackets
 surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N (f)$ can
-be written as $\closure_N f$.  We further define the meaning of $f^i$ with the
-following equations:
-\begin{equation}
-    \begin{aligned}
-        f^0(\epsilon) &= \epsilon \quad \text{and~} \\
-        f^i(\epsilon) &= \eqstep\left(
-            f^{i - 1}\left(\epsilon\right)
-        \right) \quad \text{for~} i \in \{ 0, 1, 2, \cdots \}
-    \end{aligned}
-\end{equation}
+be written as $\closure_N f$.
 
 \begin{lemma}
     $\closure_N f(\epsilon) = \epsilon \cup f \left( \closure_{N-1} f(\epsilon)
