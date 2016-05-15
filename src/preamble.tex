@@ -21,7 +21,7 @@
     hangfigurecaption=false,
     hangsection=true,
     hangsubsection=true,
-    linespacing=onehalfspacing,
+    linespacing=doublespacing,
     colorize=full,
     colortheme=bluemagenta,
     bibsys=bibtex,
@@ -42,6 +42,7 @@
 \usepackage{galois}
 \usepackage{graphicx}
 \usepackage{listings}   % source code
+\usepackage{mathtools}
 \usepackage{multirow}   % for \multirow
 \usepackage{pgfplotstable}
 \usepackage{pgfplots}
@@ -125,6 +126,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 
 \newcommand{\groebner}{Gr{\"o}bner}
 
+\newcommand{\defeq}{\vcentcolon=}
+
 \DeclareMathOperator{\roundupop}{\uparrow^\sharp_\circ}
 \DeclareMathOperator{\rounddownop}{\downarrow^\sharp_\circ}
 \DeclareMathOperator{\fresh}{\mathit{fresh}}
@@ -151,7 +154,7 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\env}[1]{\ensuremath\mathbf{Env}_{#1}}
 \newcommand{\enter}[1]{\ensuremath{A({#1})}}
 \newcommand{\interval}[2]{\ensuremath\left[{#1}, {#2}\right]}
-\newcommand{\lattice}[2]{\ensuremath\left<{#1}, {#2}\right>}
+\newcommand{\lattice}[2]{\ensuremath\langle{#1}, {#2}\rangle}
 \newcommand{\join}{\ensuremath\sqcup}
 \newcommand{\meet}{\ensuremath\sqcap}
 

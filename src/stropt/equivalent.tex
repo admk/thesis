@@ -427,7 +427,7 @@ analyze the magnitudes of error bounds, which is defined as follows:
 \end{equation}
 Here we use the function $\error: \aexprset\to\errorset$ to represent the
 analysis of round-off error analysis in an expression tree, described
-in Section~\ref{bg:sub:accuracy} of Chapter~\ref{chp:background}, where
+in Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background}, where
 $\aexprset$ denotes the set of all arithmetic expressions.
 
 
@@ -564,3 +564,42 @@ expressions to process for the next iteration.
 In the rest of this chapter, we use \frontiertrace{} to indicate our equivalent
 expression finding semantics, and \greedytrace{} to represent the alternative
 method.
+
+
+\subsection{Simultaneous Optimization of Multiple Expressions}
+
+To simultaneously optimize multiple expressions, a new operator, the barrier
+operator $\mid$, is introduced to concatenate expressions.  Multiple
+expressions, when concatenated, allow common subexpressions to be shared.  For
+instance, the expressions $a + (b + c)$ and $a \times (b + c)$ can concatenate
+to form a new expression $e$:
+\begin{equation}
+    e = a + (b + c) \mid a \times (b + c),
+\end{equation}
+and the subexpression $b + c$ is shared within $e$, as this behaviour
+naturally arises from the resource usage analysis discussed in
+Section~\ref{so:sec:resource}.
+
+The barrier operator has no rules of equivalence, this disallows any
+transforms across the expressions.  For a single expression, the quality
+of accuracy is determined by its round-off error.  However when evaluating
+multiple expressions there are choices to make in terms of determining the
+overall accuracy of the system of multiple expressions.  The reasons are
+two-fold~\cite{martel09}.  Firstly, perhaps only a user-defined subset of the
+expressions that compute the final results are influential.  Secondly, we may
+wish to minimize either the $L^1$-, $L^2$-, $L^\infty$-norm, or a geometric
+mean of the errors, depending on which one is more relevant.  The tool is
+designed to minimize the $L^\infty$-norm of all expressions by default, by
+computing the least upper bound of the following accuracy semantics of two
+expressions joined by the barrier operator:
+\begin{equation}
+    (x^\sharp_1, \mu^\sharp_1) \mid (x^\sharp_2, \mu^\sharp_2)
+    \defeq (x^\sharp_1, \mu^\sharp_1) \join (x^\sharp_2, \mu^\sharp_2).
+\end{equation}
+Here, the $\join$ operator on the abstract semantics is introduced in
+Section~\ref{bg:ssub:accuracy}.
+
+With the extended accuracy analysis in place, the automatic multi-objective
+optimization techniques for single expression can be adapted to multiple
+expressions, by concatenating them into a single expression using the barrier
+operator.

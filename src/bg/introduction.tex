@@ -30,10 +30,12 @@ optimization objective, we use LegUp~\cite{legup}, an open-source HLS tool, as
 an example, to further examine in greater detail how its scheduling stage can
 make loops to run as efficiently as possible by pipelining them.
 
-In Section~\ref{bg:sec:abstract_interpretation}, we review abstract
-interpretation~\cite{cousot77}, a theory to approximate mathematical objects
-that are not directly computable---because they are undecidable, intractable or
-both---in order to compute an approximation to them efficiently.  We informally
+The methods discussed in this thesis rely heavily on the static analysis of
+numerical programs based on abstract interpretation~\cite{cousot77}.  In
+Section~\ref{bg:sec:abstract_interpretation}, we therefore review abstract
+interpretation, a theory to create an abstraction for mathematical objects that
+are not directly computable---because they are undecidable, intractable or
+both---in order to compute an approximation of them efficiently.  We informally
 introduce this theory, by way of reviewing existing techniques to statically
 analyze numerical applications.
 
