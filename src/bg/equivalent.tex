@@ -299,7 +299,16 @@ repeated until finally one node is left in $B$; this last node is therefore
 the expression with an improved numerical accuracy obtained in the process.
 
 Ioualalen~\etal~\cite{ioualalen} found their APEG approach can reduce round-off
-errors in expressions by up to 50\%.
+errors in expressions by up to 50\%.  They further proved the correctness of
+their APEG approach by forming a Gal\"ois connection:
+\begin{equation}
+    \powersetof{{\llparenthesis e \rrparenthesis}_\rhd}
+    \galois{\alpha}{\gamma}
+    \Pi_\rhd,
+\end{equation}
+where $\powersetof{{\llparenthesis e \rrparenthesis}_\rhd}$ is all possible
+traces of rewrites of an initial expression $e$ using associativity,
+distributivity and commutativity, and $\Pi_\rhd$ is the final saturated APEG\@.
 
 \subsubsection{Herbie}
 

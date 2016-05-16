@@ -16,19 +16,28 @@ future.
 
 It is unfortunate that because of the halting problem~\cite{turing37} and
 a direct consequence of it, Rice's theorem~\cite{rice53}, any nontrivial
-property on the outcome of a program is in general undecidable.  It means
-that an interesting property---a yes or no question---which is never always
-true or always false for all programs, is \emph{undecidable}, or in other
-words, cannot be answered.  Even a question as seemingly innocuous as
-\emph{``does this program return zero''}, is difficult to answer.  A static
-analyzer, when is faced with a question, therefore do not attempt to produce
-a definite \emph{yes} or \emph{no}, instead it answers with either a definite
+property on the outcome of a program is in general undecidable.  It means that
+an interesting property---a yes or no question---which is never always true
+or always false for all programs, is \emph{undecidable}, or in other words,
+cannot be answered.  Even a question as seemingly innocuous as \emph{``does
+this program return zero''}, is difficult to answer.  A static analyzer,
+when faced with such a question, therefore do not attempt to produce a
+definite \emph{yes} or \emph{no}, instead it answers with either a definite
 \emph{yes} or \emph{I don't know}~\cite{mine04}; and producing a meaningful
 \emph{yes} in an efficient manner poses a challenging task to static analyzers.
 Additionally, they often rely heavily on formal techniques to perform well.
 Typical techniques employed include symbolic execution, model checking,
 satisfiability modulo theories~\cite{demoura08}, data-flow analysis based on
 lattices~\cite{nielson99}, and abstract interpretation~\cite{cousot77}.
+
+There are static analyzers specifically tailored to prove the absence of
+run-time errors in computing systems.  Astr\'ee~\cite{astree}, based on
+the theory of abstract interpretation, has been successful in proving the
+safety of the flight control systems of the Airbus A340 and A380 series,
+and the automatic docking software of the Jules Vernes Automated Transfer
+Vehicle~\cite{dasia09}.  Other static analysis tools which employ abstract
+interpretation include MathWorks's Polyspace Bug Finder~\cite{polyspace},
+Fluctuat~\cite{Fluctuat}, and ECLAIR~\cite{eclair}.
 
 This section starts by introducing the data-flow analysis framework to analyze
 a simple program, abstract interpretation is then applied to this example, and
@@ -774,7 +783,8 @@ Parma Polyhedra Library~\cite{ppl}.  Although the polyhedra domain is very
 accurate for linear computations, Ghorbal~\etal~\cite{ghorbal09} find both
 libraries to be much slower than their affine arithmetic based approach.
 
-Abstract domains on integers are furthermore presented by several.
+In addition to abstract domains on reals and floating-point values,
+integer-based domains are further presented by several authors.
 Granger~\cite{granger89} introduce the simple congruences on integers, which
 consists of equations of the form $x = a \mod b$, where $x$ is a variable
 and $a$ and $b$ are integers.  They further propose a linear congruences
