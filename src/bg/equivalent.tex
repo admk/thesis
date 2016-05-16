@@ -115,14 +115,14 @@ Vivado HLS, they only apply associativity in their restructuring.
 \subsubsection{Polynomial Factorization}
 
 The above mentioned tools restrict themselves to simple arithmetic
-equivalences, as they are intended for fast and simple optimizations that
-can easily be applied by a compiler.  A further handful of techniques take
-one step further, by focusing on multivariate polynomials, and factorizing
-them to minimize the number of arithmetic operations in an expression.  These
-approaches are applicable to both software and hardware designs, as they
-minimize the number of operations in an expression, the throughput of the
-optimized design can be reduced.  In addition, in an FPGA circuit, this will
-also translate to a reduction of resources utilized.
+equivalences, as they are intended for fast and simple optimizations that can
+easily be applied by a compiler.  Several techniques take one step further,
+by focusing on multivariate polynomials, and factorizing them to minimize
+the number of arithmetic operations in an expression.  These approaches are
+applicable to both software and hardware designs, as they minimize the number
+of operations in an expression, the throughput of the optimized design can
+be reduced.  In addition, in an FPGA circuit, this will also translate to a
+reduction of resources utilized.
 
 It is well known that the Horner scheme is the optimal way to
 factorize a univariate polynomial so that its operator count is

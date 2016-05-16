@@ -24,11 +24,12 @@ into circuits, low-level approaches such as RTL design become humanly
 intractable~\cite{gajski}, a gradual adoption of HLS tools has been
 observed in the FPGA community in recent years.  For this reason, in
 Section~\ref{bg:sec:high_level_synthesis}, we review the current state and
-advantages of HLS, and describe the stages in these tools to compile a program
-in a high-level language into digital circuits.  Because run time is one of our
-optimization objective, we use LegUp~\cite{legup}, an open-source HLS tool, as
-an example, to further examine in greater detail how its scheduling stage can
-make loops to run as efficiently as possible by pipelining them.
+advantages of HLS, and describe the stages employed by these tools to compile
+a program in a high-level language into digital circuits.  Because run time
+is one of our optimization objective, we use modulo SDC scheduling to further
+examine in greater detail how it can make loops to run as efficiently as
+possible by pipelining them.  The module SDC scheduling algorithm is used by
+HLS tools such as LegUp~\cite{legup}.
 
 The methods discussed in this thesis rely heavily on the static analysis of
 numerical programs based on abstract interpretation~\cite{cousot77}.  In
@@ -36,30 +37,34 @@ Section~\ref{bg:sec:abstract_interpretation}, we therefore review abstract
 interpretation, a theory to create an abstraction for mathematical objects that
 are not directly computable---because they are undecidable, intractable or
 both---in order to compute an approximation of them efficiently.  We informally
-introduce this theory, by way of reviewing existing techniques to statically
-analyze numerical applications.
+introduce this theory, by way of reviewing it with a progressive program
+analysis example.
 
 Intermediate representations (IRs) are often used to facilitate program
 optimization and program analysis.  Section~\ref{bg:sec:intermediate} we
 therefore study in detail the existing IRs designed for program optimization.
-We take a closer at how the SSA and CFG approach of LLVM~\cite{llvm_ir} encodes
-a simple program example.  In addition, a novel approach known as equality
-saturation~\cite{tate09} which uses a data structure to represent multiple
-optimization candidates, is further examined.
+We take a closer at how the SSA and CFG approach of LLVM~\cite{llvm_ir}
+encodes a simple program example.  As this technique limits itself on
+optimizing a single IR of a program, a novel approach known as equality
+saturation~\cite{tate09} which uses a data structure to simultaneously
+represent multiple optimization candidates, is further examined.
 
 In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work on
-restructuring numerical programs to discover their equivalences efficiently.
+restructuring arithmetic expressions and numerical programs.
+
+We examine existing optimization passes in software compilers and HLS
+tools.  Since HLS tools are LLVM-based and compile C or C++ programs,
+they borrow the concept from software compiler frameworks, such as
+LLVM, of including optimization passes that may improve performance of
+floating-point computations, while potentially sacrificing numerical
+accuracies.  On the other hand, we look at methods that could improve accuracy
+by simultaneously exploring multiple rewrites to expression candidates.
 Due to the full set of equivalent programs of an initial program is often
-computationally intractable, these methodologies make extensive use of abstract
-interpretation introduced in Section~\ref{bg:sec:abstract_interpretation}, in
-order to compute an under-approximation (a potentially smaller set) of the set
-of all equivalent programs.  Besides methods based on abstract interpretation
-proposed in the research community, we also look at existing optimization
-passes in HLS tools.  Since HLS tools are LLVM-based and compile C or C++
-programs, they borrow the concept from LLVM of including optimization passes
-that may improve performance of floating-point computations, while potentially
-sacrificing numerical accuracies.  We thus further examine the effect of these
-passes on numerical programs in this section.
+computationally intractable, these methodologies either make extensive
+use of heuristics, or abstract interpretation techniques introduced in
+Section~\ref{bg:sec:abstract_interpretation}, in order to compute an
+under-approximation (a potentially smaller set) of the set of all equivalent
+programs.
 
 % Section~\ref{bg:sec:wordlength} explores alternative methods, known as
 % \emph{word-length optimization}, to trade-off accuracy for other performance
