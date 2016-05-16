@@ -714,32 +714,93 @@ g$.
 \subsection{Abstract Domains}
 \label{bg:sub:abstract_domains}
 
+The interval domain offers us an efficient way to enclose reachable values
+of variables.  However, it is unable to capture the correlation among these
+variables.  For instance, if we know that $x$ and $y$ are reals between $0$
+and $1$, and $x \leq y$, intervals can not express the relation $x \leq y$ and
+using bounds $x \in [0, 1]$ and $y \in [0, 1]$, we evaluate the expression $(1
+- y)x$ is bounded by $0$ and $1$.  In contrast, if we were able to make use of
+the inequality $x \leq y$, then it is possible to deduce $(1 - y) x \leq (1 -
+x) x < \frac{1}{4}$, which yields a much tighter bound than using intervals.
+
+In general, the design of abstract domains therefore is a trade-off between
+how good a approximation it can obtain, and how efficient it can be computed.
+We could imagine another abstract domain, $\signset$, which only captures the
+signedness of variables, to also enclose a set of reachable values.  Although
+it is even faster than intervals to compute, it sacrifices the precision of
+the value bounds.  Ranging from the fastest to the most expensive, a hierarchy
+of abstract domains for reals and floating-point computations are proposed by
+various authors as discussed below.
+
+A new abstract domain, $\mathbf{Octagon}$, is proposed by Min\'e~\cite{mine07},
+to enclose values in a system of difference-bound inequalities, which are of
+the form $x - y \leq c$ and $\pm x \leq c$, where $x$ and $y$ are variables
+and $c$ is a constant.  This domain is very efficient as a Floyd-Warshall
+algorithm~\cite{floyd62}, which runs in $\bigo(n^3)$, can be used to compute
+it~\cite{mine04}, where $n$ is the number of variables.  Although not as
+efficient as intervals, it is much more expressive than intervals.  This is
+because intervals can only imply inequalities of the latter form, $\pm x \leq
+c$, but not the former, $x - y \leq c$.
+
+Based on affine arithmetic, Ghorbal~\etal~\cite{ghorbal09} propose an abstract
+domain, Taylor1+\@.  This domain uses an equation of the form to capture the
+bound on a variable $x$:
+\begin{equation}
+    \tilde{x} = \alpha^x_0 + \sum_{i = 1}^{n} \alpha^x_i \varepsilon_i,
+\end{equation}
+where $\alpha^x_i \in \realset$ for each $i$, and each $\varepsilon_i$, known
+as the noise symbol, which has an unknown quantity that lies in $[-1, 1]$,
+introduces a perturbation on the constant $\alpha^x_0$.  If two variables
+$x$ and $y$ has correlation, $\tilde{x}$ and $\tilde{y}$ can consist of
+the same $\varepsilon_i$ to encode the correlation.  They found that for a
+$2^\mathrm{nd}$ order infinite impulse response (IIR) filter, Taylor1+ can
+give an exact bound on the filter output, whereas both $\intervalset$ and
+$\mathbf{Octagon}$ failed as the bound size increase exponentially in each
+iteration, albeit slower than both methods.
+
+Cousot~\etal~\cite{cousot78} introduce the polyhedra approach to abstract
+domains.  This method makes use of arbitrary polyhedra, which could be
+expressed by a set of linear inequalities such as the following:
+\begin{equation}
+    \left\{
+    \begin{aligned}
+        & 2x + 7y \leq 32, \\
+        & 8x - 3y + z \geq 0.
+    \end{aligned}
+    \right.
+\end{equation}
+Libraries that implement the polyhedra domain include APRON~\cite{apron} and
+Parma Polyhedra Library~\cite{ppl}.  Although the polyhedra domain is very
+accurate for linear computations, Ghorbal~\etal~\cite{ghorbal09} find both
+libraries to be much slower than their affine arithmetic based approach.
+
+Abstract domains on integers are furthermore presented by several.
+Granger~\cite{granger89} introduce the simple congruences on integers, which
+consists of equations of the form $x = a \mod b$, where $x$ is a variable
+and $a$ and $b$ are integers.  They further propose a linear congruences
+formulation which is more expressible, for example, an equation $3 x + 4 y = 5
+\mod 6$ can be used to capture the relation between integer variables $x$ and
+$y$.
 
 \subsubsection{Round-off Error Analysis}
 \label{bg:ssub:accuracy}
+
+The above abstract domains are all based on the standard semantics of programs,
+\ie~they all assume that the program accepts as inputs and computes as
+outputs numerical values.  Here we extend this notion to non-standard program
+semantics.  Alongside the analysis of reachable values, this technique further
+enables the analysis of numerical round-off errors in the execution of
+numerical algorithms.
 
 In Section~\ref{bg:sec:discovering_equivalent_programs}, we will discuss
 techniques which optimize numerical accuracies in a program by restructuring
 it.  Their methods utilize a common analysis of floating-point round-off
 errors, which is based on a formulation of AI\@.  In this section, this
-numerical accuracy analysis approach is explained in detail.
+numerical accuracy analysis approach is thus explained in detail.
 
-To begin, the concepts of the floating-point representation~\cite{ieee754}
-should be introduced. Any values $v$ representable in floating-point with
-standard exponent offset can be expressed with the format given by the
-following equation:
-\begin{equation}
-    v = s \times 2^{e + 2^{k - 1} - 1} \times 1.{m_1 m_2 m_3 \ldots m_p}
-    \label{bg:eq:floating_point}
-\end{equation}
-In~\eqref{bg:eq:floating_point}, the bit $s$ is the sign bit, the $k$-bit
-unsigned integer $e$ is known as the exponent bits, and the $p$-bits $m_1 m_2
-m_3 \ldots m_p$ are the mantissa bits, here we use $1.{m_1 m_2 m_3 \ldots m_p}$
-to indicate a fixed-point number represented in unsigned binary format.
-
-Because of the finite characteristic of IEEE 754 floating-point format,
-it is not always possible to represent exact values with it. Computations
-in floating-point arithmetic often induces round-off errors. Therefore,
+Because of the finite characteristic of IEEE 754 floating-point format, it
+is not always possible to represent exact values with it.  Computations
+in floating-point arithmetic often induces round-off errors.  Therefore,
 Martel~\cite{martel07} bound the ranges of the values in floating-point
 calculations, as well as the round-off errors introduced in these computations.
 This accuracy analysis determines the bounds of all possible outputs and their
@@ -854,12 +915,16 @@ zero and towards nearest floating-point value respectively.  It is defined as:
         & \qquad\qquad\qquad\qquad \text{where~} z = \max(\ulp(a), \ulp(b)).
     \end{aligned}
 \end{equation}
-Here $z$ denotes the maximum rounding error that can occur for values within
-the range $\interval{a}{b}$, and the unit of the last place ($\ulp$) function
-$\ulp(x)$ characterizes the gap between two floating-point numbers closest to
-$x$.  However there are multiple different variations of the definition of
-$\ulp$, which one is the most fitting is still subject to debate~\cite{muller}.
-Martel~\cite{martel07}~did not mention which one was used.
+Here $z$ denotes the maximum rounding error that can occur for values
+within the range $\interval{a}{b}$, and the unit of the last place ($\ulp$)
+function $\ulp(x)$ characterizes the gap between two floating-point numbers
+closest to $x$.  However there are multiple different variations of the
+definition of $\ulp$, which one is the most fitting is still subject to
+debate~\cite{muller}\footnotemark[3].
+\footnotetext[3]{%
+    Martel~\cite{martel07}~did not mention which one was used in their
+    formulation.
+}
 
 The function $\roundupop: \intervalset \to \floatintervalset$ computes the
 floating-point bound from a real bound, by rounding the infimum $a$ and

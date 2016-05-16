@@ -362,13 +362,14 @@ $10$ and $1$ respectively, thus the $\RecMII$ of this graph is $\lceil 10 / 1
 \rceil = 10$.
 
 The simplest possible method of finding $\RecMII$ is therefore to enumerate
-all cycles in the graph and compute the ratio between sums of latencies and
-dependence distances.  Unfortunately in the worst case, the number of cycles
-is exponential to the number of edges in a graph, this approach could become
-intractable for large loops.  An alternative method based on the Floyd-Warshall
-shortest path algorithm which runs in polynomial time, is thus proposed
-in~\cite{rau94} to efficiently find $\RecMII$.  This method will be further
-discussed in Chapter~\ref{chp:latopt}, Section~\ref{lo:sub:latency_analysis}.
+all cycles in the graph and compute the ratio between sums of latencies
+and dependence distances.  Unfortunately in the worst case, the number of
+cycles is exponential to the number of edges in a graph, this approach
+could become intractable for large loops.  An alternative method based
+on the Floyd-Warshall shortest path algorithm~\cite{floyd62} which runs
+in polynomial time, is thus proposed in~\cite{rau94} to efficiently find
+$\RecMII$.  This method will be further discussed in Chapter~\ref{chp:latopt},
+Section~\ref{lo:sub:latency_analysis}.
 
 \subsubsection{Scheduling Operations}
 
@@ -439,10 +440,10 @@ exists, can be found efficiently.  More precisely, using the Bellman-Ford
 algorithm~\cite{schrijver05}, it can run in $\Theta(l n)$ time, where
 $l$ is the number of constraint inequalities and $n$ is the number of
 variables~\cite{zhang13}.  Additionally, an SDC problem can be incrementally
-solved, \ie~a new solution, if exists, can be updated in $O(m + n \log n)$
-time when a constraint is added or removed, by using the algorithm presented
-by Ramalingam~\etal~\cite{ramalingam99}.  In contrast, traditional ILP
-scheduling techniques make use of $O(mn)$ variables to represent a scheduling
+solved, \ie~a new solution, if exists, can be updated in $\bigo(m + n \log n)$
+time when a constraint is added or removed, by using the algorithm presented by
+Ramalingam~\etal~\cite{ramalingam99}.  In contrast, traditional ILP scheduling
+techniques make use of $\bigo(mn)$ variables to represent a scheduling
 problem, where $m$ is the number of time slots and $n$ is the number of
 operations~\cite{hwang91}, and solving this ILP problem often demands expensive
 branch-and-bound procedures~\cite{zhang13} as ILP is NP-complete~\cite{karp10}.

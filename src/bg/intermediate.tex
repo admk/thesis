@@ -371,12 +371,12 @@ factorial of 10.
 By using $\mathrm{pass}$ and $\mathrm{eval}$ nodes to represent the
 control-flow in an algebraic fashion, and mixing data- and control-flows
 together in the graphical representation, PEGs provide us with greater
-opportunities to optimize data-flow across control-flow boundaries and vice
-versa.  Simple equivalence rules can be defined for these nodes algebraically.
-For instance, arithmetic operators can be distributed over $\theta$ and
-$\mathrm{eval}$, \eg~$\mathrm{eval}(j, k) + i \equiv \mathrm{eval}(j + i, k)$.
-Complex transformations can therefore be deductively constructed from these
-simple equivalence rules.
+opportunities to optimize data-flow across control-flow boundaries and
+\emph{vice versa}.  Simple equivalence rules can be defined for these nodes
+algebraically.  For instance, arithmetic operators can be distributed
+over $\theta$ and $\mathrm{eval}$, \eg~$\mathrm{eval}(j, k) + i \equiv
+\mathrm{eval}(j + i, k)$.  Complex transformations can therefore be deductively
+constructed from these simple equivalence rules.
 
 \subsubsection{Equivalence Finding}
 
