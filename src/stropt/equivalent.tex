@@ -412,23 +412,7 @@ equivalent expressions $\epsilon$.
 \end{figure} \\
 Here, $\mathit{frontier} / \{ e \}$ is a set identical to $\mathit{frontier}$,
 except that the element $e$ is removed.  We use the function $\abserr$ to
-analyze the magnitudes of error bounds, which is defined as follows:
-\begin{equation}
-    \begin{aligned}
-        \abserr(e) &= \max\left(
-            \left| \mu^\sharp_{\min} \right|,
-            \left| \mu^\sharp_{\max} \right|
-        \right) \\
-        & \quad \text{where~}
-        \left(
-            x^\sharp, \left[ \mu^\sharp_{\min}, \mu^\sharp_{\max} \right]
-        \right) = \error(e)
-    \end{aligned}
-\end{equation}
-Here we use the function $\error: \aexprset\to\errorset$ to represent the
-analysis of round-off error analysis in an expression tree, described
-in Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background}, where
-$\aexprset$ denotes the set of all arithmetic expressions.
+analyze the magnitudes of error bounds as defined in~\eqref{so:eq:abserr}.
 
 
 \subsection{Equivalent Expressions Semantics}
@@ -594,9 +578,9 @@ computing the least upper bound of the following accuracy semantics of two
 expressions joined by the barrier operator:
 \begin{equation}
     (x^\sharp_1, \mu^\sharp_1) \mid (x^\sharp_2, \mu^\sharp_2)
-    \defeq (x^\sharp_1, \mu^\sharp_1) \join (x^\sharp_2, \mu^\sharp_2).
+    \defeq (x^\sharp_1, \mu^\sharp_1) \join (x^\sharp_2, \mu^\sharp_2),
 \end{equation}
-Here, the $\join$ operator on the abstract semantics is introduced in
+where the $\join$ operator on the abstract semantics is introduced in
 Section~\ref{bg:ssub:accuracy}.
 
 With the extended accuracy analysis in place, the automatic multi-objective

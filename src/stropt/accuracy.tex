@@ -1,0 +1,93 @@
+\section{Accuracy Analysis}
+\label{so:sec:accuracy}
+
+The accuracy analysis used by \soap{} follows the method based on abstract
+error domain introduced by Martel~\cite{martel07} to analyze the round-off
+error of restructured floating-point expressions.  As it was mentioned
+in Section~\ref{bg:ssub:accuracy}, they did not have a preference for the
+choice of definition of $\ulp$.  Hence, in \soap{}, the distance between two
+adjacent floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
+f_2$~\cite{goldberg} is characterized using the following definition:
+\begin{definition}
+    In our analysis, the function $\ulp$ is defined as:
+    \begin{equation}
+        \ulp(x) = \left\{
+            \begin{aligned}
+                & \infty,  && \text{if $x$ is $-\infty$ or $\infty$}, \\
+                & 2^{e(x) + 2^{k - 1} - 1} \times 2^{-p},
+                \quad && \text{otherwise}.
+            \end{aligned}
+        \right.
+    \end{equation}
+    where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
+    floating-point format as defined in~\eqref{bg:eq:floating_point}.
+    {}\label{so:def:ulp}
+\end{definition}
+
+Since Martel~\cite{martel07} does not define the arithmetic operator for
+division.  The following equations for division is therefore introduced in this
+thesis.  Firstly, divisions on intervals can be implemented as follows:
+\begin{equation}
+    \frac{\interval{a}{b}}{\interval{c}{d}}
+        \defeq \interval{\min(s)}{\max(s)},
+\end{equation}
+where $\interval{a}{b}, \interval{c}{d} \in \intervalset$ and:
+\begin{equation}
+    s = \left\{
+    \begin{aligned}
+        & \{ -\infty, \infty \}
+            && \text{if~} c \leq 0 \leq d, \\
+        & \left\{
+            \frac{a}{c}, \frac{a}{d}, \frac{b}{c}, \frac{b}{d}
+        \right\}
+            \quad && \text{otherwise}.
+    \end{aligned}
+    \right.
+\end{equation}
+By evaluating the sum of error propagated $\frac{ x^\sharp_1 + \mu^\sharp_1 }{
+x^\sharp_2 + \mu^\sharp_2 } - \frac{x^\sharp_1}{x^\sharp_2}$ and the round-off
+error introduced by division, the division on values in the abstract error
+domain can be derived as follows:
+\begin{equation}
+    \frac{
+        \left( x^\sharp_1, \mu^\sharp_1 \right)
+    }{
+        \left( x^\sharp_2, \mu^\sharp_2 \right)
+    }
+    \defeq \left(
+            \roundup{\frac{x^\sharp_1}{x^\sharp_2}},
+            \frac{
+                x^\sharp_2 \mu^\sharp_1 - x^\sharp_1 \mu^\sharp_2
+            }{
+                x^\sharp_1 \left( x^\sharp_2 + \mu^\sharp_2 \right)
+            } + \rounddown{\frac{x^\sharp_1}{x^\sharp_2}}
+        \right).
+\end{equation}
+
+We use the function $\error: \aexprset\to\errorset$ to represent the
+analysis of round-off error in an expression tree, as described in
+Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background}, using the above
+$\ulp$ equation in Definition~\ref{so:def:ulp}, where $\aexprset$ denotes the
+set of all arithmetic expressions.
+
+For each expression in a set of equivalent expressions discovered, $e \in
+\epsilon$, each expression $e$ evaluates to a distinct value in the abstract
+error domain.  Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background}
+presents a method to compare against each other with a partial ordering.
+However, a total ordering is much more preferable, as all expressions can
+be easily compared against one another.  In \soap, the following function
+$\abserr$ is used to convert an evaluated outcome $v \in \errorset$ into a
+scalar to denote the magnitude of round-off error:
+\begin{equation}
+    \begin{aligned}
+        \abserr(e) &= \max\left(
+            \left| \mu^\sharp_{\min} \right|,
+            \left| \mu^\sharp_{\max} \right|
+        \right) \\
+        & \quad \text{where~}
+        \left(
+            x^\sharp, \left[ \mu^\sharp_{\min}, \mu^\sharp_{\max} \right]
+        \right) = \error(e)
+    \end{aligned}
+    \label{so:eq:abserr}
+\end{equation}

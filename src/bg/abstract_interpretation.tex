@@ -715,7 +715,7 @@ g$.
 \label{bg:sub:abstract_domains}
 
 
-\subsubsection{Accuracy Analysis}
+\subsubsection{Round-off Error Analysis}
 \label{bg:ssub:accuracy}
 
 In Section~\ref{bg:sec:discovering_equivalent_programs}, we will discuss
@@ -740,21 +740,17 @@ to indicate a fixed-point number represented in unsigned binary format.
 Because of the finite characteristic of IEEE 754 floating-point format,
 it is not always possible to represent exact values with it. Computations
 in floating-point arithmetic often induces round-off errors. Therefore,
-Martel~\etal~\cite{martel07} bound the ranges of the values in floating-point
+Martel~\cite{martel07} bound the ranges of the values in floating-point
 calculations, as well as the round-off errors introduced in these computations.
-This accuracy analysis determines the bounds of all possible outputs and
-their associated range of round-off errors for expressions.  For example,
-assume that real variables $a \in [0.2, 0.3]$, $b \in [2.3, 2.4]$, it is
-possible to derive that in single precision floating-point computation with
-rounding to the nearest, ${(a + b)}^2 \in [6.24999857, 7.29000187]$ and the
-error caused by this computation is bounded by $[-1.60634534\times10^{-6},
-1.60634534\times10^{-6}]$.
+This accuracy analysis determines the bounds of all possible outputs and their
+associated range of round-off errors for expressions.
 
-Martel~\etal~\cite{martel07, ioualalen} describe the abstract error semantics
-for the calculation of errors described in~\cite{ioualalen, martel07}.  It
-consists of an abstract domain to enclose computed floating-point values and
-round-off errors, and a set of operations on the partial order, and another set
-of arithmetic operations.
+Martel~\cite{martel07} introduces the abstract error semantics for the
+calculation of round-off errors in the evaluation of floating-point
+expressions.  It consists of three components: an abstract domain to enclose
+computed floating-point values and round-off errors, and a suite of operations
+on the partial order, and finally, a set of arithmetic operations to evaluate
+arithmetic expressions in the error semantics.
 
 First we define the domain $\errorset = \floatintervalset\times\intervalset$,
 where $\intervalset$ and $\floatintervalset$ respectively represent the
@@ -762,44 +758,84 @@ set of real intervals, and the set of floating-point intervals (intervals
 that each enclose a range of floating-point values).  The value $(x^\sharp,
 \mu^\sharp) \in \errorset$ represents a safe bound on floating-point
 values and the accumulated error represented as a range of real values.
-Hence, addition and multiplication can be defined for the semantics as
-in~\eqref{bg:eq:error_semantics}:
+
+Secondly, for the Cartesian product of partial orders, a partial order
+relation inherently arises by allowing element-wise partial order
+operations~\cite{abramsky94}.  In other words, the following operations for the
+partial order relations can be induced for $\errorset$, by using the respective
+definitions of the operators in $\floatintervalset$ and $\intervalset$:
 \begin{equation}
     \begin{aligned}
-        \left( x^\sharp_1, \mu^\sharp_1 \right) +
+        \left( x^\sharp_1, \mu^\sharp_1 \right) \sqsubseteq
         \left( x^\sharp_2, \mu^\sharp_2 \right)
-    &=  \left(
+        &\defeq
+            x^\sharp_1 \sqsubseteq x^\sharp_2 \wedge
+            \mu^\sharp_1 \sqsubseteq \mu^\sharp_2, \\
+        \left( x^\sharp_1, \mu^\sharp_1 \right) \sqcup
+        \left( x^\sharp_2, \mu^\sharp_2 \right)
+        &\defeq
+            \left( x^\sharp_1 \sqcup x^\sharp_2,
+              \mu^\sharp_1 \sqcup \mu^\sharp_2 \right), \\
+        \left( x^\sharp_1, \mu^\sharp_1 \right) \sqcap
+        \left( x^\sharp_2, \mu^\sharp_2 \right)
+        &\defeq
+            \left( x^\sharp_1 \sqcap x^\sharp_2,
+              \mu^\sharp_1 \sqcap \mu^\sharp_2 \right),
+    \end{aligned}
+\end{equation}
+for $\left( x^\sharp_1, \mu^\sharp_1 \right) \in \errorset$ and
+$\left( x^\sharp_2, \mu^\sharp_2 \right) \in \errorset$.
+
+Furthermore, the error domain forms the following Gal\"ois connection:
+\begin{equation}
+    \powersetof{\floatset\times\realset}
+    \galois{}{}
+    \floatintervalset\times\intervalset,
+\end{equation}
+
+Finally, arithmetic operations can also be defined for the values in
+$\errorset$.  For addition and subtraction:
+\begin{equation}
+    \begin{aligned}
+    \left( x^\sharp_1, \mu^\sharp_1 \right) +
+    \left( x^\sharp_2, \mu^\sharp_2 \right)
+    &\defeq
+        \left(
             \roundup{x^\sharp_1 + x^\sharp_2},
             \mu^\sharp_1 + \mu^\sharp_2 +
             \rounddown{x^\sharp_1 + x^\sharp_2}
-        \right) \\
-        \left( x^\sharp_1, \mu^\sharp_1 \right) -
-        \left( x^\sharp_2, \mu^\sharp_2 \right)
-    &=  \left(
+        \right), \\
+    \left( x^\sharp_1, \mu^\sharp_1 \right) -
+    \left( x^\sharp_2, \mu^\sharp_2 \right)
+    &\defeq
+        \left(
             \roundup{x^\sharp_1 - x^\sharp_2},
             \mu^\sharp_1 - \mu^\sharp_2 +
             \rounddown{x^\sharp_1 - x^\sharp_2}
-        \right) \\
-        \left( x^\sharp_1, \mu^\sharp_1 \right) \times
-        \left( x^\sharp_2, \mu^\sharp_2 \right)
-    &=  \left(
+        \right).
+    \end{aligned}
+    \label{bg:eq:error_arithmetic}
+\end{equation}
+Multiplication on $\errorset$ can be formulated, by expanding $\left(
+x^\sharp_1 + \mu^\sharp_1 \right) \times \left( x^\sharp_2 + \mu^\sharp_2
+\right)$ and divide the terms into the multiplied value $x^\sharp_1 \times
+x^\sharp_2$ and error terms:
+\begin{equation}
+    \left( x^\sharp_1, \mu^\sharp_1 \right) \times
+    \left( x^\sharp_2, \mu^\sharp_2 \right)
+    \defeq
+        \left(
             \roundup{x^\sharp_1 \times x^\sharp_2},
             x^\sharp_1 \times \mu^\sharp_2 + x^\sharp_2 \times \mu^\sharp_1 +
             \mu^\sharp_1 \times \mu^\sharp_2 +
             \rounddown{x^\sharp_1 \times x^\sharp_2}
-        \right) \\
-    &\qquad\qquad\qquad\qquad\qquad\qquad\text{~for~}
-        \left( x^\sharp_1, \mu^\sharp_1 \right) \in \errorset,
-        \left( x^\sharp_2, \mu^\sharp_2 \right) \in \errorset
-    \end{aligned}
-    \label{bg:eq:error_semantics}
+        \right).
+    \label{bg:eq:error_arithmetic}
 \end{equation}
-
-\todo{Partial order operations}
 
 The addition, subtraction and multiplication of intervals follow
 the standard rules of interval arithmetic defined earlier
-in~\eqref{bg:eq:interval_operations}.  In~\eqref{bg:eq:error_semantics}, the
+in~\eqref{bg:eq:interval_operations}.  In~\eqref{bg:eq:error_arithmetic}, the
 function $\rounddownop: \intervalset \to \intervalset$ determines the range
 of round-off error due to the floating-point computation under one of the
 \emph{rounding modes} $\circ \in \{ -\infty, \infty, 0, \neg0, \sim \}$ which
@@ -810,33 +846,30 @@ zero and towards nearest floating-point value respectively.  It is defined as:
         & \downarrow^\sharp_\circ(\interval{a}{b}) = \left\{
             \begin{aligned}
                 & \left[ -\frac{z}{2}, \frac{z}{2}\right]
-                    & \quad \circ & \text{~is~}\sim \\
+                    & \quad \circ & \text{~is~}\sim, \\
                 & \left[ -z, z\right]
-                    & \quad \circ & \in \{ -\infty, \infty, 0, \neg0 \}
+                    & \quad \circ & \in \{ -\infty, \infty, 0, \neg0 \},
             \end{aligned}
         \right. \\
-        & \qquad\qquad\qquad\qquad \text{where~} z = \max(ulp(a), ulp(b))
+        & \qquad\qquad\qquad\qquad \text{where~} z = \max(\ulp(a), \ulp(b)).
     \end{aligned}
 \end{equation}
-Here $z$ denotes the maximum rounding error that can occur for values
-within the range $\interval{a}{b}$, and the unit of the last place (ulp)
-function $ulp(x)$~\cite{muller} characterizes the distance between two
-adjacent floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
-f_2$~\cite{goldberg}. In our analysis, the function $ulp$ is defined as:
-\begin{equation}
-    ulp(x) = 2^{e(x) + 2^{k - 1} - 1} \times 2^{-p}
-\end{equation}
-where $e(x)$ is the exponent of $x$, $k$ and $p$ are the parameters of the
-floating-point format as defined in~\eqref{bg:eq:floating_point}. The function
-$\roundupop: \intervalset \to \floatintervalset$ computes the floating-point
-bound from a real bound, by rounding the infimum $a$ and supremum $b$ of the
-input interval $\interval{a}{b}$:
+Here $z$ denotes the maximum rounding error that can occur for values within
+the range $\interval{a}{b}$, and the unit of the last place ($\ulp$) function
+$\ulp(x)$ characterizes the gap between two floating-point numbers closest to
+$x$.  However there are multiple different variations of the definition of
+$\ulp$, which one is the most fitting is still subject to debate~\cite{muller}.
+Martel~\cite{martel07}~did not mention which one was used.
+
+The function $\roundupop: \intervalset \to \floatintervalset$ computes the
+floating-point bound from a real bound, by rounding the infimum $a$ and
+supremum $b$ of the input interval $\interval{a}{b}$:
 \begin{equation}
     \roundupop\left(\left[a, b\right]\right)
     = {\left[
         \uparrow_\circ{\left(a\right)},
         \uparrow_\circ{\left(b\right)}
-    \right]}_\floatset
+    \right]}_\floatset.
 \end{equation}
 where the subscript $\floatset$ indicates the interval is a floating-point
 interval, and we define $\uparrow_\circ: \realset \to \floatset$ to be the
@@ -844,10 +877,8 @@ function that rounds a real number to a floating-point value, under the
 rounding mode $\circ$.
 
 Expressions can be evaluated for their accuracy by the method as follows.
-Initially the expression is parsed into a data flow graph (DFG). By way of
-illustration, the sample expression ${(a + b)}^2$ has the tree structure
-in Figure~??. Then the exact ranges of values of $a$ and
-$b$ are converted into the abstract semantics using a cast operation as in
+Initially, for real-valued variables, the following function can be used to
+convert an interval of real values into a value in the error domain.
 \eqref{bg:eq:cast}:
 \begin{equation}
     \mathrm{cast}\left(x^\sharp\right) = \left(
@@ -863,8 +894,15 @@ with rounding to nearest,
         \left[-1/67108864, 1/67108864\right]
     \right)
 \end{equation}
-After this, the propagation of bounds in the data flow graph is carried out as
-described in Section~\ref{bg:sub:intervals}, where the difference is the abstract
-error semantics defined in~\eqref{bg:eq:error_semantics} is used in lieu of the
-interval semantics. At the root of the tree (\ie~the exit of the DFG) we find
-the value of the accuracy analysis result for the expression.
+
+After this, similar to the way we use intervals to analyze a program in
+Section~\ref{bg:sub:intervals}, floating-point arithmetic expressions can be
+analyzed.  For instance, the expression ${(a + b)}^2$ can be evaluated just
+as we would expect in real arithmetic, instead, the arithmetic operators are
+\emph{overridden} to operate on values in the error domain $\errorset$.
+
+For example, assume that real variables $a \in [0.2, 0.3]$, $b \in [2.3, 2.4]$,
+it is possible to derive that in single-precision floating-point computation
+with rounding to the nearest, ${(a + b)}^2 \in [6.24999857, 7.29000187]$ and
+the error caused by this computation is bounded by $[-1.60634534\times10^{-6},
+1.60634534\times10^{-6}]$.
