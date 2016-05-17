@@ -18,20 +18,22 @@ with the above intricate details of manual RTL designs.
 
 Another advantage of using HLS tools is that they are in general more
 productive and less error-prone to work with, when compared with traditional
-RTL tools.  The reasons are two-fold.  First, a C description is smaller than
-a traditional RTL description by a factor of 10~\cite{coussy, bdti}.  Second,
+RTL tools.  The reasons are two-fold.  Firstly, a C description is smaller than
+a traditional RTL description by a factor of 10~\cite{coussy, bdti}.  Secondly,
 RTL design can be notoriously difficult to debug, whereas C code can be easily
 tested on an ordinary microprocessor, and mature debug and analysis tools for C
 are freely accessible~\cite{canis13}.
 
 HLS tools further benefit us in their ability to automatically search
 the design space with a reasonable design cost~\cite{bdti}, potentially
-explore a large number of trade-offs between performance, cost and
-power~\cite{mcfarland}, which is generally much more difficult to achieve
-in RTL tools.  Our thesis proposes a natural extension to HLS tools by
-automatically exploring the space of rewrites of floating-point numerical
-C programs, which are equivalent in real arithmetic, but could trade off
-accuracy, throughput and resource utilization when synthesized into circuits.
+exploring a large number of trade-offs between performance, cost and
+power~\cite{mcfarland}.  Traditionally, this is generally much more difficult
+to achieve in RTL designs because of their low-level nature.
+
+% Our thesis proposes a natural extension to HLS tools by automatically exploring
+% the space of rewrites of floating-point numerical C programs, which are
+% equivalent in real arithmetic, but could trade off accuracy, throughput and
+% resource utilization when synthesized into circuits.
 
 With recent advancements in this area, HLS tools have received a resurgence
 of interest.  Many commercial tools are released, such as Catapult
@@ -50,8 +52,8 @@ is now gaining significant traction in the research community.
 \subsection{HLS Design Flow}
 \label{bg:sub:hls_design}
 
-In this section, we provide an overview of the stages taken by HLS tool to
-compile a C program into RTL implementation, by using LegUp~\cite{legup,
+In this section, we provide an overview of the stages taken by the HLS tool
+to compile a C program into RTL implementation, by using LegUp~\cite{legup,
 canis13} as our example.  LegUp is an HLS tool which compiles programs to run
 on a hybrid software/hardware architecture, and its design flow is shown in
 Figure~\ref{bg:fig:legup}, which consists of three major stages to be explained
@@ -66,15 +68,15 @@ below.
 
 The first stage is to determine which parts of an application on the
 function-level are suitable candidates to be synthesized into hardware
-circuits, while the rest can be run on a processor.  This stage starts by
-compiling a C source program into a software executable targeting an FPGA-based
-MIPS processor.  This processor has additional circuitries designed to profile
-the software implementation of the original application.  By running the
-compiled application on this processor, this profiling ability allows the
+circuits, while the rest can be run on a soft-processor.  This stage starts
+by compiling a C source program into a software executable targeting an
+FPGA-based MIPS processor.  This processor has additional circuitries designed
+to profile the software implementation of the original application.  By running
+the compiled application on this processor, this profiling ability allows the
 processor to use statistics such as number of clock cycles, power and cache
-misses to identify parts of the program at the function level that will benefit
-from a hardware redesign, so that the power efficiency and run time could be
-improved~\cite{canis13}.
+misses to identify problematic parts of the program at the function level that
+will benefit from a hardware redesign, so that the power efficiency and run
+time could be improved~\cite{canis13}.
 
 After identifying functions of the application to be implemented as part
 of a hardware architecture, the next stage is then to synthesize hardware
@@ -89,21 +91,21 @@ optimization passes are used to transform the IR program, such that the result
 when synthesized will have better performance when running on the FPGA\@.
 
 This is then followed by the HLS tool flow, which consists of four logical
-steps: allocation, scheduling, binding and RTL generation.  The first
-step, allocation, extracts information from the application and user
+steps: allocation, scheduling, binding and RTL generation.  The first step,
+\emph{allocation}, extracts information from the application and user
 requirements to be used in subsequent stages, \eg~modules and RAM blocks to be
-synthesized on the target device.  This is then followed by scheduling, which
-assigns the start and end states to each LLVM instruction in a finite state
-machine~\cite{legup}, using a scheduling algorithm based on the formulation
-of \emph{system of difference constraints} (SDC)~\cite{legup, canis13,
-cong06}.  Many applications spend most of their time in loops, a scheduling
-technique, known as \emph{loop pipelining}, is therefore used in HLS tools
-to make them run efficiently.  This technique admits greater parallelism of
-computation by allowing instructions in consecutive loop iterations to overlap
+synthesized on the target device.  This is then followed by \emph{scheduling},
+which assigns the start and end states to each LLVM instruction in a finite
+state machine~\cite{legup}, using a scheduling algorithm based on the
+formulation of \emph{system of difference constraints} (SDC)~\cite{legup,
+canis13, cong06}.  Many applications spend most of their time in loops; a
+scheduling technique, known as \emph{loop pipelining}, is therefore used
+in HLS tools to make them run efficiently.  This technique admits greater
+parallelism by allowing instructions in consecutive loop iterations to overlap
 as much as possible.  LegUp uses an algorithm, known as \emph{modulo SDC
 scheduling}~\cite{canis14}, which we will cover in Section~\ref{bg:sub:sdc},
-to minimize the wall-clock time of a pipelined loop.  The third logical
-step, binding, assigns each operator in the program to functional units to
+to minimize the wall-clock time of a pipelined loop.  The third logical step,
+\emph{binding}, assigns each operator in the program to functional units to
 be synthesized into hardware, and maps program variables to registers.  The
 rationale behind this step is that operators such as multipliers and dividers
 that tend to use a lot of LUTs and DSP blocks can be shared temporally.
@@ -112,33 +114,33 @@ expensive to implement in FPGA\@.  Each assignment of an operator to a
 functional unit is thus associated with a cost.  The problem of minimizing this
 cost is called the assignment problem, which is efficiently solved in LegUp
 with a polynomial time complexity using the Hungarian algorithm~\cite{canis13,
-kuhn10}.  Finally, the RTL generation step gathers information produced from
-the previous three steps, to generate Verilog source code corresponding to the
-C function being compiled.
+kuhn10}.  Finally, the \emph{RTL generation} step gathers information produced
+from the previous three steps, to generate Verilog source code corresponding to
+the C function being compiled.
 
 The third, and also the final stage, is to integrate software and hardware
-components of the application onto the FPGA device, which is explained as
-follows~\cite{canis13}.  Firstly, custom accelerator circuits generated by HLS,
-a MIPS processor and communication interfaces between them are synthesized
-and programmed into the FPGA device.  Because some of the functions in the
-original C source code were implemented as hardware accelerators in the HLS
-compilation flow, LegUp replaces them with wrapper functions which can invoke
-the hardware accelerators in runtime.  Finally, this modified source code can
-then be compiled into a MIPS binary to be executed on the FPGA\@.
+components of the application into the FPGA device.  Following~\cite{canis13},
+we explain it as follows.  Firstly, custom accelerator circuits generated
+by HLS, a MIPS processor, and communication interfaces between them are
+synthesized and programmed into the FPGA device.  Because some of the functions
+in the original C source code were implemented as hardware accelerators in the
+HLS compilation flow, LegUp replaces them with wrapper functions which can
+invoke the hardware accelerators in runtime.  Finally, this modified source
+code can then be compiled into a MIPS binary to be executed on the FPGA\@.
 
 
 \subsection{Loop Pipelining}
 \label{bg:sub:pipelining}
 
 Loop parallelism, and subsequently, program run time is part of the main
-optimization objectives we optimize later in Chapter~\ref{chp:latopt}, hence
-in this subsection we first introduce the concept of loop pipelining.  We
-consider our example program in Figure~\ref{bg:lst:dotprod}, which computes the
-dot-product, \verb|d|, of two arrays \verb|A| and \verb|B| of floating-point
-values.  We assume both arrays are stored in the same RAM, which has one read
-port, and accessing this RAM has a one cycle latency.  We further assume
-no limits on the number of arithmetic operators that can by allocated,
-floating-point multiplier and adder are both fully pipelined, and use $7$ and
+optimization objectives we optimize later in Chapter~\ref{chp:latopt}, hence in
+this subsection we first introduce the concept of loop pipelining.  We consider
+our example program \verb|dotprod| in Figure~\ref{bg:lst:dotprod}, which
+computes the dot-product, \verb|d|, of two arrays \verb|A| and \verb|B| of
+floating-point values.  We assume both arrays are stored in the same RAM, which
+has one read port, and accessing this RAM has a one cycle latency.  We further
+assume no limits on the number of arithmetic operators that can by allocated,
+floating-point multipliers and adders are both fully pipelined, and use $7$ and
 $10$ cycles respectively to produce outputs.
 \begin{figure}[ht]
     \centering
@@ -162,22 +164,22 @@ $10$ cycles respectively to produce outputs.
     }\label{bg:lst:dotprod}
 \end{figure}
 
-A trivial way to schedule the loop in Figure~\ref{bg:lst:dotprod} is to allow
-each iteration to complete before starting the next iteration; this is however
-not very efficient.  As we can see in Figure~\ref{bg:fig:schedule}, with a
-good schedule, operations across loop iterations can often temporally overlap,
+A trivial way to schedule the loop in \verb|dotprod| is to allow each iteration
+to complete before starting the next iteration; this is however not very
+efficient.  As we can see in Figure~\ref{bg:fig:schedule}, with a good
+schedule, operations across loop iterations can often temporally overlap,
 giving way to parallelism and improve performance of the loop execution.  In
 Figure~\ref{bg:fig:schedule}, iterations are laid out in rows, each clock cycle
 is a column, \textbf{mul} and \textbf{add} are multiplication and addition
-respectively, \verb|A[0]| and \verb|B[0]| are reads from the two arrays, and
-the arrows indicate the data-flow of \verb|d| across iterations.  This schedule
-allows consecutive iterations to start every 10 cycles; and this number of
-clock cycles between the start of consecutive iterations is known as the
-\emph{initiation interval} ($\II$).  Loop iterations in this schedule repeat
-for $1024$ times (the \emph{trip count}, $N$), and each iteration requires $19$
-cycles (the \emph{depth}, $D$, of the loop), as a result the overall latency
-$L$ of this loop is $(N - 1) \times \II + D = (1024 - 1) \times 10 + 19 =
-10,249$ cycles.
+respectively, \verb|A[0]| and \verb|B[0]| are read accesses from the two
+arrays, and the arrows indicate the data-flow of \verb|d| across iterations.
+This schedule allows consecutive iterations to start every 10 cycles; and this
+number of clock cycles between the start of consecutive iterations is known
+as the \emph{initiation interval} ($\II$).  Loop iterations in this schedule
+repeat for $1024$ times (the \emph{trip count}, $N$), and each iteration
+requires $19$ cycles (the \emph{depth}, $D$, of the loop), as a result the
+overall latency $L$ of this loop is $(N - 1) \times \II + D = (1024 - 1) \times
+10 + 19 = 10,249$ cycles.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.8\linewidth]{bg/fig/schedule}
@@ -196,43 +198,44 @@ iteration, data-dependences therefore also exist on \verb|d| \emph{across}
 loop iterations.  We call the former kind of dependences \emph{intra-iteration
 dependences} and the latter \emph{inter-iteration dependences}.
 
-Besides data-dependence constraints, the amount of resources available
-also affects loop scheduling.  For instance, under our assumption in
-Figure~\ref{bg:lst:dotprod} the RAM can only be read once per cycle, our
-schedule thus should avoid reading from the same RAM in the same clock cycle.
-We say a schedule is optimal, in the sense that the overall latency $L = (N -
-1) \times \II + D$, is minimized, while none of the constraints are violated.
-However with a much more complex program, finding the optimal schedule is
-often an intractable task.  Limits on resource availability, along with
-dependence constraints, make scheduling an NP-hard problem which is difficult
-to solve optimally and efficiently~\cite{hwang91}.  In the following part
-of this section, we discuss a heuristic technique known as \emph{modulo SDC
-scheduling}~\cite{zhang13, canis14} used in LegUp to efficiently attack the
-scheduling problem.
+Besides data-dependence constraints, the amount of resources available also
+affects loop scheduling.  For instance, under our assumption in \verb|dotprod|
+the RAM can only be read once per cycle, our schedule thus should avoid
+reading from the same RAM in the same clock cycle.  We say a schedule is
+optimal, in the sense that the overall latency $L = (N - 1) \times \II + D$,
+is minimized, while none of the constraints are violated.  However with a much
+more complex program, finding the optimal schedule is often an intractable
+task.  Limits on resource availability, along with dependence constraints,
+make scheduling an NP-hard problem which is difficult to solve optimally and
+efficiently~\cite{hwang91}.  In the following part of this section, we discuss
+a heuristic technique known as \emph{modulo SDC scheduling}~\cite{zhang13,
+canis14} used in HLS tools, such as LegUp, to efficiently attack the scheduling
+problem.
 
 
 \subsection{Modulo SDC Scheduling}
 \label{bg:sub:sdc}
 
-Many algorithms exist that can schedule loops efficiently.  For example,
+Many algorithms exist to schedule pipelined loops.  For example,
 Fan~\etal~\cite{fan08} proposed that a schedule can be found by formulating
-the constraints into a satisfiability modulo theory (SMT) problem and use
-an SMT solver to modulo schedule operations.  A technique, Iterative Modulo
-Scheduling (IMS)~\cite{rau94}, has been a widely adopted by compilers that use
-software pipelining to schedule instructions for Very Long Instruction Word
-(VLIW) processors~\cite{mcnairy03}.  This method has also been widely adopted
-in HLS tools such as PICO-NPA~\cite{schreiber02}, Trident~\cite{tripp05} and
+the constraints into a satisfiability modulo theory (SMT) problem
+and use an SMT solver to modulo schedule operations.  An alternative
+technique, \emph{iterative modulo scheduling} (IMS)~\cite{rau94}, has
+been a widely adopted by compilers that use software pipelining to
+schedule instructions for \emph{very long instruction word} (VLIW)
+processors~\cite{mcnairy03}.  This method has also been widely adopted in
+HLS tools such as PICO-NPA~\cite{schreiber02}, Trident~\cite{tripp05} and
 LegUp~\cite{canis13, canis14}.  IMS for software pipelining~\cite{rau94},
-however did not consider operator chaining, \ie~allowing operations
-with combinational logics to be carried out in the same clock cycle.
-Schreiber~\etal~\cite{schreiber02} in their adoption of IMS in HLS, found
-operator chaining to be non-trivial in IMS and requires static timing analysis
-of combinational components~\cite{canis14}.  A new method, the modulo SDC
-scheduling algorithm, has recently gained traction and has been used by
-Canis~\etal~\cite{canis14} in their LegUp and Zhang~\etal~\cite{zhang13},
-because an SDC formulation is more suited to model the effect of chaining
-operators, and therefore in this subsection an overview is provided for their
-modulo SDC scheduling approach.
+however did not consider operator chaining, \ie~allowing operations with
+combinational logics in a data-flow sequence to be carried out in the same
+clock cycle.  Schreiber~\etal~\cite{schreiber02} in their adoption of IMS in
+HLS, found operator chaining to be non-trivial in IMS and requires static
+timing analysis of combinational components~\cite{canis14}.  A new method, the
+\emph{modulo SDC scheduling} algorithm, has thus recently gained traction and
+has been used by Canis~\etal~\cite{canis14} in their LegUp and by Zhang~\etal
+in~\cite{zhang13}, because an SDC formulation is more suited to model the
+effect of chaining operators.  For this reason, an overview is provided for
+their modulo SDC scheduling approach in this subsection.
 
 \subsubsection{Constructing the Data-Dependence Graph}
 
@@ -240,9 +243,8 @@ In the first stage of modulo SDC scheduling, dependence relations are extracted
 from the body of this loop.  These dependence relations form a dependence
 graph, where vertices are operations, and edges between pairs of vertices
 indicate dependence relations.  This dependence graph can subsequently be used
-to derive data-dependence constraints.  Figure~\ref{bg:fig:depgraph} shows
-the complete dependence graph of the loop in our Figure~\ref{bg:lst:dotprod}
-example.
+to derive data-dependence constraints.  Figure~\ref{bg:fig:depgraph} shows the
+complete dependence graph of \verb|dotprod|'s loop body.
 \begin{figure}[ht]
     \centering
     \begin{tikzpicture}
@@ -280,7 +282,7 @@ depends on the final value of \verb|d| from the previous iteration.  In this
 graph we thus add an edge from the output of the addition to the variable
 \verb|d|.  We further describe that this dependence has a \emph{dependence
 distance} of $1$, as $1$ iteration must elapse between the start of each pair
-of value updates and its corresponding use.  This edge is then further assigned
+of value updates and its corresponding use.  This edge is then assigned
 an attribute $\langle 10, 1 \rangle$ which signifies that the adder has a
 latency of $10$ cycles, and this dependence has a distance $1$.
 
@@ -290,32 +292,30 @@ Modulo SDC scheduling owes its efficiency to assuming an initial constant
 $\II$ and attempting to search for a schedule that satisfies all constraints.
 This search stops if a feasible schedule is found, otherwise $\II$ can be
 incremented by 1 and search again until we discover a valid schedule.  To
-begin with, we can find a lower bound on $\II$---which we call the minimum
-initiation interval $\MII$, such that all schedules with an $\II$ less than
-$\MII$ violate some constraints---as our initial constant $\II$.  The $\MII$ is
-determined by both the inter-iteration dependences and resource limits.  For
-each of the both types of constraints, an $\MII$ can be found, respectively
-known as recurrence-constrained $\MII$ ($\RecMII$) and resource-constrained
-$\MII$ ($\ResMII$)~\cite{rau94, canis14, zhang13}.  We first introduce methods
-to compute both values, then the overall $\MII$ can then be computed using the
-following equation:
+begin, we can find a lower bound on $\II$, which we call the minimum initiation
+interval $\MII$, as our initial constant $\II$.  The $\MII$ is computed such
+that all schedules with an $\II$ less than $\MII$ violate some constraints.
+For each of the inter-iteration dependences and resource constraints, an $\MII$
+can be found, respectively known as recurrence-constrained $\MII$ ($\RecMII$)
+and resource-constrained $\MII$ ($\ResMII$)~\cite{rau94, canis14, zhang13}.  We
+first introduce methods to compute both values, then the overall $\MII$ can
+then be computed using the following equation:
 \begin{equation}
     \MII = \max\left(\RecMII, \ResMII\right).
 \end{equation}
 
-Firstly, we compute $\ResMII$, by finding the most constrained resources
-in the loop, as these limits impact the $\ResMII$ value.  For example, our
-example in Figure~\ref{bg:lst:dotprod} does not impose limits on the number
-of floating-point operators that can be allocated, but assumes there is a
-constraint which restricts the rate of memory accesses, \ie~only one read is
-allowed in each clock cycle.  Because each iteration requires two accesses to
-the same memory, a $\ResMII = 2$ will thus fully occupy the RAM throughput.
-To generalize this to all loops, we consider for each type of operations
-$\opsymbol$ being used in the loop, the number of available resources
-$r_\opsymbol$ for $\opsymbol$ and the number of occurrences $n_\opsymbol(G)$
-of $\opsymbol$ in the loop dependence graph $G$, to evaluate $\left\lceil
-n_\opsymbol(G) / r_\opsymbol \right\rceil$, the maximum ratio constitutes the
-final $\ResMII$, or equivalently:
+Firstly, we compute $\ResMII$, by finding the most constrained resources in the
+loop, as these limits impact the $\ResMII$ value.  For example, \verb|dotprod|
+does not impose limits on the number of floating-point operators that can be
+allocated, but assumes there is a constraint which restricts the rate of memory
+accesses, \ie~only one read is allowed in each clock cycle.  Because each
+iteration requires two accesses to the same memory, a $\ResMII = 2$ will thus
+fully occupy the RAM throughput.  To generalize this to all loops, we consider
+for each type of operations $\opsymbol$ being used in the loop, the number of
+available resources $r_\opsymbol$ for $\opsymbol$ and the number of occurrences
+$n_\opsymbol(G)$ of $\opsymbol$ in the loop dependence graph $G$, to evaluate
+$\left\lceil n_\opsymbol(G) / r_\opsymbol \right\rceil$, the maximum ratio
+constitutes the final $\ResMII$, or equivalently:
 \begin{equation}
     \ResMII = \max_{\opsymbol~\in~\mathrm{OpTypes}}
         \left\lceil
@@ -325,11 +325,11 @@ final $\ResMII$, or equivalently:
 where $\mathrm{OpTypes}$ is the set of all types of operations, \eg~array
 accesses, arithmetic units, and others, used in the loop.
 
-The second step is to evaluate $\RecMII$ by ensuring for all cycles $c$ in the
-graph $G$ the following inequalities hold:
+The second step is to evaluate a minimal $\RecMII$ by ensuring for all cycles
+$c$ in the graph $G$ the following inequalities hold:
 \begin{equation}
     \forall c \in \mathrm{Cycles}(G):
-        \sum_{e \in c} \mathrm{lat}(e) - \II \times
+        \sum_{e \in c} \mathrm{lat}(e) - \RecMII \times
         \sum_{e \in c} \mathrm{dist}(e) \leq 0,
 \end{equation}
 where $\mathrm{Cycles}(G)$ computes the set of all cycles in the graph $G$;

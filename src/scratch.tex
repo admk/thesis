@@ -1,0 +1,30 @@
+We believe that it is possible to extend our tool for the multi-objective
+optimization of arithmetic expressions in the following ways. First, Secondly,
+it would be useful to further allow transformations of expressions while
+allowing different mantissa widths in the subexpressions, this further
+increases the number options in the Pareto frontier, as well as leads to more
+optimized expressions. Thirdly, as an alternative for interval analysis, we
+could employ more sophisticated abstract domains that capture the correlations
+between variables, and produce tighter bounds for results. Finally, there
+could be a lot of interest in the HLS community on how our tool can be
+incorporated with Martin Langhammer's work on fused floating-point data-path
+synthesis~\cite{langhammer}.
+
+We are convinced that with the foundation and framework that we developed,
+our tool can be extended in the following ways.  First, it can be trivially
+extended to support additional numerical data structure such as arrays and
+matrices.  Secondly, the Pareto optimization can be extended to optimize the
+latencies of equivalent programs, as restructuring programs and partially
+unrolling loops could have a notable impact on the ability to pipeline
+program loops, especially when arrays are incorporated.  Finally, fixed point
+representations, along with the interaction between our structural optimization
+and multiple wordlength optimization~\cite{constantinides} could also generate
+a lot of interest from the HLS community.
+
+Currently, our tool sees a diminishing performance return when loops are deeply
+unrolled, because of a memory bottleneck. We are exploring an extension to
+our tool that enables it to automatically partition arrays upon hitting such
+a memory bottleneck. Also, our tool currently supports only single-precision
+floating-point data types; we intend to extend this to multiple-precision
+types, and explore the impact on our three performance metrics: latency,
+resource utilization and numerical accuracy.

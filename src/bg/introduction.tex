@@ -1,6 +1,3 @@
-\section{Introduction}
-\label{bg:sec:introduction}
-
 The main focus of this thesis is to devise optimization methods to efficiently
 rewrite numerical programs by automatically varying the structure of their
 control- and data-paths for an improved trade-off relationship among numerical
@@ -49,21 +46,19 @@ optimizing a single IR of a program, a novel approach known as equality
 saturation~\cite{tate09} which uses a data structure to simultaneously
 represent multiple optimization candidates, is further examined.
 
-In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work on
-restructuring arithmetic expressions and numerical programs.
-
-We examine existing optimization passes in software compilers and HLS
-tools.  Since HLS tools are LLVM-based and compile C or C++ programs,
-they borrow the concept from software compiler frameworks, such as
-LLVM, of including optimization passes that may improve performance of
-floating-point computations, while potentially sacrificing numerical
-accuracies.  On the other hand, we look at methods that could improve accuracy
-by simultaneously exploring multiple rewrites to expression candidates.
-Due to the full set of equivalent programs of an initial program is often
-computationally intractable, these methodologies either make extensive
-use of heuristics, or abstract interpretation techniques introduced in
-Section~\ref{bg:sec:abstract_interpretation}, in order to compute an
-under-approximation (a potentially smaller set) of the set of all equivalent
+In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work
+on restructuring arithmetic expressions and numerical programs.  We examine
+existing optimization passes in software compilers and HLS tools.  Since HLS
+tools are LLVM-based and compile C or C++ programs, they borrow the concept
+from software compiler frameworks, such as LLVM, of including optimization
+passes that may improve performance of floating-point computations, while
+potentially sacrificing numerical accuracies.  On the other hand, we look
+at methods that could improve accuracy by simultaneously exploring multiple
+rewrites to expression candidates.  Due to the full set of equivalent programs
+of an initial program is often computationally intractable, these methodologies
+either make extensive use of heuristics, or abstract interpretation techniques
+introduced in Section~\ref{bg:sec:abstract_interpretation}, in order to compute
+an under-approximation (a potentially smaller set) of the set of all equivalent
 programs.
 
 % Section~\ref{bg:sec:wordlength} explores alternative methods, known as

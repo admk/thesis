@@ -17,18 +17,19 @@ future.
 It is unfortunate that because of the halting problem~\cite{turing37} and
 a direct consequence of it, Rice's theorem~\cite{rice53}, any nontrivial
 property on the outcome of a program is in general undecidable.  It means that
-an interesting property---a yes or no question---which is never always true
-or always false for all programs, is \emph{undecidable}, or in other words,
-cannot be answered.  Even a question as seemingly innocuous as \emph{``does
-this program return zero''}, is difficult to answer.  A static analyzer,
-when faced with such a question, therefore do not attempt to produce a
-definite \emph{yes} or \emph{no}, instead it answers with either a definite
-\emph{yes} or \emph{I don't know}~\cite{mine04}; and producing a meaningful
-\emph{yes} in an efficient manner poses a challenging task to static analyzers.
-Additionally, they often rely heavily on formal techniques to perform well.
-Typical techniques employed include symbolic execution, model checking,
-satisfiability modulo theories~\cite{demoura08}, data-flow analysis based on
-lattices~\cite{nielson99}, and abstract interpretation~\cite{cousot77}.
+an interesting property, a \emph{yes} or \emph{no} question which is never
+always true or always false for all programs, is \emph{undecidable}; or in
+other words, it cannot be answered.  Even a question as seemingly innocuous
+as \emph{``does this program return zero''} is difficult to answer.  A static
+analyzer, when faced with such a question, therefore do not attempt to
+produce a definite \emph{yes} or \emph{no}, instead it answers with either
+a definite \emph{yes} or \emph{I don't know}~\cite{mine04}; and producing a
+meaningful \emph{yes} in an efficient manner poses a challenging task to static
+analyzers.  Additionally, they often rely heavily on formal techniques to
+perform well.  Typical techniques employed include symbolic execution, model
+checking~\cite{kroening03}, satisfiability modulo theories~\cite{demoura08},
+data-flow analysis based on lattices~\cite{nielson99}, and abstract
+interpretation~\cite{cousot77}.
 
 There are static analyzers specifically tailored to prove the absence of
 run-time errors in computing systems.  Astr\'ee~\cite{astree}, based on
@@ -212,15 +213,15 @@ to simplify the derivation:
     \end{aligned}
 \end{equation}
 
-Intuitively, a manual inspection of \verb|simple| finds that \verb|x| can reach
-values $v$, $0.9 v$, $0.9^2 v$, and \textellipsis, such that all values in this
+Intuitively, a manual inspection of \verb|simple| finds that \verb|x| can
+reach values $v$, $0.9 v$, $0.9^2 v$, and so on, such that all values in this
 sequence are greater than $1$, for each $v \in \iota$; or more succinctly, an
 alternative solution to $A(1)$ should be:
 \begin{equation}
-    A(1) = \{ v \in \iota \mid 0.9^k v > 1 \wedge k \in \naturalset \}.
+    A(1) = \{ v \in \iota \mid 0.9^k v > 1 \wedge k \in \naturalset \},
     \label{bg:eq:a12}
 \end{equation}
-Here $k \in \naturalset$ denotes $k$ is one of $0, 1, 2, \mathellipsis$, \ie~a
+where $k \in \naturalset$ denotes $k$ is one of $0, 1, 2, \mathellipsis$, \ie~a
 natural number.
 
 It is evident to us the latter solution~\eqref{bg:eq:a12} is more precise,
@@ -654,11 +655,11 @@ $\alpha(A \cup B) = \alpha(A) \sqcup \alpha(B)$:
 \begin{equation}
     \begin{aligned}
         f^\sharp(X^\sharp)
-        &= \alpha \left( \left\{
+        ={} & \alpha \left( \left\{
             v \mid \underline{\iota^\sharp}
                 \leq v \leq \overline{\iota^\sharp}
         \right\} \cap \{ v \mid v > 1 \} \right) \sqcup \\
-        & \quad\quad
+        &
         \alpha \left( \left\{
             v \mid
             \min(0.9 \underline{X^\sharp}, 1 + \epsilon)
@@ -676,8 +677,8 @@ The term $\epsilon$ vanishes when the abstraction function $\alpha$ is applied:
                 \leq v \leq \overline{\iota^\sharp}
         \right\} \right) \sqcup
         \left( \interval{
-            \min(\underline{\iota^\sharp}, 1)
-        }{\overline{\iota^\sharp}} \right) \\
+            \min(\underline{0.9X^\sharp}, 1)
+        }{\overline{0.9X^\sharp}} \right) \\
         &= \left( \iota^\sharp \sqcap \interval{1}\infty \right) \sqcup
            \left( 0.9 X^\sharp \sqcap \interval{1}\infty \right)
          = \left( \iota^\sharp \sqcup 0.9 X^\sharp \right) \sqcap
@@ -694,23 +695,22 @@ can be induced.
 
 \subsubsection{Further Generalization}
 
-For simplicity, \verb|simple| is used in the sample data-flow analysis.
-However unlike \verb|simple|, general programs can consist of more than one
-variable.  A DFA for a program should therefore compute a reachable set of
-values for each variable.  A typical way do so is to use a mapping which
-associates each program variable with a value, which is defined as an element
-$\sigma \in \Sigma$, where $\Sigma = \left[\varset \to \mathsf{L}\right]$
-and $\mathsf{L}$ is a set of values.  For example, a single program state of
-\verb|simple| could be $\sigma_0 \in \left[\varset \to \realset\right]$, and
-$\sigma_0 = [x \mapsto 0]$, which denotes that the state $\sigma_0$ has only
-a variable $x$, and $x$ is assigned a value $0$.  We could also have a state
-that captures multiple program states, $\sigma^\sharp \in \left[\varset \to
-\intervalset\right]$, where $\sigma^\sharp(x)$ could be an interval.
+For simplicity, \verb|simple| is used as an example of DFA\@.  However unlike
+\verb|simple|, general programs can consist of more than one variable.  A DFA
+for a program should therefore compute a reachable set of values for each
+variable.  A typical way do so is to use a mapping which associates each
+program variable with a value, which is defined as an element $\sigma \in
+\Sigma$, where $\Sigma = \left[\varset \to \mathsf{L}\right]$ and $\mathsf{L}$
+is a set of values.  For example, a single program state of \verb|simple| could
+be $\sigma_0 \in \left[\varset \to \realset\right]$, and $\sigma_0 = [x \mapsto
+0]$, which denotes that the state $\sigma_0$ has only a variable $x$, and $x$
+is assigned a value $0$.  We could also have a state that captures multiple
+program states, $\sigma^\sharp \in \left[\varset \to \intervalset\right]$,
+where $\sigma^\sharp(x)$ could be an interval.
 
-Gal\"ois connections can be be compositionally constructed~\cite{nielson99}.
-If we know that $\powersetof\realset \galois{\alpha}{\gamma} \intervalset$,
-then the following Gal\"ois connection between mappings can also be
-constructed:
+Gal\"ois connections can be compositionally constructed~\cite{nielson99}.  If
+we know that $\powersetof\realset \galois{\alpha}{\gamma} \intervalset$, then
+the following Gal\"ois connection between mappings can also be constructed:
 \begin{equation}
     [\varset \to \powersetof\realset]
         \galois{\alpha^\prime}{\gamma^\prime}
@@ -730,23 +730,24 @@ and $1$, and $x \leq y$, intervals can not express the relation $x \leq y$ and
 using bounds $x \in [0, 1]$ and $y \in [0, 1]$, we evaluate the expression $(1
 - y)x$ is bounded by $0$ and $1$.  In contrast, if we were able to make use of
 the inequality $x \leq y$, then it is possible to deduce $(1 - y) x \leq (1 -
-x) x < \frac{1}{4}$, which yields a much tighter bound than using intervals.
+x) x \leq \frac{1}{4}$, which yields a much tighter bound than using intervals
+alone.
 
-In general, the design of abstract domains therefore is a trade-off between
-how good a approximation it can obtain, and how efficient it can be computed.
-We could imagine another abstract domain, $\signset$, which only captures the
-signedness of variables, to also enclose a set of reachable values.  Although
-it is even faster than intervals to compute, it sacrifices the precision of
-the value bounds.  Ranging from the fastest to the most expensive, a hierarchy
-of abstract domains for reals and floating-point computations are proposed by
-various authors as discussed below.
+In general, the design of abstract domains is a trade-off between how good
+a approximation it can obtain, and how efficient it can be computed.  For
+example, we could imagine another abstract domain, $\signset$, which only
+captures the signedness of variables, to also enclose a set of reachable
+values.  Although it is even faster than intervals to compute, it sacrifices
+the precision of the value bounds.  Ranging from the fastest to the most
+expensive, a hierarchy of abstract domains for reals and floating-point
+computations are proposed by various authors as discussed below.
 
 A new abstract domain, $\mathbf{Octagon}$, is proposed by Min\'e~\cite{mine07},
 to enclose values in a system of difference-bound inequalities, which are of
 the form $x - y \leq c$ and $\pm x \leq c$, where $x$ and $y$ are variables
 and $c$ is a constant.  This domain is very efficient as a Floyd-Warshall
-algorithm~\cite{floyd62}, which runs in $\bigo(n^3)$, can be used to compute
-it~\cite{mine04}, where $n$ is the number of variables.  Although not as
+algorithm~\cite{floyd62}, which runs in $\bigo(n^3)$, where $n$ is the number
+of variables, can be used to compute it~\cite{mine04}.  Although not as
 efficient as intervals, it is much more expressive than intervals.  This is
 because intervals can only imply inequalities of the latter form, $\pm x \leq
 c$, but not the former, $x - y \leq c$.
@@ -788,7 +789,7 @@ integer-based domains are further presented by several authors.
 Granger~\cite{granger89} introduce the simple congruences on integers, which
 consists of equations of the form $x = a \mod b$, where $x$ is a variable
 and $a$ and $b$ are integers.  They further propose a linear congruences
-formulation which is more expressible, for example, an equation $3 x + 4 y = 5
+formulation which is more expressive, for instance, an equation $3 x + 4 y = 5
 \mod 6$ can be used to capture the relation between integer variables $x$ and
 $y$.
 
