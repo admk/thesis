@@ -14,7 +14,7 @@ expressions respectively, and $\stmtset$ denotes the set of program statements.
 We then have following syntax definition for expressions and \numimp{}
 programs, written in the Backus-Naur Form~\cite{knuth64}:
 \newcommand{\syndef}{\ensuremath\mathbin{::=}}%
-\newcommand{\synor}{\ensuremath\mathbin{\mid}}%
+\newcommand{\synor}{\ensuremath\mid}%
 \begin{equation}
     \begin{aligned}
         a \syndef {} &
@@ -23,9 +23,9 @@ programs, written in the Backus-Naur Form~\cite{knuth64}:
             a_1 \odot a_2,
         \quad b \syndef x < a, \\
         s \syndef {} &
-            x~\texttt{=}~a \synor
-            s_1 \semicolon s_2 \synor
-            \mathtt{if}~(b)~\{ s_1 \}~\mathtt{else}~\{ s_2 \} \synor
+            x~\texttt{=}~a \semicolon \synor
+            s_1~s_2 \synor
+            \iflit~(b)~\{ s_1 \}~\elselit~\{ s_2 \} \synor
             \whilelit~(b)~\{s\}
     \end{aligned}
     \label{po:eq:program_syntax}

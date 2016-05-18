@@ -1,9 +1,11 @@
 \input{preamble}
 \begin{document}
 
+% Page count
+\pagenumbering{arabic}          % arabic page numbering
+\setcounter{page}{1}            % set page counter
+
 % Front matter
-\pagenumbering{roman}           % roman page numbing (invisible for empty page style)
-\pagestyle{empty}               % no header or footers
 \input{title}                   % INCLUDE: all titlepages
 \cleardoublepage
 
@@ -23,11 +25,7 @@
 \cleardoublepage
 
 % Body matter
-\pagenumbering{arabic}          % arabic page numbering
-\setcounter{page}{1}            % set page counter
 \pagestyle{maincontentstyle}    % fancy header and footer
-
-% \doublespacing
 
 % Main text
 \chapter{Introduction}
@@ -48,7 +46,6 @@
 \input{bg/abstract_interpretation}
 \input{bg/intermediate}
 \input{bg/equivalent}
-% \input{bg/wordlength}
 
 
 \chapter{Structural Optimization of Arithmetic Expressions}

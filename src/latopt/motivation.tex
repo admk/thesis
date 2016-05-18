@@ -1,6 +1,8 @@
 \section{Motivation}
 \label{lo:sec:motivation}
 
+\todo{Revamp this section following updates in Section~\ref{bg:sub:sdc}.}
+
 % \newcommand\arr[3]{\texttt{#1}_{\texttt{#2},\texttt{#3}}}
 \newcommand\arr[3]{\texttt{#1[#2][#3]}}
 \newcommand\barr[3]{\texttt{\underline{#1[#2][#3]}}}
@@ -22,10 +24,10 @@ equations.
             $\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$ + $\arr{A}{i+1}{j}$);
 \end{lstlisting}
     \caption{%
-    An excerpt from the Seidel stencil~\cite{polybench}.  The inter-iteration
-    data dependence of the innermost loop is underlined ($\arr{A}{i}{j}$ and
-    $\arr{A}{i}{j-1}$).}
-    \label{lo:fig:seidel_prog}
+        An excerpt from the Seidel stencil~\cite{polybench}.  The
+        inter-iteration data dependence of the innermost loop is underlined
+        ($\barr{A}{i}{j}$ and $\barr{A}{i}{j-1}$).
+    }\label{lo:fig:seidel_prog}
 \end{figure}
 
 We start by synthesizing this program in \emph{Vivado HLS} (VHLS)\@.  We
@@ -46,20 +48,19 @@ innermost loop is $((N-1) \times \II) + D = 47,015$ cycles.
 
 We then enable VHLS's \emph{expression balancing} (EB) optimization.  When
 synthesized, this optimization pass tries to reorder the sequence of additions
-in the loop body into a tree structure, thus reducing the $\II$ to 28
-cycles, and the depth $D$ to 42 cycles, while the trip count $N = 1022$
-remains the same.  The overall latency is now $((N-1) \times \II) + D =
-28,630$ cycles.  The overall resource usage remains roughly the same.
-However, as we mentioned in Section~\ref{lo:sec:introduction}, VHLS is not
-aware of the inter-iteration data dependence.  Although enabling EB did
-produce a faster implementation, there is still room for improvement.  We
-further discovered that if we partially unroll the loop, VHLS's EB did
-not improve the total run time, despite using a lot more resources.  As
-we have explained in Section~\ref{lo:sec:introduction}, EB only makes
-use of associativity, and does not make use of other equivalence rules.
-These limitations pose great restrictions on VHLS's ability to produce a
-significantly faster implementation.  Most importantly, VHLS does not guarantee
-that this optimization will not result in catastrophic inaccuracies.
+in the loop body into a tree structure, thus reducing the $\II$ to 28 cycles,
+and the depth $D$ to 42 cycles, while the trip count $N = 1022$ remains
+the same.  The overall latency is now $((N-1) \times \II) + D = 28,630$
+cycles.  The overall resource usage remains roughly the same.  However,
+VHLS's EB is not aware of the inter-iteration data dependence.  Although
+enabling EB did produce a faster implementation, there is still room for
+improvement.  We further discovered that if we partially unroll the loop,
+VHLS's EB did not improve the total run time, despite using a lot more
+resources.  Additionally, EB only makes use of associativity, but not other
+equivalence rules.  These limitations pose great restrictions on VHLS's ability
+to produce a significantly faster implementation.  Most importantly, VHLS
+does not guarantee that this optimization will not result in catastrophic
+inaccuracies.
 
 We then use our tool to automatically discover equivalent programs from the
 program in Figure~\ref{lo:fig:seidel_prog}.  Because our tool explores a

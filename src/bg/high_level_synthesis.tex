@@ -554,10 +554,9 @@ computed outputs from the original C code and the synthesized circuit should
 be identical.  A different class of optimizations, which we call \emph{lossy
 optimization}, break this promise by optimizing data-paths in a way that may
 impact numerical accuracy.  HLS tools could benefit from these optimizations
-in the future, which bring further performance improvements that can not
+in the future, which bring further performance improvements that cannot
 be attained by traditional optimizations alone.  Because these approaches
 could affect numerical accuracy, performance optimization and round-off error
 analysis may be carried out simultaneously.  We will further discuss lossy
 optimization methods such as expression balancing enjoyed by Vivado HLS and
 LegUp in Section~\ref{bg:sec:discovering_equivalent_programs}.
-% and word-length optimization in Section~\ref{bg:sec:wordlength}.

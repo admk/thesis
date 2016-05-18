@@ -603,22 +603,23 @@ following Gal\"ois connection can be established to formalize it:
     \lattice{\intervalset}{\sqsubseteq},
 \end{equation}
 The functions $\alpha: \powersetof\realset \to \intervalset$ and $\gamma:
-\intervalset \to \powersetof\realset$ which satisfies~\eqref{bg:eq:galois} can
-be defined as follows:
+\intervalset \to \powersetof\realset$ that satisfy~\eqref{bg:eq:galois} can be
+defined as follows:
 \begin{equation}
     \begin{aligned}
         \alpha(X) &= \interval{\inf(X)}{\sup(X)}, \\
-        \gamma(\interval{\underline{X^\sharp}}{\overline{X^\sharp}})
-            &= \left\{
-                v \mid \underline{X^\sharp} \leq v \leq \overline{X^\sharp}
-            \right\},
+        \gamma\left(
+            \interval{\underline{X^\sharp}}{\overline{X^\sharp}}
+        \right) &= \left\{
+            v \mid \underline{X^\sharp} \leq v \leq \overline{X^\sharp}
+        \right\},
     \end{aligned}
 \end{equation}
 where $\inf(X)$ and $\sup(X)$ are respectively the infimum and supremum of $X$.
 
-Furthermore, the AI framework allows an approximated function $g^\sharp:
-\mathsf{M} \to \mathsf{M}$ to be inductively abstracted by the Gal\"ois
-connection from a function $g: \mathsf{L} \to \mathsf{L}$~\cite{nielson99}.
+Furthermore, from a function $g: \mathsf{L} \to \mathsf{L}$, the AI framework
+allows an approximated function $g^\sharp: \mathsf{M} \to \mathsf{M}$ to
+be inductively abstracted by the Gal\"ois connection~\cite{nielson99}.
 For example, consider~\eqref{bg:eq:a1_transfer} which is not computable,
 an approximated candidate $f^\sharp$ can be computed by $\alpha
 \circ f \circ \gamma$.  Since we are computing in $\intervalset$,
@@ -726,7 +727,7 @@ g$.
 The interval domain offers us an efficient way to enclose reachable values
 of variables.  However, it is unable to capture the correlation among these
 variables.  For instance, if we know that $x$ and $y$ are reals between $0$
-and $1$, and $x \leq y$, intervals can not express the relation $x \leq y$ and
+and $1$, and $x \leq y$, intervals cannot express the relation $x \leq y$ and
 using bounds $x \in [0, 1]$ and $y \in [0, 1]$, we evaluate the expression $(1
 - y)x$ is bounded by $0$ and $1$.  In contrast, if we were able to make use of
 the inequality $x \leq y$, then it is possible to deduce $(1 - y) x \leq (1 -

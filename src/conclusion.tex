@@ -1,0 +1,208 @@
+High-level synthesis tools are typically designed to adhere to a rigid
+specification which outlines their behaviour.  It is a traditional practice
+to design this specification and the subsequent tool to ensure that the
+synthesized circuits perform functionally identical to the original source
+program written in high-level language.  It is also viewed as a good practice
+because it has predicable outcomes.  Guided by the rules of the language,
+programmers translate mathematical objects such as algorithms and physical
+information respectively into source code and numerical data, in a way similar
+to tools adhering to their specifications.  This manual process of translation
+is unfortunately an approximate one.  Computations as simple as $\sqrt{3}$ must
+be approximated, \eg~they are carried out in floating-point arithmetic, because
+of the finite nature of computing machines.  Therefore, HLS tools cannot be
+relied upon for an exact interpretation of the mathematical objects we wish
+to implement, even if they guarantee the functional equivalence between the
+source code and the synthesized result.
+
+Despite the awareness of the approximate characteristic of numerical
+software/hardware implementations using floating-point operations, engineers
+often take the risks of neglecting this fact, and anticipate their designs to
+behave identically to the mathematical algorithms visioned in real arithmetic
+within a reasonable but not well-defined error margin.  As it was shown in
+Section~\ref{bg:sub:expression_accuracy} in Chapter~\ref{chp:background},
+round-off errors when accumulated, could have detrimental effects on our daily
+life.  The aforementioned functional equivalence between source and circuit
+guaranteed by HLS tools is therefore unable to regain any lost accuracies due
+to approximation.
+
+Traditional IR-level HLS program optimization consist of a series of
+transformation passes.  Most of these passes do not predict whether they have
+negative impact on the resulting circuit, and they limit their capabilities by
+preserving functional equivalence.  Varying the order of these passes could
+have significant impact on the quality, as these passes interact with one
+another in a complicated manner, it is difficult to predict the overall impact
+on performance~\cite{huang15}.  For $n$ passes, there are $n{\,!}$ distinct
+ways to order, it is thus a considerable challenge to decide the optimal pass
+ordering, which is exacerbated by the fact that it could be highly dependent on
+the input program~\cite{cong13}.
+
+These above shortcomings of traditional HLS tools and optimizing compilers
+provide a strong motivation for the work proposed in this thesis.
+
+Firstly, we can apply the philosophy of relaxing the functional equivalence
+required by HLS tools.  In the mean time, we preserve the equivalence of the
+underlying mathematical objects in real arithmetic which hardware designs are
+approximating.  One can often improve the numerical accuracy by choosing a
+better alternative among these equivalences.
+
+Secondly, by applying the same paradigm, a wide range of optimization
+opportunities can be explored to minimize throughput and resource utilization.
+These opportunities were previously lost out to the necessity of ensuring
+consistent behaviour.
+
+Finally, optimization can be carried out by applying steps of equivalence
+rewrites driven by a prediction model.  Traditional optimization passes can
+be broken up into much smaller common parts made of equivalence rules can be
+easily proved mathematically correct.  By using models to predict run time,
+resources and accuracy to guide the optimization process, it is possible to
+explore multiple designs that trade-off the three performance metrics while
+removing concerns about the ordering problem.  Many optimization passes, such
+as constant propagation, dead code removal, common subexpression elimination
+and~\etc, are naturally subsumed by the new approach.  As the computational
+power of machines increases exponentially, we can foresee an increase in the
+scale of the vast search space to be explored in the future.
+
+This thesis therefore broadens the horizon of HLS tools, and equips them with
+the new program optimization paradigm by leveraging these above observations.
+Specifically, the trade-off relationship among numerical accuracy, resource
+utilization and throughput are optimized in floating-point numerical programs
+for HLS\@.  Here we summarize the contributions of this thesis.
+
+To the best of our knowledge, this thesis is the first to introduce
+multiple-objective performance optimization in a unified framework for
+discovering equivalence in programs.  Chapter~\ref{chp:stropt} implements
+this framework and optimizes a suite of expressions that are difficult to
+optimize by hand, and improve numerical accuracy and area automatically.
+In the experimental results, it turns out that the two central goals,
+\ie~improving accuracy and minimizing area, are often not in conflict, as
+optimized expressions can enjoy almost all enhancements that can be achieved
+in both metrics.  Guided by the concept of abstract interpretation, it further
+introduces the semantics-based program analyses to jointly reason about
+safe ranges of round-off errors and resource utilization, and subsequently,
+discovery of equivalent expressions.  This technique lays the necessary
+foundation for program equivalence beyond simple arithmetic expressions.
+
+The infinite size of the equivalent program space, coupled with undecidability
+of program properties, makes the program optimization an even more
+challenging task than the one of arithmetic expressions.  For this,
+Chapter~\ref{chp:progopt} introduces a new graph-based intermediate
+representation, MIR, for capturing the semantics of numerical programs.  This
+approach reduces the size of the search space, and the IR itself is derived
+from the formal semantics of programs to ensure the correctness of equivalent
+MIRs and the back-and-forth translation between C and MIR\@.  It further
+eliminates the problem of optimization pass ordering, because by using
+the equivalence discovery framework, the Pareto frontier can be extended
+incrementally with small steps of rewrites to multiple candidates.  Traditional
+compiler optimizations are naturally subsumed and further enhanced by the MIRs,
+as many optimization techniques such as loop splitting and loop fusion that
+previously must be profiled to justify enabling them, can emerge automatically
+from the optimization process.  By optimizing a suite of resource-efficient
+benchmark examples, the tool improves the numerical accuracy by up to 65\%.
+
+Formerly, HLS tools' ability to pipeline loops is fundamentally constrained
+by intra-iteration dependencies.  Traditional optimization techniques such as
+partial loop unrolling may have minimal effects on the initiation interval of
+pipelined loops, as these do not impact the data-path structure, which ensures
+that the functional equivalence is preserved.  Encouraged by the promising
+effects of Nicolau~\etal's tree height reduction technique~\cite{nicolau91}
+and LegUp's recurrence minimization~\cite{canis14}, Chapter~\ref{chp:latopt}
+further incorporates latency analysis into the unified program optimization
+framework.  It was found that traditional optimization techniques when used
+in tandem with the arithmetic equivalence rules and memory access reduction
+rules can significantly improve the latency and accuracy of a numerical
+program.  In Chapter~\ref{chp:progopt}, the experimental results identifies
+that the static analysis of round-off errors for each candidate explored is
+the key factor to the speed of optimization.  This problem is addressed in
+this chapter by graph partitioning and candidate pruning algorithms.  It
+further enables deeper partial loop unrolling factors that was not explored in
+Chapter~\ref{chp:progopt}.  By optimizing a suite of benchmark examples from
+PolyBench and Livermore loops, the tool improves the latency and accuracy of
+each by up to 12$\times$ and 7$\times$ respectively, at a cost of 4$\times$
+more resource utilization.
+
+
+\section{Future Prospects}
+\label{sec:future_prospects}
+
+In its current form, the new approach to program optimization explained in this
+thesis forms the underlying basis for a much larger set of future work.  Even
+though it is precursory on its own, the promising experimental results showcase
+the powerful optimization it can bring to optimizing compilers and HLS tools.
+Here, a list of potential directions of future research is discussed that could
+further widen the scope of our technique for a broader range of applications.
+
+\textbf{LLVM IR-Level Program Optimization.}  We could envision a
+back-and-forth translator from LLVM IR~\cite{llvm, llvm_ir} to MIR graphs.
+This could enable a much wider applicability of the technique presented in the
+thesis to both LLVM-based HLS tools and software compilers.  Additionally,
+it could benefit from existing LLVM optimizations passes by using the
+optimized LLVM IR code as inputs.  There are however obstacles in migrating
+to LLVM IR as the source language.  Firstly, LLVM IR is SSA-based.  Since
+it uses temporary variables for intermediate results in computation, a full
+liveness analysis~\cite{hathhorn12, nielson99, boissinot08} may be necessary
+to eliminate temporary variables from the resulting MIR\@.  Secondly,
+control-flows in LLVM IR are more freely structured.  Unlike C, which
+defines \iflit~statements and \whilelit~loops and discourages the use of
+\verb|goto| statements, control-flow in LLVM IR are composed by basic blocks
+and branches between pairs of them.  This requires the MIR to be further
+extended to cope with complex control-flow patterns.  Conventionally, programs
+written with branches are often analyzed using \emph{continuation style
+semantics}~\cite{felleisen88}.  It is not evident how this semantics can be
+embedded within MIRs.
+
+\textbf{Tighter bounds on round-off errors.} As an alternative for interval
+analysis, the accuracy analysis could enjoy more sophisticated abstract domains
+that capture the correlations between variables, and produce tighter bounds
+for results.  Currently, the analysis cannot produce meaningful, \ie~finite,
+bounds on the round-off errors of certain numerical programs.  If the analysis
+fails to bound errors, then currently the optimization cannot be directed to
+a more accurate implementation.  By using abstract relational domains, it is
+possible to produce a much tighter bound on the values of program variables,
+and the associated errors.  Currently there are a few relational domains-based
+static analysis techniques of floating-point errors~\cite{mine07_2, goubault01,
+putot04, goubault06, goubault11}, making use of them still poses challenges.
+Each floating-point operation introduces an independent error term as a
+variable in the formulation of these relational domains, and it may be
+difficult to determine how to collapse these error terms into a smaller set of
+variables, as the optimization in this thesis can introduce a large number of
+error variables.
+
+\textbf{Special and fused operators.} There could be a lot of interest in the
+HLS community on how our tool can be incorporated with existing work on fused
+floating-point data-path synthesis.  Langhammer~\etal~\cite{langhammer} propose
+that normalization and denormalization stages could be regarded as redundant
+between operators in a floating-point data-path.  By removing these stages,
+subsets of the data-path become fixed-point data-paths, in the meanwhile
+saving resources and improving throughput at a cost of accuracy.  It will be
+compelling to isolate the normalization/denormalization stages into operators
+in the \soap~framework, so that a mixed floating-point/fixed-point program can
+more efficiently trade-off resources, accuracy and latency.
+
+\textbf{Multiple word-lengths.}  Currently experiments have been carried
+out on floating-point operations with a fixed mantissa only.  It would be
+beneficial to further integrate fixed-point support.  Additionally, by further
+supporting multiple precisions in the data-path, \ie~allowing each operators to
+compute with different precisions, the trade-off relationship among our three
+primary performance measures can be even more effective.  Techniques, known
+as multiple word-length optimization~\cite{constantinides, lee06, cantin02},
+exist to apply a heuristic approach to perturb the precisions in a data-path,
+so that a performance metric can be optimized while round-off errors of outputs
+satisfies an error budget.  Instituting such techniques in the \soap~framework
+is rewarding as it can further reduce the area and latency requirement of a
+synthesized circuit for a given accuracy.  All of these approaches optimize a
+fixed data-path, whereas in \soap~the structure of the data- and control-paths
+are varying as we optimize them.  Analyzing each of the candidates for the
+optimal precision assignment to each operator is very inefficient because of
+the number of candidates explored.  Moreover, current techniques work with a
+predetermined error budget, and yet in fact a Pareto frontier exists for each
+data-path to trade-off accuracy, resources and latency.
+
+\textbf{BLAS and numerical analysis}
+
+\textbf{Continuity analysis and improvements}
+
+\textbf{Memory partitioning}
+
+\textbf{Practical considerations.}
+% \textbf{Drop input assumption}
+% \textbf{Algorithmic speedup}

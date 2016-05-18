@@ -1,93 +1,106 @@
-% !TEX root = ../thesis-example.tex
-%
 % ------------------------------------  --> cover title page
-\begin{titlepage}
-	\pdfbookmark[0]{Cover}{Cover}
-	\flushright
-	\hfill
-	\vfill
-	{\LARGE\thesisTitle \par}
-	\rule[5pt]{\textwidth}{.4pt} \par
-	{\Large\thesisName}
-	\vfill
-	\textit{\large\thesisDate} \\
-	Version: \thesisVersion
-\end{titlepage}
+% \begin{titlepage}
+    % \pdfbookmark[0]{Cover}{Cover}
+    % \flushright
+    % \hfill
+    % \vfill
+    % {\LARGE\thesisTitle \par}
+    % \rule[5pt]{\textwidth}{.4pt} \par
+    % {\Large\thesisName}
+    % \vfill
+    % \textit{\large\thesisDate} \\
+    % Version: \thesisVersion
+% \end{titlepage}
 
 
 % ------------------------------------  --> main title page
-\begin{titlepage}
-	\pdfbookmark[0]{Titlepage}{Titlepage}
-	\tgherosfont
-	\centering
+{
+    \thispagestyle{plain}
+    \pdfbookmark[0]{Titlepage}{Titlepage}
+    \tgherosfont
+    \centering
 
-	\includegraphics[width=6cm]{imperial_logo} \\[4mm]
-    % {\Large \thesisUniversity} \\[4mm]
-	\textsf{\thesisUniversityDepartment} \\
-	% \textsf{\thesisUniversityInstitute} \\
-	\textsf{\thesisUniversityGroup} \\
+    \includegraphics[width=6cm]{imperial_logo} \\[4mm]
+    {\Large \thesisUniversity} \\[4mm]
+    \textsf{\thesisUniversityDepartment} \\
+    % \textsf{\thesisUniversityInstitute} \\
+    \textsf{\thesisUniversityGroup} \\
 
-	\vfill
-	{\LARGE \color{ctcolortitle}\textbf{\thesisTitle} \\[10mm]}
-	{\Large \thesisName} \\
+    \vfill
+    {\LARGE \color{ctcolortitle}\textbf{\thesisTitle} \\[10mm]}
+    {\Large \thesisName} \\
 
-	\vfill
-	% \begin{minipage}[t]{.27\textwidth}
-		% \raggedleft
-		% \textit{1. Reviewer}
-	% \end{minipage}
-	% \hspace*{15pt}
-	% \begin{minipage}[t]{.65\textwidth}
-		% {\Large \thesisFirstReviewer} \\
-		  % {\small \thesisFirstReviewerDepartment} \\[-1mm]
-		% {\small \thesisFirstReviewerUniversity}
-	% \end{minipage} \\[5mm]
-	% \begin{minipage}[t]{.27\textwidth}
-		% \raggedleft
-		% \textit{2. Reviewer}
-	% \end{minipage}
-	% \hspace*{15pt}
-	% \begin{minipage}[t]{.65\textwidth}
-		% {\Large \thesisSecondReviewer} \\
-		  % {\small \thesisSecondReviewerDepartment} \\[-1mm]
-		% {\small \thesisSecondReviewerUniversity}
-	% \end{minipage} \\[10mm]
-	\begin{minipage}[t]{.27\textwidth}
-		\raggedleft
-		\textit{Supervisor}
-	\end{minipage}
-	\hspace*{15pt}
-	\begin{minipage}[t]{.65\textwidth}
-		\thesisFirstSupervisor%\ and \thesisSecondSupervisor
-	\end{minipage} \\[10mm]
+    \vfill
+    % \begin{minipage}[t]{.27\textwidth}
+        % \raggedleft
+        % \textit{1. Reviewer}
+    % \end{minipage}
+    % \hspace*{15pt}
+    % \begin{minipage}[t]{.65\textwidth}
+        % {\Large \thesisFirstReviewer} \\
+          % {\small \thesisFirstReviewerDepartment} \\[-1mm]
+        % {\small \thesisFirstReviewerUniversity}
+    % \end{minipage} \\[5mm]
+    % \begin{minipage}[t]{.27\textwidth}
+        % \raggedleft
+        % \textit{2. Reviewer}
+    % \end{minipage}
+    % \hspace*{15pt}
+    % \begin{minipage}[t]{.65\textwidth}
+        % {\Large \thesisSecondReviewer} \\
+          % {\small \thesisSecondReviewerDepartment} \\[-1mm]
+        % {\small \thesisSecondReviewerUniversity}
+    % \end{minipage} \\[10mm]
+    \begin{minipage}[t]{.27\textwidth}
+        \raggedleft
+        \textit{Supervisor}
+    \end{minipage}
+    \hspace*{15pt}
+    \begin{minipage}[t]{.65\textwidth}
+        \thesisFirstSupervisor%\ and \thesisSecondSupervisor
+    \end{minipage} \\[10mm]
     \begin{minipage}[t]{.8\textwidth}
         {\small
-            Submitted in part fulfilment of the requirements for the degree of
-            Doctor of Philosophy of Imperial College London and the Diploma of
-            Imperial College London
-        }
+        Submitted in part fulfilment of the requirements for the degree of
+        Doctor of Philosophy in Electrical and Electronic Engineering of
+        Imperial College London and the Diploma of Imperial College London}
     \end{minipage} \\[10mm]
 
-	\thesisDate \\
-
-\end{titlepage}
+    \thesisDate \\
+    \clearpage
+}
 
 
 % ------------------------------------  --> lower title back for single page layout
+{%
+    \thispagestyle{plain}
+    ~
+
+    This thesis is my own work and all other related work are appropriately
+    referenced.
+
+    The copyright of this thesis rests with the author and is made
+    available under a Creative Commons Attribution Non-Commercial No
+    Derivatives licence. Researchers are free to copy, distribute or
+    transmit the thesis on the condition that they attribute it, that
+    they do not use it for commercial purposes and that they do not
+    alter, transform or build upon it. For any reuse or redistribution,
+    researchers must make clear to others the licence terms of this work.
+}
 \hfill
 \vfill
 {
-	\small
-	\textbf{\thesisName} \\
-	\textit{\thesisTitle} \\
-	\thesisDate \\
-	% Reviewers: \thesisFirstReviewer\ and \thesisSecondReviewer \\
-	Supervisor: \thesisFirstSupervisor%\ and \thesisSecondSupervisor
-	\\[1.5em]
+    \small
+    \textbf{\thesisName} \\
+    \textit{\thesisTitle} \\
+    \thesisDate \\
+    % Reviewers: \thesisFirstReviewer\ and \thesisSecondReviewer \\
+    Supervisor: \thesisFirstSupervisor%\ and \thesisSecondSupervisor
+    \\[1.5em]
     \textbf{\thesisUniversity} \\
-	\textit{\thesisUniversityGroup} \\
-	% \thesisUniversityInstitute \\
-	\thesisUniversityDepartment \\
-	\thesisUniversityStreetAddress \\
-	\thesisUniversityPostalCode\ and \thesisUniversityCity
+    \textit{\thesisUniversityGroup} \\
+    % \thesisUniversityInstitute \\
+    \thesisUniversityDepartment \\
+    \thesisUniversityStreetAddress \\
+    \thesisUniversityPostalCode\ and \thesisUniversityCity
 }

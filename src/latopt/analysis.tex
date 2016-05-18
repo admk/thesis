@@ -14,11 +14,11 @@ of numerical programs, as this would be computationally expensive, and
 would need to be repeated for tens of thousands of equivalent programs.
 Instead, our latency analysis computes a lower bound of the loop's initiation
 interval ($\II$), \ie~the minimum initiation interval ($\MII$).  (Recall from
-Section~\ref{lo:sec:introduction} that the initiation interval is the number
-of clock cycles that must elapse between the starts of two consecutive loop
-iterations, and is determined by data dependences and resource constraints.)
-We then compute the overall latency of the loop, and subsequently, the total
-latency of the program.
+Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background} that the initiation
+interval is the number of clock cycles that must elapse between the starts of
+two consecutive loop iterations, and is determined by data dependences and
+resource constraints.)  We then compute the overall latency of the loop, and
+subsequently, the total latency of the program.
 
 Following LegUp~\cite{legup} and Vivado HLS~\cite{vivado_hls}, we compute
 $\MII$ values using \emph{iterative modulo scheduling}~\cite{rau94}. For our
@@ -132,9 +132,10 @@ with:
         \MII = \max\left(\RecMII, \ResMII\right)
     \nonumber
 \end{equation}
-where, recalling from Section~\ref{lo:sec:introduction}, $N$ is the maximum
-\emph{trip count}, \ie~the loop's total number of iterations, and $D$ is the
-loop's depth, \ie~the total number of cycles per iteration.
+where, recalling from Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background},
+$N$ is the maximum \emph{trip count}, \ie~the loop's total number of
+iterations, and $D$ is the loop's depth, \ie~the total number of cycles per
+iteration.
 
 Because we optimize programs in a bottom-up hierarchy, as described in
 Section~\ref{lo:sec:structural_optimization}, when an expression in a loop is
