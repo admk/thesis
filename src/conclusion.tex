@@ -115,10 +115,13 @@ that the static analysis of round-off errors for each candidate explored is
 the key factor to the speed of optimization.  This problem is addressed in
 this chapter by graph partitioning and candidate pruning algorithms.  It
 further enables deeper partial loop unrolling factors that was not explored in
-Chapter~\ref{chp:progopt}.  By optimizing a suite of benchmark examples from
-PolyBench and Livermore loops, the tool improves the latency and accuracy of
-each by up to 12$\times$ and 7$\times$ respectively, at a cost of 4$\times$
-more resource utilization.
+Chapter~\ref{chp:progopt}.  Often as we optimize numerical programs by spending
+more resources, latency and round-off error can be simultaneously minimized, as
+more resources would allow greater flexibility to discover equivalent programs
+that often perform well in terms of run time and accuracy.  By optimizing
+a suite of benchmark examples from PolyBench and Livermore loops, the tool
+improves the latency and accuracy of each by up to 12$\times$ and 7$\times$
+respectively, at a cost of 4$\times$ more resource utilization.
 
 
 \section{Future Prospects}
@@ -155,17 +158,17 @@ analysis, the accuracy analysis could enjoy more sophisticated abstract domains
 that capture the correlations between variables, and produce tighter bounds
 for results.  Currently, the analysis cannot produce meaningful, \ie~finite,
 bounds on the round-off errors of certain numerical programs.  If the analysis
-fails to bound errors, then currently the optimization cannot be directed to
-a more accurate implementation.  By using abstract relational domains, it is
-possible to produce a much tighter bound on the values of program variables,
-and the associated errors.  Currently there are a few relational domains-based
-static analysis techniques of floating-point errors~\cite{mine07_2, goubault01,
-putot04, goubault06, goubault11}, making use of them still poses challenges.
-Each floating-point operation introduces an independent error term as a
-variable in the formulation of these relational domains, and it may be
-difficult to determine how to collapse these error terms into a smaller set of
-variables, as the optimization in this thesis can introduce a large number of
-error variables.
+fails to bound errors, then currently the optimization cannot be directed
+to a more accurate implementation.  By using abstract relational domains,
+it is possible to produce a much tighter bound on the values of program
+variables, and the associated errors.  There are a few relational domains-based
+static analysis techniques of floating-point errors~\cite{mine07_2, putot04,
+goubault11, astree}, however making use of them still poses challenges.  Each
+floating-point operation introduces an independent error term as a new variable
+in the formulation of these relational domains, and it may be difficult to
+determine how to collapse these error terms into a smaller set of variables,
+as the optimization in this thesis can introduce a large number of error
+variables.
 
 \textbf{Special and fused operators.} There could be a lot of interest in the
 HLS community on how our tool can be incorporated with existing work on fused
@@ -178,7 +181,7 @@ compelling to isolate the normalization/denormalization stages into operators
 in the \soap~framework, so that a mixed floating-point/fixed-point program can
 more efficiently trade-off resources, accuracy and latency.
 
-\textbf{Multiple word-lengths.}  Currently experiments have been carried
+\textbf{Multiple word-lengths.}  In this thesis, experiments have been carried
 out on floating-point operations with a fixed mantissa only.  It would be
 beneficial to further integrate fixed-point support.  Additionally, by further
 supporting multiple precisions in the data-path, \ie~allowing each operators to
@@ -197,12 +200,98 @@ the number of candidates explored.  Moreover, current techniques work with a
 predetermined error budget, and yet in fact a Pareto frontier exists for each
 data-path to trade-off accuracy, resources and latency.
 
-\textbf{BLAS and numerical analysis}
+\textbf{Numerical analysis and linear algebra.}  There are two distinct
+approaches to the analysis of round-off errors.  One focuses on the round-off
+errors by statically analyzing numerical programs, and apply this in a way
+which is as general as possible, similar to the method presented in this
+thesis.  On the other hand, there are techniques employed by numerical analysts
+to evaluates and improve the numerical accuracy and stability of particular
+algorithms analytically.  Many creative solutions to challenges are invented
+in this process.  For instance, \emph{Kahan's compensated summation} algorithm
+is an accurate way to compute a sum of $n$ values, $\sum_{i = 0}^{n-1}
+x_i$~\cite{kahan65} is shown in Figure~\ref{co:lst:sum}.  This algorithm
+cannot be discovered easily using the method outlined in this thesis, and a
+way to extend the framework to optimize programs as creatively as humans still
+eludes us at the moment.  Higham~\etal~\cite{higham02} discuss in great depth
+many existing numerical accuracy problems encountered in finite-precision
+computation of polynomials and linear algebra subprograms and how to analyze
+and overcome inaccuracies, often in terms of relative errors.  Bridging the
+gap between computational and mathematical approaches for numerical analysis
+will allow us to automate many accuracy optimizations that were previously
+unexplored by the tool.
+\begin{figure}[ht]
+    \centering
+\begin{lstlisting}[]
+    float compensated_summation(float X[N])
+    {
+        float sum = 0.0f;
+        float e = 0.0f;
+        for (i = 0; i < n; i++)
+        {
+            float tmp = sum;
+            float y = X[i] + e;
+            sum = tmp + y;
+            e = (temp - sum) + y;
+        }
+        return sum;
+    }
+\end{lstlisting}
+    \caption{%
+        Kahan's compensated summation algorithm to accurately compute the sum
+        of $n$ elements $\sum_{i = 0}^{n-1} x_i$.
+    }\label{co:lst:sum}
+\end{figure}
 
-\textbf{Continuity analysis and improvements}
+\textbf{Continuity analysis and optimization.} The robustness of programs
+are very important to us.  In many cases, we wish our algorithms to be
+free from discontinuity, \ie~a small change in the initial condition
+would not result in an undesirably large jump in the outputs.  For this,
+Chaudhuri~\etal~\cite{chaudhuri11} and Goubault~\etal~\cite{goubault13}
+respectively propose methods to analyze the robustness of programs.  The
+former approach formally proves whether an algorithm is ill-conditioned in
+terms of the existence of discontinuity, whereas the latter statically analyze
+programs to determine if round-off errors introduce significant discontinuous
+behaviour.  To illustrate, consider an \iflit~branch, ``\iflit~\texttt{($e$ >
+0)} \thenlit~$c_1$ \elselit~$c_2$'', where $e$ is a floating-point expression.
+When $e$ is positive and very close to $0$ when evaluated in real arithmetic,
+the floating-point result of $e$ could be non-positive, due to the effects
+of the round-off errors.  In these extraordinary cases, the $c_2$ branch may
+be executed instead of the intended $c_1$.  These above new techniques could
+inspire us to implement the optimization of discontinuous behaviour such as the
+one shown in the example as another objective.
 
-\textbf{Memory partitioning}
+\textbf{Memory partitioning.} The experimental results in this work see a
+diminishing performance return when loops are deeply unrolled, because of a
+memory bottleneck.  As memory accesses saturate in loop execution, \ie~all
+memory ports are working in 100\% utilization, it is unable to gain further
+performance improvements.  Currently the tool stops exploring further loop
+unrolling when this happens.  By automatically partition arrays upon hitting
+such a memory bottleneck, further throughput improvements can be achieved.
 
-\textbf{Practical considerations.}
-% \textbf{Drop input assumption}
-% \textbf{Algorithmic speedup}
+\textbf{Other practical considerations.}  Finally, we may consider design
+perspectives that could make the resulting tool much more usable.  For
+instance, programs may still be optimized by not having any knowledge about the
+input variables.  Herbie~\cite{panchekha15} makes no assumption about the input
+space, and can nevertheless optimize arithmetic expressions, by splitting the
+input space into regimes.
+
+
+\section{Final Remarks}
+\label{sub:final_remarks}
+
+This thesis adapts existing techniques such as accuracy, latency and resource
+usage analysis, and further introduces novel approaches, \eg~MIR and efficient
+equivalence discovery, and delivers them in a unified framework.  The
+functional equivalence relaxation paradigm is relatively under-explored,
+because these optimizations are often highlighted as \emph{unsafe} by the
+HLS tools, as they cannot analyze the numerical implications of these
+optimizations.  HLS tools therefore have very limited optimization options
+base on this particular concept.  With the constructive results produced
+by this thesis, optimizations based on our concept can not only raise
+performance measures, but also result in even \emph{safer} implementations
+as we improve numerical accuracies.  The equivalence discovery algorithm
+in tandem with MIRs could have great potential in compiler optimization
+based on our concept.  Furthermore, since machine learning algorithms are
+error-resilient~\cite{lesser11, kim09, holt91, zhu03}, the methods demonstrated
+in this thesis have promising capabilities to improve the resource usage,
+latency and accuracy of them.

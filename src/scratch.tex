@@ -16,10 +16,7 @@ representations, along with the interaction between our structural optimization
 and multiple wordlength optimization~\cite{constantinides} could also generate
 a lot of interest from the HLS community.
 
-Currently, our tool sees a diminishing performance return when loops are deeply
-unrolled, because of a memory bottleneck. We are exploring an extension to
-our tool that enables it to automatically partition arrays upon hitting such
-a memory bottleneck. Also, our tool currently supports only single-precision
+ Also, our tool currently supports only single-precision
 floating-point data types; we intend to extend this to multiple-precision
 types, and explore the impact on our three performance metrics: latency,
 resource utilization and numerical accuracy.
