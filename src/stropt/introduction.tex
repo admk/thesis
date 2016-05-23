@@ -18,15 +18,15 @@ of arithmetic expressions in terms of the following two quality metrics
 relevant to FPGA implementation: the resource usage when synthesized into
 circuits, and a bound on roundoff errors when evaluated. Our goal is the joint
 minimization of these two quality metrics.  This optimization process provides
-a Pareto optimal set of implementations.  For example, our tool discovered that
+a Pareto optimal set of implementations.  For example, the tool discover that
 with single precision floating-point representation, if $a \in [0.1, 0.2]$,
 then the expression ${(a + 1)}^2$ uses fewest resources when implemented in the
-form $(a + 1) \times (a + 1)$ but most accurate when expanded into $(((a \times
-a) + a) + a) + 1$.  However it turns out that a third alternative, $((1 + a)
-+ a) + (a \times a)$, is never desirable because it is neither more accurate
-nor uses fewer resources than the other two possible structures. Our aim is to
-automatically detect and utilize such information to optimize the structure of
-expressions.
+form $(a + 1) \times (a + 1)$ but is most accurate when expanded into $(((a
+\times a) + a) + a) + 1$.  However it turns out that a third alternative,
+$((1 + a) + a) + (a \times a)$, is never desirable because it is neither more
+accurate nor uses fewer resources than the other two possible structures. Our
+aim is to automatically detect and utilize such information to optimize the
+structure of expressions.
 
 A na{\"\i}ve implementation of equivalent expression finding
 would be to explore all possible equivalent expressions to find

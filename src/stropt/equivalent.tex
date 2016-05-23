@@ -22,11 +22,11 @@ have the following rules in our inference system:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Reflexivity}] & \quad &
-            e_1 \eqrel e_1 \\
+            e_1 \eqrel e_1, \\
         & [\mathrm{Symmetry}] & \quad &
-            \inference{e_1 \eqrel e_2}{e_2 \eqrel e_1} \\
+            \inference{e_1 \eqrel e_2}{e_2 \eqrel e_1}, \\
         & [\mathrm{Transitivity}] & \quad &
-            \inference{e_1 \eqrel e_2 \wedge e_2 \eqrel e_3}{e_1 \eqrel e_3}
+            \inference{e_1 \eqrel e_2 \wedge e_2 \eqrel e_3}{e_1 \eqrel e_3}.
     \end{aligned}
     \label{so:eq:equivalence_relation}
 \end{equation}
@@ -38,50 +38,55 @@ of associativity rules:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Assoc}_1] & \quad &
-            \forall \circ \in \{ +, \times \}:
-            (e_1 \circ e_2) \circ e_3 \eqrel e_1 \circ (e_2 \circ e_3) \\
+            \forall \opsymbol \in \{ +, \times \}:
+            (e_1 \opsymbol e_2) \opsymbol e_3
+            \eqrel e_1 \opsymbol (e_2 \opsymbol e_3), \\
         & [\mathrm{Assoc}_2] & \quad &
-            \forall \circ \in \{ +, \times, / \}:
-            (e_1 \circ e_2) \circ e_3 \eqrel (e_1 \circ e_3) \circ e_2 \\
+            \forall \opsymbol \in \{ +, \times, / \}:
+            (e_1 \opsymbol e_2) \opsymbol e_3
+            \eqrel (e_1 \opsymbol e_3) \opsymbol e_2, \\
         & [\mathrm{Assoc}_3 (/)] & \quad &
-            (e_1 / e_2) / e_3 \eqrel e_1 / (e_2 \times e_3) \\
+            (e_1 / e_2) / e_3 \eqrel e_1 / (e_2 \times e_3), \\
         & [\mathrm{Assoc}_4 (/)] & \quad &
-            e_1 / (e_2 / e_3) \eqrel e_1 \times e_3 / e_2
+            e_1 / (e_2 / e_3) \eqrel e_1 \times e_3 / e_2.
     \end{aligned}
 \end{equation}
 Secondly, we define commutativity rules for addition and multiplication:
 \begin{equation}
     [\mathrm{Commut}] \quad
-    \forall \circ \in \{ +, \times \}: e_1 \circ e_2 \eqrel e_2 \circ e_1
+    \forall \opsymbol \in \{ +, \times \}:
+        e_1 \opsymbol e_2 \eqrel e_2 \opsymbol e_1.
 \end{equation}
 Thirdly, distributivity rules enable further equivalent expressions to be
 explored with our relation:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Distrib}_1] & \quad &
-            \forall \circ \in \{ \times, / \}:
-            e_1 \circ e_3 + e_2 \circ e_3 \eqrel (e_1 + e_2) \circ e_3 \\
+            \forall \opsymbol \in \{ \times, / \}:
+            e_1 \opsymbol e_3 + e_2 \opsymbol e_3
+            \eqrel (e_1 + e_2) \opsymbol e_3, \\
         & [\mathrm{Distrib}_2 (\times)] & \quad &
-            e_1 + e_1 \times e_2 \eqrel (1 + e_2) \times e_1 \\
+            e_1 + e_1 \times e_2 \eqrel (1 + e_2) \times e_1, \\
         & [\mathrm{Distrib}_3 (\times)] & \quad &
-            e_1 + e_1 \eqrel 2 \times e_1 \\
+            e_1 + e_1 \eqrel 2 \times e_1, \\
         & [\mathrm{Distrib}_4 (/)] & \quad &
-            e_1 + e_2 / e_3 \eqrel (e_1 \times e_3 + e_2) / e_3 \\
+            e_1 + e_2 / e_3 \eqrel (e_1 \times e_3 + e_2) / e_3, \\
         & [\mathrm{Distrib}_5 (/)] & \quad &
             e_1 / e_3 + e_2 / e_4 \eqrel
-            (e_1 \times e_4 + e_2 \times e_3) / (e_3 \times e_4) \\
+            (e_1 \times e_4 + e_2 \times e_3) / (e_3 \times e_4), \\
         & [\mathrm{Distrib}_6] & \quad &
-            \forall \circ \in \{ +, - \}:
-            -(e_1 \circ e_2) \eqrel (-e_1) \circ (-e_2) \\
+            \forall \opsymbol \in \{ +, - \}:
+            -(e_1 \opsymbol e_2) \eqrel (-e_1) \opsymbol (-e_2), \\
         & [\mathrm{Distrib}_7] & \quad &
-            \forall \circ \in \{ \times, / \}:
-            -(e_1 \circ e_2) \eqrel (-e_1) \circ e_2 \eqrel e_1 \circ (-e_2)
+            \forall \opsymbol \in \{ \times, / \}:
+            -(e_1 \opsymbol e_2)
+            \eqrel (-e_1) \opsymbol e_2 \eqrel e_1 \opsymbol (-e_2).
     \end{aligned}
 \end{equation}
 The following rule rewrites an expression with subtraction into an addition:
 \begin{equation}
     [\mathrm{Subtract}] \quad
-    e_1 - e_2 \eqrel e_1 + (-e_2)
+    e_1 - e_2 \eqrel e_1 + (-e_2).
 \end{equation}
 The following reduction rules propagates constant values in expression
 trees. The $\mathrm{ConstProp}_1$ rule states that if an expression is an
@@ -92,17 +97,17 @@ a negation on a constant value into a single constant.
     \begin{aligned}{}
         & [\mathrm{ConstProp_1}] &~&
         \inference{%
-            (v_3 = v_1 \circ v_2) \wedge
-            (\circ \in \binopset)
+            (v_3 = v_1 \opsymbol v_2) \wedge
+            (\opsymbol \in \binopset)
         }{%
-            v_1 \circ v_2 \eqrel v_3
-        } \\
+            v_1 \opsymbol v_2 \eqrel v_3
+        }, \\
         & [\mathrm{ConstProp_2} (-)] &~&
         \inference{%
             v_2 = -v_1
         }{%
             -v_1 \eqrel v_2
-        }
+        }.
     \end{aligned}
     \label{so:eq:constant_propagation}
 \end{equation}
@@ -112,24 +117,24 @@ patterns that can be simplified:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Identity}_1] &~&
-            \forall \circ \in \{ \times, / \}:
-            e_1 \circ 1 \eqrel e_1
+            \forall \opsymbol \in \{ \times, / \}:
+            e_1 \opsymbol 1 \eqrel e_1,
             & \quad
         & [\mathrm{Elim}_1 (-)] &~&
-            e_1 - e_1 \eqrel 0
+            e_1 - e_1 \eqrel 0,
             \\
         & [\mathrm{Identity}_2] &~&
-            \forall \circ \in \{ +, - \}:
-            e_1 \circ 0 \eqrel e_1
+            \forall \opsymbol \in \{ +, - \}:
+            e_1 \opsymbol 0 \eqrel e_1,
             & \quad
         & [\mathrm{Elim}_2 (/)] &~&
-            e_1 / e_1 \eqrel 1
+            e_1 / e_1 \eqrel 1,
             \\
         & [\mathrm{ZeroProp} (\times)] &~&
-            0 \times e_1 \eqrel 0
+            0 \times e_1 \eqrel 0,
             & \quad
         & [\mathrm{DoubleNeg} (-)] &~&
-            -(-e_1) \eqrel e_1
+            -(-e_1) \eqrel e_1.
             \\
     \end{aligned}
     \label{so:eq:common_reduction}
@@ -143,16 +148,16 @@ Finally, the following two allow structural induction on expression trees,
         \inference{%
             \left( e_1 \eqrel e_2 \right) \wedge
             \left( e_3 \eqrel e_4 \right) \wedge
-            \left( \circ \in \binopset \right)
+            \left( \opsymbol \in \binopset \right)
         }{%
-            e_1 \circ e_3 \eqrel e_2 \circ e_4
-        } \\
+            e_1 \opsymbol e_3 \eqrel e_2 \opsymbol e_4
+        }, \\
         & [\mathrm{Tree}_2] &~&
         \inference{%
             e_1 \eqrel e_2
         }{%
             -e_1 \eqrel -e_2
-        }
+        }.
     \end{aligned}
     \label{so:eq:equivalence_tree}
 \end{equation}
@@ -197,7 +202,7 @@ $\aexprset$, can be defined as follows:
 \begin{equation}
     \eqstep(\epsilon) = \left\{
         e^\prime\in\aexprset \mid
-        e \eqgenrel e^\prime \wedge e\in\epsilon\right\}
+        e \eqgenrel e^\prime \wedge e\in\epsilon\right\},
     \label{so:eq:eqstep}
 \end{equation}
 where $\epsilon$ is a set of equivalent expressions.
@@ -219,15 +224,15 @@ We further define a functional $\closure_N: ( \powersetof\aexprset \to
 \powersetof\aexprset ) \to ( \powersetof\aexprset \to$ $\powersetof\aexprset
 )$, which takes as an input a EEG function and produces another EEG function:
 \begin{equation}
-    f^\prime (\epsilon) \stackrel{\text{def}}=
+    f^\prime (\epsilon) \defeq
         \bigcup_{i = 0}^N f^i(\epsilon),
-    \text{~where~} f^\prime = \closure_N (f)
+    \text{~where~} f^\prime = \closure_N (f),
     \label{so:eq:transitive_generator}
 \end{equation}
 here, $f$ and $f^\prime$, respectively the input and output of $\closure_N$,
 are both EEG functions.  In the rest of the section, we omit the brackets
-surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N (f)$ can
-be written as $\closure_N f$.
+surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N
+(f)$ can be written as $\closure_N f$.
 
 \begin{lemma}
     $\closure_N f(\epsilon) = \epsilon \cup f \left( \closure_{N-1} f(\epsilon)
@@ -242,7 +247,7 @@ be written as $\closure_N f$.
     \begin{equation}
         \closure_N f(\epsilon) = \epsilon \cup f\left(
             f^0(\epsilon) \cup f^1(\epsilon) \cup \cdots \cup f^{N-1}(\epsilon)
-        \right)
+        \right),
     \end{equation}
     which equals to $\epsilon \cup f\left( \closure_{N-1} f(\epsilon) \right)$
     by definition.
@@ -257,12 +262,14 @@ inference system, \ie~the transitive closure of equivalent expressions related
 by $f$, from an initial set of equivalent expressions $\epsilon$:
 \begin{equation}
     \closure_\infty \eqstep (\epsilon) =
-        \bigcup_{i = 0}^\infty \eqstep^i(\epsilon)
+        \bigcup_{i = 0}^\infty \eqstep^i(\epsilon).
     \label{so:eq:transitive_closure}
 \end{equation}
-We may further omit the $\infty$ from $\closure_\infty$ to denote the
-transitive closure, \eg~the above example in~\ref{so:eq:transitive_closure} can
-be simplified to be $\closure \eqstep (\epsilon)$.
+Alternatively, we can view $\closure_\infty (f)$ as computing the
+least fixpoint of $f$.  We may further omit the $\infty$ from
+$\closure_\infty$ to denote the transitive closure, \eg~the above example
+in~\ref{so:eq:transitive_closure} can be simplified to be $\closure \eqstep
+(\epsilon)$.
 
 In practice, it is often infeasible to generate the full transitive closure of
 a given expression, we therefore impose further constraints on how we discover
@@ -292,7 +299,7 @@ to a time complexity at least exponential in terms of the expression size. In
 contrast, our technique has a time complexity that does not depend on the size
 of the input expression, but grows with respect to the depth limit $k$. Note
 that the full equivalence closure using the inference system we defined earlier
-in~\eqref{so:eq:transitive_closure} is at least $\bigo({2n - 1}!!)$ where $n$
+in~\eqref{so:eq:transitive_closure} is at least $\bigo((2n - 3)\,!!)$ where $n$
 is the number of terms in an expression, as we discussed earlier.
 
 Finally, we use the iterative algorithm in Figure~\ref{so:alg:closure} to
@@ -336,12 +343,12 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
     \begin{equation*}
     \begin{aligned}
         s_{m+1}
-         &= s_m \cup s^\prime_{m+1} \\
-         &= s_m \cup \left( f \left( s^\prime_m \right) - s_m \right) \\
-         &= s_m \cup f \left( s^\prime_m \right) \\
-         &= s_m \cup f \left(
+        &= s_m \cup s^\prime_{m+1}
+         = s_m \cup \left( f \left( s^\prime_m \right) - s_m \right) \\
+        &= s_m \cup f \left( s^\prime_m \right)
+         = s_m \cup f \left(
                 f \left( s^\prime_{m-1} \right) - s_{m-1}
-            \right)
+            \right).
     \end{aligned}
     \end{equation*}
     We substitute $s_m$ using Lemma~\ref{so:lem:transitive} to get:
@@ -350,20 +357,18 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
           = \epsilon \cup f \left( s_{m-1} \right) \cup
             f \left(
                 f \left( s^\prime_{m-1} \right) - s_{m-1}
-            \right)
+            \right).
     \end{equation*}
     Using distributivity of $f$ over $\cup$ and the iteration $m$ of the
     algorithm, we can derive:
     \begin{equation*}
-    \begin{aligned}
         s_{m+1}
-         &= \epsilon \cup f \left(
+         = \epsilon \cup f \left(
                 s_{m-1} \cup \left(
                     f \left( s^\prime_{m-1} \right) - s_{m-1}
                 \right)
-            \right) \\
-         &= \epsilon \cup f \left( s_m \right)
-    \end{aligned}
+            \right)
+         = \epsilon \cup f \left( s_m \right).
     \end{equation*}
     Finally, we make use of the assumption $s_m = \closure_m f(\epsilon)$,
     followed by Lemma~\ref{so:lem:transitive} to show:
@@ -372,7 +377,7 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
         = \epsilon \cup f \left(
             \closure_m f(\epsilon)
         \right)
-        = \closure_{m+1} f(\epsilon)
+        = \closure_{m+1} f(\epsilon).
     \end{equation*}
     It is trivial that $s_0 = \epsilon = \closure_0 f(\epsilon)$, by induction,
     $s_n = \closure_n f(\epsilon)$ thus holds for all $n \in \naturalset$.
@@ -381,14 +386,17 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
 
 \subsection{Pareto Frontier}
 
-Because we optimize expressions in two quality metrics, \ie~the accuracy of
-computation and the estimate of FPGA resource utilization, there is a trade-off
-between them. We desire the largest subset of all equivalent expressions
-$E$ discovered such that in this subset, no expression dominates any other
-expression, in terms of having both better area and better accuracy. This
-subset is known as the Pareto frontier.  Figure~\ref{so:alg:pareto} shows
-a simplified algorithm for calculating the Pareto frontier for a set of
-equivalent expressions $\epsilon$.
+Because we optimize expressions in two quality metrics, \ie~the accuracy
+of computation and the estimate of FPGA resource utilization, there is a
+trade-off between them. We desire the largest subset of all equivalent
+expressions $E$ discovered such that in this subset, no expression dominates
+any other expression, in terms of having both better area and better
+accuracy. This subset is known as the \emph{Pareto frontier}~\cite{legriel10}.
+Figure~\ref{so:alg:pareto} shows a simplified algorithm for calculating
+the Pareto frontier for a set of equivalent expressions $\epsilon$, faster
+algorithms exist.  For instance, we could sort these expressions by accuracy,
+as a fast sorting algorithm takes $\bigo(n\log(n))$ for $n$ elements, and then
+prune suboptimal ones in one pass.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
@@ -429,15 +437,15 @@ propagate the equivalence expressions in the parse tree's direction of flow,
 using~\eqref{so:eq:equivalence_semantics} defined below:
 \begin{equation}
     \begin{aligned}
-        \epsilon_x \circ \epsilon_y &= \frontier\left(
+        \epsilon_x \opsymbol \epsilon_y &= \frontier\left(
             \closure \eqstep_k \left(
-                E_\circ \left( \epsilon_x, \epsilon_y \right)
-            \right) \right) \\
+                E_\opsymbol \left( \epsilon_x, \epsilon_y \right)
+            \right) \right), \\
         & \text{where~}
-        E_\circ(\epsilon_x, \epsilon_y) = \{
-            e_x \circ e_y \mid e_x \in \epsilon_x \wedge e_y \in \epsilon_y
+        E_\opsymbol(\epsilon_x, \epsilon_y) = \{
+            e_x \opsymbol e_y \mid e_x \in \epsilon_x \wedge e_y \in \epsilon_y
         \}, \\
-        & \text{and~} \circ\in\{+, -, \times\}
+        & \text{and~} \opsymbol\in\{+, -, \times\}.
     \end{aligned}
     \label{so:eq:equivalence_semantics}
 \end{equation}
@@ -455,26 +463,29 @@ sample expression:
         \epsilon_a + \epsilon_b
             &= \frontier\left(
                     \closure \eqstep_k \left(
-                        E_\circ \left( \epsilon_a, \epsilon_b \right)
+                        E_\opsymbol \left( \epsilon_a, \epsilon_b \right)
                     \right)
                 \right) \\
             &= \frontier\left(
                     \closure \eqstep_k \left(
-                        E_\circ \left( \{a\}, \{b\} \right)
+                        E_\opsymbol \left( \{a\}, \{b\} \right)
                     \right)
                 \right) \\
             &= \frontier\left(
                     \{ a + b, b + a \}
-                \right)
+                \right).
     \end{aligned}
 \end{equation}
-Alternatively, we could view the semantics in terms of DFGs representing
-the algorithm for finding equivalent expressions. The parsing of an
-expression directly determines the structure of its DFG\@. For instance,
-the expression $(a + b) \times (a + b)$ generates the DFG illustrated in
-Figure~\ref{so:fig:tree_expr_flow}. The circles labeled $3$ and $7$ in this
-diagram are shorthands for the operation $E_+$ and $E_\times$ respectively,
-where $E_+$ and $E_\times$ is defined in~\eqref{so:eq:equivalence_semantics}.
+Alternatively, we could view the semantics in terms of DFGs representing the
+algorithm for finding equivalent expressions. The parsing of an expression
+directly determines the structure of its DFG\@. For instance, consider the
+tree structure of the expression $e_0 = (a + b) \times (a + b)$, as shown in
+Figure~\ref{so:fig:sample_tree}. This tree structure can be used to generate
+a DFG illustrated in Figure~\ref{so:fig:tree_expr_flow}, which when data-flow
+analysis is applied, discovers a set of equivalent expressions to $e_0$. The
+circles labeled $3$ and $7$ in this diagram are shorthands for the operation
+$E_+$ and $E_\times$ respectively, where $E_+$ and $E_\times$ is defined
+in~\eqref{so:eq:equivalence_semantics}.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.6]{tree_expr_flow}
@@ -489,22 +500,23 @@ we can produce a set of equations from the data flow of the DFG, which now
 produces equivalent expressions:
 \begin{equation}
     \begin{aligned}
-        \enter{1} &= \enter{1} \cup \{a\} &
-        \enter{2} &= \enter{2} \cup \{b\} \\
-        \enter{3} &= E_+(\enter{1}, \enter{2}) &
-        \enter{4} &= \enter{3} \cup \enter{5} \\
-        \enter{5} &= \eqstep_k(\enter{4}) &
-        \enter{6} &= \frontier(\enter{5}) \\
-        \enter{7} &= E_\times(\enter{6}, \enter{6}) &
-        \enter{8} &= \enter{7} \cup \enter{9} \\
-        \enter{9} &= \eqstep_k(\enter{8}) &
-        \enter{10} &= \frontier(\enter{9})
+        \enter{1} &= \enter{1} \cup \{a\}, &
+        \enter{2} &= \enter{2} \cup \{b\}, \\
+        \enter{3} &= E_+(\enter{1}, \enter{2}), &
+        \enter{4} &= \enter{3} \cup \enter{5}, \\
+        \enter{5} &= \eqstep_k(\enter{4}), &
+        \enter{6} &= \frontier(\enter{5}), \\
+        \enter{7} &= E_\times(\enter{6}, \enter{6}), &
+        \enter{8} &= \enter{7} \cup \enter{9}, \\
+        \enter{9} &= \eqstep_k(\enter{8}), &
+        \enter{10} &= \frontier(\enter{9}).
     \end{aligned}
     \label{so:eq:tree_expr_flow}
 \end{equation}
-Because of loops in the DFG, it is no longer trivial to find the solution.
-In general, the analysis equations are solved iteratively. We can
-regard the set of equations as a single transfer function $F$ as in
+Because of loops in the DFG, it is no longer trivial to find the solution.  In
+general, the analysis equations are solved iteratively, using the DFA approach
+discussed in Section~\ref{bg:sub:data_flow} of Chapter~\ref{chp:background}. We
+can regard the set of equations as a single transfer function $F$ as in
 \eqref{so:eq:transfer_function}, where the function $F$ takes as input
 the variables $A(1), \ldots, A(10)$ appearing in the right-hand sides of
 \eqref{so:eq:tree_expr_flow} and outputs the values $A(1), \ldots, A(10)$
@@ -512,19 +524,26 @@ appearing in the left-hand sides. Our aim is then to find an input $\vec{x}$ to
 $F$ such that $F(\vec{x}) = \vec{x}$, \ie~a fixpoint of $F$.
 \begin{equation}
       F((\enter{1}, \ldots, \enter{10}))
-    = (\enter{1} \cup \{a\}, \ldots, \frontier(\enter{9}))
+    = (\enter{1} \cup \{a\}, \ldots, \frontier(\enter{9})).
     \label{so:eq:transfer_function}
 \end{equation}
-Initially we assign $\enter{i} = \varnothing$ for $i\in\{1,2,\ldots,10\}$,
-and we denote $\vec\varnothing = (\varnothing, \ldots, \varnothing)$.
-Then we compute iteratively $F(\vec\varnothing)$, $F^2(\vec\varnothing) =
-F(F(\vec\varnothing))$, and so forth, until the fixpoint solution $\fix F$ is
-reached for some iteration $n$, that is:
+Initially we assign $\enter{i} = \varnothing$ for $i\in\{1,2,\ldots,10\}$, and
+we denote $\vec\varnothing = (\varnothing, \ldots, \varnothing)$.  Then we
+compute the least fixpoint of $F$:
 \begin{equation}
-    \fix F = F^n(\vec\varnothing) =
-    F(F^n(\vec\varnothing)) = F^{n + 1}(\vec\varnothing)
+    \lfp F \defeq \bigcup_{n \in \realset} F^n(\vec\varnothing).
 \end{equation}
-The fixpoint solution $\fix F$ gives a set of equivalent expressions derived
+This expression can be computed iteratively by first evaluating
+$F(\vec\varnothing)$, $F^2(\vec\varnothing) = F(F(\vec\varnothing))$,
+and so forth, until the fixpoint is reached for some iteration $n$,
+\ie~$F(F^n(\vec\varnothing)) = F^{n + 1}(\vec\varnothing)$. Hence we know that
+for any iterations $m > n + 1$, $F^m(\vec\varnothing) = F^n(\vec\varnothing)$.
+The value $n$ should be a finite constant, because the relation $\eqgenrel$
+can not reach an infinite number of expressions.  In cases when $\lfp F$ is
+computational intensive, we could limit the number of iterations $n$, to
+compute an under-approximation (a subset) of $\lfp F$.
+
+The fixpoint solution $\lfp F$ gives a set of equivalent expressions derived
 using our method, which is found at $\enter{10}$. In essence, the depth limit
 acts as a sliding window.  The semantics allow hierarchical transformation of
 subexpressions using a depth-limited search and the propagation of a set of

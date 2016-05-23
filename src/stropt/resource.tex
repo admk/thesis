@@ -24,7 +24,7 @@ to $\bot$, then in the mapping $\lambda$, each leaf of an expression is
 assigned a unique label, and the unique label $l$ is used to identify the leaf.
 That is for the leaf variable or constant $x$:
 \begin{equation}
-    (l, \lambda) = (\fresh(x), [\fresh(x)\mapsto{x}])
+    (l, \lambda) = (\fresh(x), [\fresh(x)\mapsto{x}]).
 \end{equation}
 This equation uses $[\fresh(x)\mapsto{x}]$ to indicate an environment that
 maps the label $\fresh(x)$ to the expression $x$ and all other labels map
@@ -36,14 +36,13 @@ $\lambda(l) = x$ and $\lambda(l^\prime) = \bot$.
     \includegraphics[scale=0.6]{sample_tree}
     \caption{The DFG for the sample expression.}\label{so:fig:sample_tree}
 \end{figure}
-For example, for the DFG in Figure~\ref{so:fig:sample_tree}, taken from
-Section~\ref{bg:sec:abstract_interpretation} of Chapter~\ref{chp:background},
-we have for the variables $a$ and $b$:
+For example, for the DFG in Figure~\ref{so:fig:sample_tree} we have for the
+variables $a$ and $b$:
 \begin{equation}
     \begin{aligned}
         (l_a, \lambda_a) &= (\fresh(a), [\fresh(a)\mapsto{a}])
-                   = (l_1, [l_1 \mapsto a]) \\
-        (l_b, \lambda_b) &= (l_2, [l_2 \mapsto b])
+                   = (l_1, [l_1 \mapsto a]), \\
+        (l_b, \lambda_b) &= (l_2, [l_2 \mapsto b]).
     \end{aligned}
     \label{so:eq:variable_env}
 \end{equation}
@@ -53,9 +52,9 @@ the following formulation of the labeling semantics:
     \begin{aligned}
         (l_x, \lambda_x) \circ (l_y, \lambda_y)
             &= (l, (\lambda_x\odot\lambda_y)
-                      [l\mapsto{l_x \circ l_y}]) \\
+                      [l\mapsto{l_x \circ l_y}]), \\
             \text{where~} l &= \fresh(l_x \circ l_y),
-                          \circ\in\{+, -, \times\}
+                          \circ\in\{+, -, \times\}.
     \end{aligned}
     \label{so:eq:labeling_semantics}
 \end{equation}
@@ -75,12 +74,12 @@ derive for the subexpression $a + b$:
             &= (l_3, [l_1\mapsto{a}]\odot
                      [l_2\mapsto{b}]\odot
                      [l_3\mapsto{l_1 + l_2}]) \\
-            &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}])
+            &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}]),
     \end{aligned}
 \end{equation}
-\todo{George: I am a little confused by addition here.  What is the definition
-of ``+'' on labels?  If $l_a + l_b$ should be read purely as a syntactic
-construct, why does it need a distinct representation as $l_3$?}
+where $l_a + l_b$ is a syntactic construct to signify that the subexpressions
+with labels $l_a$ and $l_b$ are added to form an expression.
+% \todo{George: I am a little confused by addition here.  What is the definition of ``+'' on labels?  If $l_a + l_b$ should be read purely as a syntactic construct, why does it need a distinct representation as $l_3$?}
 Finally, for the full expression $(a + b) \times (a + b)$:
 \begin{equation}
     \begin{aligned}
@@ -88,7 +87,7 @@ Finally, for the full expression $(a + b) \times (a + b)$:
             &= (l_{a + b}, \lambda_{a + b}) \times
                (l_{a + b}, \lambda_{a + b}) \\
             &= (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
-                      l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}])
+                      l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}]).
     \end{aligned}
 \end{equation}
 From the above derivation, it is clear that the semantics capture the reuse
