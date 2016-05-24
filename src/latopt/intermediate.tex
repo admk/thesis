@@ -33,10 +33,10 @@ computations.
 In practice, it is desirable to eliminate as much as possible the need
 for these syntactic rewrites that do not affect our performance metrics.
 Therefore, following Chapter~\ref{chp:progopt}, we perform transformations not
-on the program text directly, but on a DAG representation of the program called
-a MIR\@.  It expresses how each program variable is updated, but abstracts away
-the order in which the updates occur, and ignores any temporary variables that
-are not marked as program outputs.
+on the program text directly, but on a \gls{dag} representation of the program
+called a \gls{mir}\@.  It expresses how each program variable is updated, but
+abstracts away the order in which the updates occur, and ignores any temporary
+variables that are not marked as program outputs.
 
 % As an example, the two equivalent programs above can be automatically
 % translated into an identical MIR\@:
@@ -64,13 +64,13 @@ are not marked as program outputs.
     % \end{tikzpicture}
 % \end{equation}
 
-This representation is useful to us, because a single MIR is able to capture a
-class of syntactically-distinct programs, all of which have the same resource
-usage, accuracy, and latency characteristics.  By searching for transformations
-on MIRs, we drastically reduce the size of our search space.  Note that
-expressions in the MIR can share common structures; this is useful for modeling
-the sharing of common subexpressions and makes the search for optimizations
-much more efficient.
+This representation is useful to us, because a single \gls{mir} is able to
+capture a class of syntactically-distinct programs, all of which have the
+same resource usage, accuracy, and latency characteristics.  By searching for
+transformations on \glspl{mir}, we drastically reduce the size of our search
+space.  Note that expressions in the \gls{mir} can share common structures;
+this is useful for modeling the sharing of common subexpressions and makes the
+search for optimizations much more efficient.
 
 % MIRs also abstract the control structure of a program, preserving only the
 % computations that lead to the outputs. For instance, by using the ternary
@@ -116,19 +116,19 @@ much more efficient.
 \label{lo:sub:extending_the_translation_to_handle_arrays}
 
 Chapter~\ref{chp:progopt} did not include support for arrays in their original
-description of the MIR format. However, the examples that motivate our work
-all include arrays, so in this chapter, we extend MIRs to be able to represent
-programs that use single- or multi-dimensional arrays.
+description of the \gls{mir} format. However, the examples that motivate our
+work all include arrays, so in this chapter, we extend \glspl{mir} to be able
+to represent programs that use single- or multi-dimensional arrays.
 
 In many imperative languages such as C, arrays are stateful objects, \ie~they
 are used to store information, and changes to them are reflected to concurrent
 parts of the program that may be oblivious to the changes.  This characteristic
-is known as the lack of \emph{referential transparency}.  Such behavior is not
-present in arithmetic expressions, many functional programming languages, SSA,
-as well as MIRs.  This proves to be a challenge to us, because our efficient
-program optimization relies on recursively dividing the program into smaller
-subprograms that can be optimized independently, without affecting other
-subprograms.
+is known as the lack of \emph{referential transparency}.  Such behavior is
+not present in arithmetic expressions, many functional programming languages,
+\gls{ssa}, as well as \glspl{mir}.  This proves to be a challenge to us,
+because our efficient program optimization relies on recursively dividing the
+program into smaller subprograms that can be optimized independently, without
+affecting other subprograms.
 
 To remedy this, we treat arrays as immutable.  We use a function
 $\updateop(A,\bar{x}, e)$ to return a new array that is the same as $A$ but
@@ -138,7 +138,7 @@ As a simple example, a loop body:
 \begin{lstlisting}
     A[i + 1] = 2 * A[i];
 \end{lstlisting}
-can be translated into the following MIR\@:
+can be translated into the following \gls{mir}\@:
 \begin{equation}
     \label{lo:eq:array_example}
     \begin{tikzpicture}[mir]
@@ -168,17 +168,17 @@ can be translated into the following MIR\@:
     \end{tikzpicture}
 \end{equation}
 
-The implication of making arrays immutable is two-fold.  Firstly, we
-disallow pointer aliasing, \ie~\verb|float *b = a;| is not allowed in the
-C code, to keep the translation simple.  However this is not a problem
-for us because the programs that can benefit from our optimizations
-usually do not manipulate pointers.  This issue can also be addressed
-in the future by performing pointer analysis. Secondly, diverged paths
-in array updates could occur if we na{\"\i}vely optimize MIRs.  For
-instance, if $A$ is an input array, consider the two expressions in an MIR,
-$\update{A}{\bar{x}}{e}$ and $\update{A}{\bar{x}}{e^\prime}$, where $e,
-e^\prime$ are equivalent.  They respectively update the $x$-th element of $A$
-with $e$ and $e^\prime$ and return different arrays.  A C program cannot be
-generated from this MIR without duplicating $A$.  We solve this problem by
-partitioning the MIR at ``$\updateop$'' nodes using the method described in
+The implication of making arrays immutable is two-fold.  Firstly, we disallow
+pointer aliasing, \ie~\verb|float *b = a;| is not allowed in the C code, to
+keep the translation simple.  However this is not a problem for us because the
+programs that can benefit from our optimizations usually do not manipulate
+pointers.  This issue can also be addressed in the future by performing
+pointer analysis. Secondly, diverged paths in array updates could occur if
+we na{\"\i}vely optimize \glspl{mir}.  For instance, if $A$ is an input
+array, consider the two expressions in an \gls{mir}, $\update{A}{\bar{x}}{e}$
+and $\update{A}{\bar{x}}{e^\prime}$, where $e, e^\prime$ are equivalent.
+They respectively update the $x$-th element of $A$ with $e$ and $e^\prime$
+and return different arrays.  A C program cannot be generated from this
+\gls{mir} without duplicating $A$.  We solve this problem by partitioning
+the \gls{mir} at ``$\updateop$'' nodes using the method described in
 Section~\ref{lo:sec:structural_optimization}.

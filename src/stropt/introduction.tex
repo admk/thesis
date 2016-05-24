@@ -15,7 +15,7 @@ By exploiting rules of equivalence in arithmetic, such as associativity $(a
 \times c + b \times c$, it is possible to automatically generate different
 implementations of the same arithmetic expression.  We optimize the structures
 of arithmetic expressions in terms of the following two quality metrics
-relevant to FPGA implementation: the resource usage when synthesized into
+relevant to \gls{fpga} implementation: the resource usage when synthesized into
 circuits, and a bound on roundoff errors when evaluated. Our goal is the joint
 minimization of these two quality metrics.  This optimization process provides
 a Pareto optimal set of implementations.  For example, the tool discover that
@@ -56,7 +56,7 @@ we introduce freedom in choosing mantissa widths for the evaluation of the
 expressions. Generally as the precision of the evaluation increases, the
 utilization of resources increases for the same expression. This gives
 flexibility in the trade-off between resource usage and precision. Our
-approach and its associated tool, SOAP, allow high-level synthesis flows to
+approach and its associated tool, \soap, allow high-level synthesis flows to
 automatically determine whether it is a better choice to rewrite an expression,
 or change its precision in order to meet optimization goals.
 
@@ -67,7 +67,7 @@ The three contributions of this chapter are:
     \item A semantics-based program analysis that allows joint reasoning about
     the resource usage and safe ranges of values and errors in floating-point
     computation of arithmetic expressions.
-    \item A tool which produces RTL implementations on the area-accuracy
+    \item A tool which produces \gls{rtl} implementations on the area-accuracy
     trade-off curve derived from structural optimization.
 \end{enumerate}
 

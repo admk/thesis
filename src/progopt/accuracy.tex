@@ -1,5 +1,12 @@
-\subsection{Accuracy Analysis}
-\label{po:sub:accuracy_analysis}
+\section{Accuracy Analysis}
+\label{po:sec:accuracy_analysis}
+
+Because we make use of accuracy analysis to navigate the Pareto optimization
+of program candidates, we start by providing an overview of how the accuracy
+of simple arithmetic expressions are analyzed with the \soap{} framework, and
+since it only allows arithmetic expressions with simple operators $\{+, -,
+\times\}$, we explain how it can be extend fully to analyze \glspl{mir} and
+semantic expressions.
 
 In a typical program execution, values of variables, typically integers
 $\integerset$ and floating-point values $\floatset$, are modified according
@@ -55,16 +62,16 @@ example can be expressed concisely by $\exprerrorfunc{a + b}{\sigma^\sharp_0} =
 We build on top of the above method outlined in Chapter~\ref{chp:stropt} to
 analyze the accuracy of arithmetic expressions, which supported only addition,
 subtraction, multiplication and division.  In this section, we explain in
-detail how it is extended to support MIRs, and our additional operators
+detail how it is extended to support \glspl{mir}, and our additional operators
 in semantic expressions, that is, the substitution operator, the ternary
 conditional operator and the fixpoint operator.
 
-\subsubsection{MIR}
+\subsection{MIR}
 
-In the same way that an expression can be analyzed for its accuracy, an MIR,
-which is a mapping of variables to semantic expressions, can be analyzed by
-computing the round-off error for each of its expressions.  For instance, the
-accuracy of an MIR\@:
+In the same way that an expression can be analyzed for its accuracy, an
+\gls{mir}, which is a mapping of variables to semantic expressions, can be
+analyzed by computing the round-off error for each of its expressions.  For
+instance, the accuracy of an \gls{mir}\@:
 \begin{align}
     \mu_0 &= [a \mapsto a + b, b \mapsto a \times 0.5] \\
     \intertext{with an input state}
@@ -86,8 +93,8 @@ value-error bounds to their corresponding variables, that is:
 \end{equation}
 
 We define a function, $\mirerrorfunc{\mu}{\sigma^\sharp}$, to perform the
-above analysis, which takes as an input the MIR $\mu \in \mirset$, and an
-abstract input state $\sigma^\sharp \in \errordom$.  It computes a new
+above analysis, which takes as an input the \gls{mir} $\mu \in \mirset$, and
+an abstract input state $\sigma^\sharp \in \errordom$.  It computes a new
 state ${\sigma^\sharp}^\prime$, where for each variable $x \in \varset$,
 ${\sigma^\sharp}^\prime(x)$ is the analyzed value-error range of the expression
 $\mu(x)$.  Formally,
@@ -102,7 +109,7 @@ The notation ${[x \mapsto \exprerrorfunc{\mu(x)}{\sigma^\sharp}]}_{x \in
 each variable $x$ in the mapping $\mu$, the pairing of $x$ with the analyzed
 value-error bound of the semantic expression $\mu(x)$.
 
-\subsubsection{Substitution Operator}
+\subsection{Substitution Operator}
 
 The analysis of an expression $e \expand \mu$, where $e \in \sexprset$ and $\mu
 \in \mirset$ is carried out in two steps.  Initially, given an input state
@@ -115,7 +122,7 @@ input state.  Equivalently, this procedure can be defined as:
     = \exprerrorfunc{e}{\left( \mirerrorfunc{\mu}{\sigma^\sharp} \right)}
 \end{equation}
 
-\subsubsection{Ternary Conditional Operator}
+\subsection{Ternary Conditional Operator}
 
 A conditional expression is written as $\select{b}{e_1}{e_2}$, where $b
 \in \bexprset$ and $e_1, e_2 \in \sexprset$.  The truth value of Boolean
@@ -187,28 +194,30 @@ accuracy analysis on a conditional expression:
     \left(\exprerrorfunc{e_2}{\sigma^\sharp|_{\neg b}}\right).
 \end{equation}
 
-\subsubsection{Fixpoint Operator}
+\subsection{Fixpoint Operator}
 
 An expression with a fixpoint operator, $\fixpoint{b, \mu_s, x}$, has
 three child nodes, the Boolean expression $b \in \bexprset$, the loop body
-represented with an MIR $\mu_s \in \mirset$, and the return variable $x \in
-\varset$.  Similar to executing a \whilelit~loop, evaluating the expression is
-to iteratively evaluate $b$ for its truth value, if $b$ is true, then the loop
-MIR $\mu_s$ is used to update the program state for the next iteration and we
-repeat the process and iterate until $b$ is evaluated to false.
+represented with an \gls{mir} $\mu_s \in \mirset$, and the return variable $x
+\in \varset$.  Similar to executing a \whilelit~loop, evaluating the expression
+is to iteratively evaluate $b$ for its truth value, if $b$ is true, then
+the loop \gls{mir} $\mu_s$ is used to update the program state for the next
+iteration and we repeat the process and iterate until $b$ is evaluated to
+false.
 
 Before we explain how a fixpoint expression can be analyzed for its
-accuracy, we introduce the concept of \emph{loop invariants} (LI).  In our
-context, an LI of a \whilelit~loop is a set of bounds on loop variables
-that holds invariantly on entry to each loop iteration.  For example, in
-Figure~\ref{po:fig:syntax_example}, if our input is $n = 10$, then the LI on
-the variable $x$ is that its value is an integer, and is bounded by $[0, 9]$
-on loop entry, whereas on loop exit, $x$ is always equal to $10$.  The reason
-for inferring the LI is that, because we optimize the fixpoint expression's
-child nodes in a bottom-up hierarchy, the child $\mu_s$ is optimized before the
-expression $\fixpoint{b, \mu_s, x}$ itself, we are using the LI as the input
-state to optimize $\mu_s$, because the LI encompasses all possible program
-states the loop body $\mu_s$ will encounter when executed.
+accuracy, we introduce the concept of \gls{li}.  In our context, a
+\gls{li} of a \whilelit~loop is a set of bounds on loop variables that
+holds invariantly on entry to each loop iteration.  For example, in
+Figure~\ref{po:fig:syntax_example}, if our input is $n = 10$, then the \gls{li}
+on the variable $x$ is that its value is an integer, and is bounded by $[0,
+9]$ on loop entry, whereas on loop exit, $x$ is always equal to $10$.  The
+reason for inferring the \gls{li} is that, because we optimize the fixpoint
+expression's child nodes in a bottom-up hierarchy, the child $\mu_s$ is
+optimized before the expression $\fixpoint{b, \mu_s, x}$ itself, we are using
+the \gls{li} as the input state to optimize $\mu_s$, because the \gls{li}
+encompasses all possible program states the loop body $\mu_s$ will encounter
+when executed.
 
 Our accuracy analysis follows a similar pattern.  Initially, we start
 with an input state $\sigma^\sharp_0$.  In the first iteration $k = 0$,
@@ -220,7 +229,7 @@ loop $\mu_s$, so $\sigma^\sharp_1 = \mirerrorfunc{\mu_s}{\sigma^\sharp_0|_b}$
 captures all possible program states after the loop body.  This procedure
 is repeated for iterations $k = 1, 2, 3, \ldots$, until a certain iteration
 $n$, where $\sigma^\sharp_n = \sigma^\sharp_{n-1}$.  Hence, we can obtain the
-LI by computing $\sigma^\sharp_0|_b \join \sigma^\sharp_1|_b \join \cdots
+\gls{li} by computing $\sigma^\sharp_0|_b \join \sigma^\sharp_1|_b \join \cdots
 \join \sigma^\sharp_n|_b$, and the loop exit states with its counterpart,
 \ie~$\sigma^\sharp_0|_{\neg b} \join \sigma^\sharp_1|_{\neg b} \join \cdots
 \join \sigma^\sharp_n|_{\neg b}$.  The meaning of $\join$ operator on states is
@@ -237,13 +246,12 @@ defined as follows, where $\sigma^\sharp_a, \sigma^\sharp_b \in \errordom$:
 The process above is achieved with the algorithm in Figure~\ref{po:alg:fix}.
 The value $\bot$ indicates an empty or unreachable state, and for any
 state $\sigma^\sharp \in \errordom$, we have $\bot \join \sigma^\sharp =
-\sigma^\sharp$.  The return values $li$ and $le$ are respectively the LI and
-the loop exit state.
-\newcommand{\statett}{\ensuremath\sigma^\sharp_{\mathrm{tt}}}
-\newcommand{\stateff}{\ensuremath\sigma^\sharp_{\mathrm{ff}}}
-
+\sigma^\sharp$.  The return values $li$ and $le$ are respectively the \gls{li}
+and the loop exit state.
 \begin{figure}[ht]
     \centering
+    \newcommand{\statett}{\ensuremath\sigma^\sharp_{\mathrm{tt}}}
+    \newcommand{\stateff}{\ensuremath\sigma^\sharp_{\mathrm{ff}}}
     \begin{algorithmic}
         \Function{Fixpoint-Analysis}{$\fixpoint{b, \mu_s, x}, \sigma^\sharp$}
             \State{%

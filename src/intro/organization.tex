@@ -3,28 +3,28 @@
 
 Chapter~\ref{chp:background} serves to explain various essential concepts
 used throughout this thesis.  Our techniques discussed in this thesis
-naturally extends high-level synthesis (HLS), a process to compile a program
-written in high-level languages such as C into circuits.  We therefore
-start by introducing the advantages of HLS, compared against manual RTL
+naturally extends \gls{hls}, a process to compile a program written in
+high-level languages such as C into circuits.  We therefore start by
+introducing the advantages of \gls{hls}, compared against manual \gls{rtl}
 implementations.  We then bring rigorous approaches from software static
 analysis, specifically program semantics and abstract interpretation, to
-source-to-source transformation for HLS\@.  We introduce existing intermediate
-representations designed for program optimizations, and highlight the
-advantages and disadvantages of them relevant to our requirements.  We draw
-comparisons between others' work and ours to better motivate the thesis's
+source-to-source transformation for \gls{hls}\@.  We introduce existing
+intermediate representations designed for program optimizations, and highlight
+the advantages and disadvantages of them relevant to our requirements.  We
+draw comparisons between others' work and ours to better motivate the thesis's
 contributions.  We further explain existing program rewriting techniques for
 numerical accuracy, which inspired our efficient discovery of equivalent
 programs.  Finally, we introduce the concept of loop pipelining and how
 restructuring numerical programs can optimize run time.
 
 In Chapter~\ref{chp:stropt} we propose new methods to automatically optimize
-the structure of arithmetic expressions for FPGA implementation as part of a
-high-level synthesis flow.  This chapter introduces the basis of the practice
-we use to perform structural optimization on numerical programs, taking into
-account axiomatic rules derived from real arithmetic, such as distributivity,
-associativity and others.  A new efficient method is proposed to generate
-a computable optimized subset of equivalent expressions from an original
-expression.  Our approach explicitly target an optimized area/accuracy
+the structure of arithmetic expressions for \gls{fpga} implementation as part
+of a high-level synthesis flow.  This chapter introduces the basis of the
+practice we use to perform structural optimization on numerical programs,
+taking into account axiomatic rules derived from real arithmetic, such as
+distributivity, associativity and others.  A new efficient method is proposed
+to generate a computable optimized subset of equivalent expressions from an
+original expression.  Our approach explicitly target an optimized area/accuracy
 trade-off, by automatically rewriting arithmetic expressions, and analyzing
 each expression rewritten for its accuracy and area usage.  This gives
 the synthesis tool the flexibility to choose an implementation satisfying
@@ -38,15 +38,15 @@ targeting the trade-off between numerical accuracy and resource usage,
 but we have extended it to optimize general numerical programs, including
 \iflit~statements and \whilelit~loops.  Because there are infinite number
 of ways to rewrite numerical C programs, and many of these rewrites produce
-programs that have the same resource usage, accuracy and latency properties,
-we propose a novel expression-based intermediate representation called
-metasemantic intermediate representation (MIR) to reduce the number of rewrites
-to explore.  In Chapter~\ref{chp:progopt} we explain in detail the structure of
-MIRs, and the back-and-forth translation between numerical C programs and MIRs.
-We efficiently discover equivalent structures in MIRs by exploiting not only
-the rules of real arithmetic, such as associativity and distributivity, but
-also rules that enable control-flow restructuring.  Our numerical accuracy and
-resource usage analyses are further extended to analyze MIRs.  Additionally, we
+programs that have the same resource usage, accuracy and latency properties, we
+propose a novel expression-based intermediate representation called \gls{mir}
+to reduce the number of rewrites to explore.  In Chapter~\ref{chp:progopt}
+we explain in detail the structure of \glspl{mir}, and the back-and-forth
+translation between numerical C programs and \glspl{mir}.  We efficiently
+discover equivalent structures in \glspl{mir} by exploiting not only the rules
+of real arithmetic, such as associativity and distributivity, but also rules
+that enable control-flow restructuring.  Our numerical accuracy and resource
+usage analyses are further extended to analyze \glspl{mir}.  Additionally, we
 broaden the Pareto frontier in our optimization flow to automatically explore
 the numerical implications of partial loop unrolling and loop splitting.  In
 real applications, the tool discovers a wide range of Pareto optimal options,
@@ -60,24 +60,24 @@ for these transformations to significantly reduce the run time of numerical
 programs while improving resources and accuracy.  In Chapter~\ref{chp:latopt},
 we therefore introduce a new analysis procedure to minimize yet another
 objective: the total run time of the optimized program.  Together with accuracy
-and resource utilization, these three form the simultaneous goals we use to
-produce the Pareto frontier.  In this chapter, MIRs are extended with new
-operators to allow for arrays and matrices in the source program, to optimize a
-wide-range of practical numerical applications.  Numerical programs typically
-spend most of their run time in loops, so state-of-the-art high-level synthesis
-(HLS) tools use pipelining to schedule them efficiently.  Still, the run
-time performance of the resultant FPGA implementation is limited by data
+and resource utilization, these three form the simultaneous goals we use
+to produce the Pareto frontier.  In this chapter, \glspl{mir} are extended
+with new operators to allow for arrays and matrices in the source program,
+to optimize a wide-range of practical numerical applications.  Numerical
+programs typically spend most of their run time in loops, so state-of-the-art
+\gls{hls} tools use pipelining to schedule them efficiently.  Still, the run
+time performance of the resultant \gls{fpga} implementation is limited by data
 dependences between loop iterations.  We thus present additional rewriting
 rules---memory access reductions---along with arithmetic identities and
 control-flow transformations to alleviate some of these dependence constraints.
-HLS tools cannot safely enable such rewrites by default because they may impact
-the accuracy of floating-point computations and increase area usage, whereas
-we optimize run time while controlling the implications on accuracy and area.
-Again, the tool reports a multi-dimensional Pareto frontier that the programmer
-can use to resolve the trade-off according to their needs.  When applied to
-a suite of PolyBench and Livermore Loops benchmarks, the tool has generated
-programs that enjoy up to a 12$\times$ speedup, with a simultaneous 7$\times$
-increase in accuracy, at a cost of up to 4$\times$ more LUTs.
+\gls{hls} tools cannot safely enable such rewrites by default because they may
+impact the accuracy of floating-point computations and increase area usage,
+whereas we optimize run time while controlling the implications on accuracy and
+area.  Again, the tool reports a multi-dimensional Pareto frontier that the
+programmer can use to resolve the trade-off according to their needs.  When
+applied to a suite of PolyBench and Livermore Loops benchmarks, the tool has
+generated programs that enjoy up to a 12$\times$ speedup, with a simultaneous
+7$\times$ increase in accuracy, at a cost of up to 4$\times$ more \glspl{lut}.
 
 Finally, Chapter~\ref{chp:conclusion} concludes this thesis by summarizing
 our research, and we discuss the potential for how future research into the

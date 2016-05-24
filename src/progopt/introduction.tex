@@ -4,18 +4,18 @@
 The previous chapter introduced a new methodology to efficiently restructure
 arithmetic expressions for the optimized trade-off between two performance
 metrics, \ie~numerical accuracy when evaluated and area usage in synthesized
-FPGA implementations.  This method however has a substantial limitation when
-applied to general numerical programs, that is, it can only be applied to
+\gls{fpga} implementations.  This method however has a substantial limitation
+when applied to general numerical programs, that is, it can only be applied to
 straight-line codes without control structures such as branches and loops.
 
 In this chapter, a new general \emph{program} optimization technique for
 numerical algorithms is therefore proposed, which analyzes and optimizes
 \texttt{if} statements as well as \texttt{while} loops in a numerical program.
-This enables the joint optimization of accuracy and resource usage, as well as
-the trade-off between both performance metrics.  A tool is thus developed to
-perform source-to-source optimization of numerical programs targeting FPGAs,
-and generate implementations that trade off resource usage and numerical
-accuracy.
+This enables the joint optimization of accuracy and resource usage, as well
+as the trade-off between both performance metrics.  A tool is thus developed
+to perform source-to-source optimization of numerical programs targeting
+\glspl{fpga}, and generate implementations that trade off resource usage and
+numerical accuracy.
 
 % floating-point arithmetic has round-off errors, exploit equivalence
 
@@ -23,11 +23,11 @@ Similar to the approach proposed in Chapter~\ref{chp:stropt}, equivalence rules
 such as such as \emph{associativity} $(a + b) + c \equiv a + (b + c)$, and
 \emph{distributivity} $(a + b) \times c \equiv a \times c + b \times c$ are
 exploited to automatically optimize implementations for the optimal trade-off
-between resource usage, \ie~the number of LUTs and DSP elements utilized,
-and accuracy when evaluated using floating-point computations.  This process
-generates a Pareto frontier of optimized numerical programs.  For example, with
-single precision floating-point format, the tool found that give an input $x
-\in [0, 100]$ and $y \in [0, 2]$, then the program:
+between resource usage, \ie~the number of \glspl{lut} and \gls{dsp} elements
+utilized, and accuracy when evaluated using floating-point computations.  This
+process generates a Pareto frontier of optimized numerical programs.  For
+example, with single precision floating-point format, the tool found that give
+an input $x \in [0, 100]$ and $y \in [0, 2]$, then the program:
 \begin{lstlisting}
     if (x < 1) {
         x = (x + y) + 0.1;
@@ -62,7 +62,7 @@ general numerical program.
 
 The difficulty in defining program equivalence is due to the fact that
 two programs can be identical in function, but have distinct syntactic
-structure because of the expressiveness of a HLL\@.  For instance, even
+structure because of the expressiveness of a \gls{hll}\@.  For instance, even
 without the introduction of branches and loops, the following two programs in
 Figure~\ref{bg:fig:equiv_progs} are equivalent, but syntactically, they are
 very different.
@@ -97,24 +97,25 @@ is greatly reduced.
 
 We explored in Section~\ref{bg:sec:intermediate} of
 Chapter~\ref{chp:background} various intermediate representations designed
-for program transformation, and specifically examined PEGs in closer details,
-because it fits our requirement to abstract away as much irrelevant syntactic
-information as possible.  However, one important shortcoming of the PEG
-is that it is not suited for the optimization of numerical accuracy.  By
-introducing equivalence edges in the graph, the number of elementary cycles
+for program transformation, and specifically examined \glspl{peg} in closer
+details, because it fits our requirement to abstract away as much irrelevant
+syntactic information as possible.  However, one important shortcoming of the
+\gls{peg} is that it is not suited for the optimization of numerical accuracy.
+By introducing equivalence edges in the graph, the number of elementary cycles
 in the graph could increase exponentially in the number of equivalences that
 have been discovered.  Cycles in graphs require analyzing a large proportion
-of the IR, whereas a tree structure can be reasoned in a bottom-up hierarchy.
-This has significant implications on program transformation.  First, for the
-above reason, their approach does not use semantics to optimize for numerical
-accuracy, while we wish to reason about semantics and utilize them to steer
-optimization.  Moreover, tree structure allows us to easily support partial
-loop unrolling by simply extending the equivalence relations while avoiding
-re-evaluation.  In contrast, like~\cite{martel09} and~\cite{damouche15},
-equality saturation is unable to perform partial loop unrolling.  In this
-chapter, a solution to the above limitations of PEGs is therefore proposed,
-by introducing a new tree-based intermediate representation with fixpoint
-constructs to specifically tackle the problem of program equivalences.
+of the \gls{ir}, whereas a tree structure can be reasoned in a bottom-up
+hierarchy.  This has significant implications on program transformation.
+First, for the above reason, their approach does not use semantics to
+optimize for numerical accuracy, while we wish to reason about semantics and
+utilize them to steer optimization.  Moreover, tree structure allows us to
+easily support partial loop unrolling by simply extending the equivalence
+relations while avoiding re-evaluation.  In contrast, like~\cite{martel09}
+and~\cite{damouche15}, equality saturation is unable to perform partial
+loop unrolling.  In this chapter, a solution to the above limitations of
+\glspl{peg} is therefore proposed, by introducing a new tree-based intermediate
+representation with fixpoint constructs to specifically tackle the problem of
+program equivalences.
 
 Additionally, as none of the methods in
 Section~\ref{bg:sec:discovering_equivalent_programs} of
@@ -123,7 +124,7 @@ numerical programs, this thesis is the first to propose a tool that performs
 a semantics-directed and truly restructuring program transformation, which
 optimizes not only arithmetic expressions, but also numerical programs.  The
 tool optimizes for the trade-off between numerical accuracy and resource usage
-when synthesized to FPGAs.
+when synthesized to \glspl{fpga}.
 
 The program optimization flow is \emph{safe}, \emph{semantics-directed} and
 \emph{flexible}. \emph{Safety} means that because we make use of formal
@@ -155,14 +156,14 @@ Our main contributions in this chapter are as follows:
         programs, its structure is designed to be manipulated and analyzed
         with ease.  A new framework of numerical program transformations is
         developed to enable the back and forth translation between the program
-        and a new intermediate representation (IR), which preserves the
-        semantics of the original program.
+        and a new \gls{ir}, which preserves the semantics of the original
+        program.
     \vspace{-6pt}
     \item
         Semantics-based analyses that reason about not only the resource
-        utilization (number of LUTs and DSP elements), and safe ranges of
-        values and errors for programs, but also potential errors such as
-        overflows and non-termination.
+        utilization (number of \glspl{lut} and \gls{dsp} elements), and safe
+        ranges of values and errors for programs, but also potential errors
+        such as overflows and non-termination.
     \vspace{-6pt}
     \item
         A new tool, \newsoap, which trades off resource usage and accuracy
@@ -171,15 +172,17 @@ Our main contributions in this chapter are as follows:
     \vspace{-6pt}
 \end{enumerate}
 
-This chapter is organized as follows.  We start by defining our program syntax
-in Section~\ref{po:sec:syntax_definition}.  Using the syntax definition, we
-provide a detailed formal explanation of our numerical program transformation,
-which consists of three stages.  Sections~\ref{po:sec:program_to_mir}
-describe how how numerical programs can be translated into MIRs,
-Section~\ref{po:sec:transformations} discusses how we infer bounds and
-error bounds on variables and analyze resource usage estimates, and how
-these analyses can be used to efficiently discover equivalent structures
-in the analyzed MIR\@.  Section~\ref{po:sec:code_generation} explains how
-a chosen MIR can be translated into an optimized numerical program.  Then
-we present the optimization results in Section~\ref{po:sec:results} and
+This chapter is organized as follows.  We start by defining our
+program syntax in Section~\ref{po:sec:syntax_definition}.  Using the
+syntax definition, we provide a detailed formal explanation of our
+numerical program transformation, which consists of three stages.
+Sections~\ref{po:sec:program_to_mir} describe how how numerical programs can
+be translated into \glspl{mir}.  Sections~\ref{po:sec:accuracy_analysis}
+and~\ref{po:sec:resource_usage_analysis} respectively discuss how we infer
+bounds and error bounds on variables and analyze resource usage estimates.
+Section~\ref{po:sec:equivalence_analysis} explains how these analyses can
+be used to efficiently discover equivalent structures in the analyzed
+\gls{mir}\@.  Section~\ref{po:sec:code_generation} explains how a chosen
+\gls{mir} can be translated into an optimized numerical program.  Then we
+present the optimization results in Section~\ref{po:sec:results} and finally
 Section~\ref{po:sec:conclusion} concludes this chapter.

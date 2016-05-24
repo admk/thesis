@@ -40,6 +40,7 @@
 \usepackage{courier}    % makes \tt font same size as \rm font
 \usepackage{fixltx2e}   % for \textsubscript and \textsuperscript
 \usepackage{galois}
+\usepackage[acronym,nonumberlist,nopostdot]{glossaries}
 \usepackage{graphicx}
 \usepackage{listings}   % source code
 \usepackage{mathtools}
@@ -53,6 +54,33 @@
 \usepackage{tikz}       % graphs
 \usepackage[obeyDraft,textsize=tiny]{todonotes}
 \usepackage{verbatim}
+
+\newacronymstyle{em-long-short}
+{%
+  \GlsUseAcrEntryDispStyle{long-short}%
+}%
+{%
+  \GlsUseAcrStyleDefs{long-short}%
+  \renewcommand*{\genacrfullformat}[2]{%
+   \emph{\glsentrylong{##1}}##2\space
+   (\firstacronymfont{\glsentryshort{##1}})%
+  }%
+  \renewcommand*{\Genacrfullformat}[2]{%
+   \emph{\Glsentrylong{##1}}##2\space
+   (\firstacronymfont{\glsentryshort{##1}})%
+  }%
+  \renewcommand*{\genplacrfullformat}[2]{%
+   \emph{\glsentrylongpl{##1}}##2\space
+   (\firstacronymfont{\glsentryshortpl{##1}})%
+  }%
+  \renewcommand*{\Genplacrfullformat}[2]{%
+   \emph{\Glsentrylongpl{##1}}##2\space
+   (\firstacronymfont{\Glsentryshortpl{##1}})%
+  }%
+}
+\setacronymstyle{em-long-short}
+\loadglsentries[acronym]{acronyms}
+\makeglossaries%
 
 \addbibresource{intro/publications.bib}
 
@@ -93,7 +121,6 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\thesisUniversity}{\protect{Imperial College London}}
 \newcommand{\thesisUniversityDepartment}{%
     Department of Electrical and Electronic Engineering}
-% \newcommand{\thesisUniversityInstitute}{Institut for Clean Thesis Dev}
 \newcommand{\thesisUniversityGroup}{Circuits and Systems Research Group}
 \newcommand{\thesisUniversityCity}{London}
 \newcommand{\thesisUniversityStreetAddress}{South Kensington Campus}
@@ -255,10 +282,10 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 
 % latency
 \newcommand\pair[2]{\footnotesize $#1,#2$}
-\newcommand\II{\mathit{II}}
-\newcommand\MII{\mathit{MII}}
-\newcommand\RecMII{\mathit{RecMII}}
-\newcommand\ResMII{\mathit{ResMII}}
+\newcommand\II{\mathrm{II}}
+\newcommand\MII{\mathrm{MII}}
+\newcommand\RecMII{\mathrm{RecMII}}
+\newcommand\ResMII{\mathrm{ResMII}}
 
 \newcommand\opsymbol{\otimes}
 

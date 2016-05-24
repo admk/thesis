@@ -9,41 +9,48 @@ introductory numerical programs, and four real applications that are frequently
 encountered in numerical analyses, and round-off errors have big impacts on the
 quality of their execution:
 \begin{itemize}
+
     \item \texttt{simple}: for an input $x \in [0, 20]$, we repeatedly multiply
-it with $0.9$, until the result is less than or equal to 1, the number of
-iterations is dependent on $x$ and can only be determined by analyzing the
-program.
+    it with $0.9$, until the result is less than or equal to 1, the number of
+    iterations is dependent on $x$ and can only be determined by analyzing the
+    program.
+
     \item \texttt{basal}: the example in Figure~\ref{po:fig:syntax_example}.
+
     \item \texttt{taylor}: the Taylor expansion of $\cos(x + y)$, with single
-precision inputs $x \in [-0.1, 0.1]$ and $y \in [0, 1]$, and an integer $n \in
-[10, 20]$, which determines the bound on the iteration count.
+    precision inputs $x \in [-0.1, 0.1]$ and $y \in [0, 1]$, and an integer $n
+    \in [10, 20]$, which determines the bound on the iteration count.
+
     \item \texttt{filter}: computes the unit step response of a 3rd-order
-infinite impulse response (IIR) filter, and all coefficients are bounded by
-$[0.0, 0.2]$, and it has a fixed iteration count 20.
+    \gls{iir} filter, and all coefficients are bounded by $[0.0, 0.2]$, and it
+    has a fixed iteration count 20.
+
     \item \texttt{euler}, it uses Euler's method to solve the differential
-equation of a harmonic oscillator $\ddot{x} + \omega^2 x = 0$, with both an
-initial stationary position $x$ and $\omega^2$ bounded by $[0.0, 1.0]$, a step
-size of $0.1$, and an iteration count $n \in [0, 20]$.  It returns the position
-$x$ and velocity $\dot{x}$.
-    \item \texttt{pid}, the example PID controller that was used as a case
-study in~\cite{damouche14} as a motivation of automated accuracy optimization
-of numerical programs, we make it more challenging by changing constant
-coefficients to be bounds to model not only one, but a huge selection of PID
-controllers, with $kp \in [9.0, 10.0]$, $ki \in [0.5, 0.7]$ and $kd \in [0,
-3.0]$, and an iteration count $n \in [0, 20]$.
+    equation of a harmonic oscillator $\ddot{x} + \omega^2 x = 0$, with both an
+    initial stationary position $x$ and $\omega^2$ bounded by $[0.0, 1.0]$, a
+    step size of $0.1$, and an iteration count $n \in [0, 20]$.  It returns the
+    position $x$ and velocity $\dot{x}$.
+
+    \item \texttt{pid}, the example \gls{pid} controller that was used as a
+    case study in~\cite{damouche14} as a motivation of automated accuracy
+    optimization of numerical programs, we make it more challenging by changing
+    constant coefficients to be bounds to model not only one, but a huge
+    selection of \gls{pid} controllers, with $kp \in [9.0, 10.0]$, $ki \in
+    [0.5, 0.7]$ and $kd \in [0, 3.0]$, and an iteration count $n \in [0, 20]$.
+
 \end{itemize}
 
-Our configuration for the efficient discovery of equivalent expressions
-uses a depth limit $k = 2$, and a maximum 3 times of partial unrolling is
-performed.  For each program we optimize it with our tool to discover a wide
-range of implementations, and select the most accurate and least resource
-demanding equivalent implementations for further analysis.  The selected
-implementations are then simulated 1000 times, with a sample of 1000 unique
-random inputs for each benchmark example, then we compare the maximum round-off
-errors encountered.  Finally, our back-end transpiler produces C source codes
-from MIRs, and they are synthesized with LegUp~\cite{legup}, an open source
-HLS tool, with floating-point operator sharing turned off to achieve maximum
-frequency, then compiled and verified with Quartus, targeting an Altera
+Our configuration for the efficient discovery of equivalent expressions uses a
+depth limit $k = 2$, and a maximum 3 times of partial unrolling is performed.
+For each program we optimize it with our tool to discover a wide range of
+implementations, and select the most accurate and least resource demanding
+equivalent implementations for further analysis.  The selected implementations
+are then simulated 1000 times, with a sample of 1000 unique random inputs
+for each benchmark example, then we compare the maximum round-off errors
+encountered.  Finally, our back-end transpiler produces C source codes from
+\glspl{mir}, and they are synthesized with LegUp~\cite{legup}, an open source
+\gls{hls} tool, with floating-point operator sharing turned off to achieve
+maximum frequency, then compiled and verified with Quartus, targeting an Altera
 Stratix IV device (EP4SGX530) for the actual resource usage statistics and the
 frequency achieved.
 
@@ -87,19 +94,19 @@ whereas in actual computations worst case round-off errors are extremely rare.
     \end{minipage}
 \end{figure*}
 
-The ``Resources'' columns show our estimation of the number of LUTs and
-DSPs required for each of these programs, and the numbers in brackets are
-the corresponding statistics obtained from Quartus synthesis.  Because
-implementations on the Pareto frontier is only sensitive to how their LUTs
-compare against each other, \ie~the rank, the Pareto frontier will not be
-affected unless the rank is changed.  To ensure that the resource estimation
-method used in our optimization can identify accurately whether an actual
-implementations is on the Pareto frontier, we gathered 150 implementations
-discovered across the benchmark examples, and for each one we rank its
-number of estimated LUTs among them, and do the same for actual LUTs.
-Figure~\ref{po:fig:rank} plots the rank of estimated LUTs against the rank of
-actual LUTs, which shows the Pareto frontier we produced is very close to using
-Quartus to count resources.
+The ``Resources'' columns show our estimation of the number of \glspl{lut}
+and \glspl{dsp} required for each of these programs, and the numbers in
+brackets are the corresponding statistics obtained from Quartus synthesis.
+Because implementations on the Pareto frontier is only sensitive to how
+their \glspl{lut} compare against each other, \ie~the rank, the Pareto
+frontier will not be affected unless the rank is changed.  To ensure that the
+resource estimation method used in our optimization can identify accurately
+whether an actual implementations is on the Pareto frontier, we gathered 150
+implementations discovered across the benchmark examples, and for each one we
+rank its number of estimated \glspl{lut} among them, and do the same for actual
+\glspl{lut}.  Figure~\ref{po:fig:rank} plots the rank of estimated \glspl{lut}
+against the rank of actual \glspl{lut}, which shows the Pareto frontier we
+produced is very close to using Quartus to count resources.
 
 Because our benchmark examples are designed to be resource efficient, there
 is no room for resource usage optimization of the original program.  However
@@ -121,12 +128,13 @@ a different goal, that is to compute their respective return variables as
 accurately as possible, this generated a program that consists of two loops
 that have completely different structures.  With this, we further widen the
 trade-off curve with the most accurate option improving the accuracy by 65\%.
-In Figure~\ref{po:fig:filter}, because the loop kernel of \texttt{filter} has
-the expression $\sum_{i=0}^2{(a_i y_i + b_i x_i)}$, which has a large number of
-equivalent expressions, without increasing the resource usage, our optimization
-improves its accuracy by 14.5\%.  Because our Pareto frontier has three
-dimensions, which are respectively accuracy, LUT utilization and the number of
-DSPs, points within the shaded region optimize DSP count.
+In Figure~\ref{po:fig:filter}, because the loop kernel of \texttt{filter}
+has the expression $\sum_{i=0}^2{(a_i y_i + b_i x_i)}$, which has a large
+number of equivalent expressions, without increasing the resource usage, our
+optimization improves its accuracy by 14.5\%.  Because our Pareto frontier has
+three dimensions, which are respectively accuracy, \gls{lut} utilization and
+the number of \glspl{dsp}, points within the shaded region optimize \gls{dsp}
+count.
 
 \begin{figure}[ht]
     \centering

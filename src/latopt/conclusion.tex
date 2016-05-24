@@ -1,10 +1,10 @@
 \section{Summary}
 \label{lo:sec:conclusion}
 
-Minimizing the latency of loops is a central task for HLS tools that obtain
-FPGA implementations from numerical C programs. Loop latency can often be
-reduced by performing simple rewrites to minimize inter-iteration data
-dependences, but HLS tools cannot enable such rewrites by default because
+Minimizing the latency of loops is a central task for \gls{hls} tools that
+obtain \gls{fpga} implementations from numerical C programs. Loop latency can
+often be reduced by performing simple rewrites to minimize inter-iteration data
+dependences, but \gls{hls} tools cannot enable such rewrites by default because
 they may spoil the accuracy of floating-point computations. This paper has
 presented the first tool that is able to automatically rewrite a given program
 to optimize latency, while controlling for accuracy and resource usage. Our

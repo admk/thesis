@@ -1,61 +1,60 @@
 \section{Performance Analysis}
 \label{lo:sec:performance_analysis}
 
-This section explains how we analyze MIRs for our three performance metrics:
-latency, resource usage, and accuracy. %  Later we use these analyses
-% to evaluate equivalent numerical programs, and also guide our optimization
-% procedure.
+This section explains how we analyze \glspl{mir} for our three performance
+metrics: latency, resource usage, and accuracy.
 
 \subsection{Latency Analysis}
 \label{lo:sub:latency_analysis}
 
-The purpose of our latency analysis is not to create a complete scheduling
-of numerical programs, as this would be computationally expensive, and
-would need to be repeated for tens of thousands of equivalent programs.
-Instead, our latency analysis computes a lower bound of the loop's initiation
-interval ($\II$), \ie~the minimum initiation interval ($\MII$).  (Recall from
-Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background} that the initiation
-interval is the number of clock cycles that must elapse between the starts of
-two consecutive loop iterations, and is determined by data dependences and
-resource constraints.)  We then compute the overall latency of the loop, and
-subsequently, the total latency of the program.
+The purpose of our latency analysis is not to create a complete scheduling of
+numerical programs, as this would be computationally expensive, and would need
+to be repeated for tens of thousands of equivalent programs.  Instead, our
+latency analysis computes a lower bound of the loop's \gls{ii}, \ie~\gls{mii}.
+(Recall from Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background} that the
+initiation interval is the number of clock cycles that must elapse between
+the starts of two consecutive loop iterations, and is determined by data
+dependences and resource constraints.)  We then compute the overall latency of
+the loop, and subsequently, the total latency of the program.
 
-Following LegUp~\cite{legup} and Vivado HLS~\cite{vivado_hls}, we compute
-$\MII$ values using \emph{iterative modulo scheduling}~\cite{rau94}. For our
-work, we have adapted this analysis to apply directly to MIRs. The structure of
-MIRs already captures intra-iteration data dependences; to this, we add extra
-latency information as attributes on the edges of MIRs, plus new edges to form
-cycles that capture inter-iteration data dependences.  The analysis is carried
-out in three stages.
+Following LegUp~\cite{legup} and \gls{vhls}~\cite{vivado_hls}, we compute
+\gls{mii} values using \gls{ims}~\cite{rau94}. For our work, we have adapted
+this analysis to apply directly to \glspl{mir}. The structure of \glspl{mir}
+already captures intra-iteration data dependences; to this, we add extra
+latency information as attributes on the edges of \glspl{mir}, plus new edges
+to form cycles that capture inter-iteration data dependences.  The analysis is
+carried out in three stages.
 
-The analysis starts with the MIR of the loop under analysis. Each edge in the
-MIR, say $s\rightarrow t$, represents a data dependence: the operation at
-node $s$ must be evaluated fully before the operation at $t$ can begin. The
-first step is to add a 2-tuple $\langle l, d \rangle$ to each edge of the
-MIR\@. Here, $l$ is the \emph{latency} of the edge (the number of \emph{clock
-cycles} that must elapse between the start of $s$ and the start of $t$) and
-$d$ is the \emph{dependence distance} (the number of \emph{loop iterations}
-that must elapse between the start of $s$ and the start of $t$). Because all
-operations in the MIR are performed in a single iteration, all edges have
-$d=0$. The value of $l$ is given by the latency of the operation at node $s$;
-if $s$ corresponds to an input variable or a numerical constant, then $l=0$.
+The analysis starts with the \gls{mir} of the loop under analysis. Each edge
+in the \gls{mir}, say $s\rightarrow t$, represents a data dependence: the
+operation at node $s$ must be evaluated fully before the operation at $t$
+can begin. The first step is to add a 2-tuple $\langle l, d \rangle$ to each
+edge of the \gls{mir}\@. Here, $l$ is the \emph{latency} of the edge (the
+number of \emph{clock cycles} that must elapse between the start of $s$ and
+the start of $t$) and $d$ is the \emph{dependence distance} (the number of
+\emph{loop iterations} that must elapse between the start of $s$ and the start
+of $t$). Because all operations in the \gls{mir} are performed in a single
+iteration, all edges have $d=0$. The value of $l$ is given by the latency
+of the operation at node $s$; if $s$ corresponds to an input variable or a
+numerical constant, then $l=0$.
 
 The second stage is to add edges to form a cyclic dependence graph that
-captures \emph{read after write} (RAW) dependences across loop iterations.
-This step involves checking whether each pair of ``$\accessop$'' and
-``$\updateop$'' nodes has a dependence, and if so, adding a new edge between
-them with latency and dependence distance attributes.  As an example, consider
-the MIR in~\eqref{lo:eq:array_example} and assume each iteration increments
-\verb|i| by 1.  Because in the original program, \verb|A[i]| and \verb|A[i+1]|
-are respectively reading from and writing to the same array \verb|A|, we need
-to check if these accesses could touch the same memory location in different
+captures \gls{raw} dependences across loop iterations.  This step involves
+checking whether each pair of ``$\accessop$'' and ``$\updateop$'' nodes
+has a dependence, and if so, adding a new edge between them with latency
+and dependence distance attributes.  As an example, consider the \gls{mir}
+in~\eqref{lo:eq:array_example} and assume each iteration increments \verb|i|
+by 1.  Because in the original program, \verb|A[i]| and \verb|A[i+1]| are
+respectively reading from and writing to the same array \verb|A|, we need to
+check if these accesses could touch the same memory location in different
 iterations.  For this, our analysis formulates an integer linear programming
 problem for the dependence distance, and solves it using the integer set
 library (isl)~\cite{isl}.  In this example, the dependence distance is 1
 because the value written to \verb|A[i+1]| in the current iteration \verb|i|
 is immediately used in the next iteration \verb|i+1|.  Similarly, we also add
-new edges for reads and writes to the same variable, which can be treated as a
-special array with only one element. Our analysis yields the following MIR\@:
+new edges for reads and writes to the same variable, which can be treated
+as a special array with only one element. Our analysis yields the following
+\gls{mir}\@:
 \begin{equation}
     \label{lo:eq:array_example_latency}
     \begin{tikzpicture}[mir, inner sep=0pt]
@@ -107,25 +106,24 @@ $1$, indicates that there is a data flow dependence from iteration $i$ to
 iteration $i+1$.
 
 We assume no limit on the number of operators we can allocate, so operators
-do not constraint $\II$.  However, in Vivado HLS, each array is usually
-translated into a dual-port RAM, which allows only two accesses per clock
-cycle~\cite{vivado_hls}, and thus constrains $\MII$.  For instance, for a
-loop to perform 3 accesses to a single array in each iteration, $\II$ must be
-greater than 1.  This lower bound on $\II$ is known as \emph{resource-based
-minimum initiation interval}, $\ResMII$~\cite{rau94}. It is defined as $\max_A
-\lceil {n_A}/{r_A} \rceil$, where $A$ ranges over all arrays in the loop body,
-$n_A$ is the number of accesses to the array $A$, and $r_A$ is the maximum
-number of accesses allowed per cycle, which is $2$ in our case.
+do not constraint \gls{ii}.  However, in \gls{vhls}, each array is usually
+translated into a dual-port \gls{ram}, which allows only two accesses per
+clock cycle~\cite{vivado_hls}, and thus constrains \gls{mii}.  For instance,
+for a loop to perform 3 accesses to a single array in each iteration,
+\gls{ii} must be greater than 1.  This lower bound on \gls{ii} is known as
+\acrfull{resmii}~\cite{rau94}. It is defined as $\max_A \lceil {n_A}/{r_A}
+\rceil$, where $A$ ranges over all arrays in the loop body, $n_A$ is the number
+of accesses to the array $A$, and $r_A$ is the maximum number of accesses
+allowed per cycle, which is $2$ in our case.
 
-The final step is to calculate an integer $\RecMII$ which is defined as
+The final step is to calculate an integer \gls{recmii} which is defined as
 $\max_c \lceil {l_c}/{d_c} \rceil$, where $c$ ranges over all cycles in
 the graph, and $l_c$ and $d_c$ are respectively the sums of all latencies
-and dependence distances of the edges in the cycle. This value is known
-as the \emph{recurrence-based minimum initiation interval}~\cite{rau94}.
-Because a typical MIR with array accesses could have a very large number of
-cycles, we efficiently search for an $\MII$ using a modified Floyd--Warshall
-algorithm~\cite{rau94}.  Finally, we estimate the total latency $L$ of the loop
-with:
+and dependence distances of the edges in the cycle. This value is known as
+the \acrlong{recmii}~\cite{rau94}.  Because a typical \gls{mir} with array
+accesses could have a very large number of cycles, we efficiently search for an
+\gls{mii} using a modified Floyd--Warshall algorithm~\cite{rau94}.  Finally, we
+estimate the total latency $L$ of the loop with:
 \begin{equation}
     L = (N - 1) \MII + D,
     \text{~where~}
@@ -138,22 +136,22 @@ iterations, and $D$ is the loop's depth, \ie~the total number of cycles per
 iteration.
 
 Because we optimize programs in a bottom-up hierarchy, as described in
-Section~\ref{lo:sec:structural_optimization}, when an expression in a loop is
-optimized, its latency is estimated by scheduling its operations by using an
-As-Late-As-Possible (ALAP)~\cite{wang_hls} scheduling algorithm, where each
-operation is scheduled to the latest opportunity, while respecting the order of
-data dependences.  Because the expression is eventually used in a loop, and the
-$\II$ of the loop is critical to how fast the loop can execute, it is necessary
-to start optimizing for $\II$ as soon as possible. Therefore, in our latency
-analysis of an MIR that is a fragment of a loop, our algorithm automatically
-shortens any paths between any pair of dependent accesses in the MIR\@, as we
-use the latency analysis as a component to manoeuvre our optimization on the
-Pareto frontier.  Moreover, we place greater weights on dependent accesses with
-smaller dependence distances, because these impact the resulting loop $\II$
-more significantly than larger distances.  We use the following formula as the
-analyzed latency value to guide the optimization for $\II$ for subexpressions
-in a loop, where $\mathrm{Deps}$ is a set of 2-tuple attributes of all
-inter-iteration dependences:
+Section~\ref{lo:sec:structural_optimization}, when an expression in a loop
+is optimized, its latency is estimated by scheduling its operations by using
+an \gls{alap}~\cite{wang_hls} scheduling algorithm, where each operation
+is scheduled to the latest opportunity, while respecting the order of data
+dependences.  Because the expression is eventually used in a loop, and the
+\gls{ii} of the loop is critical to how fast the loop can execute, it is
+necessary to start optimizing for \gls{ii} as soon as possible. Therefore,
+in our latency analysis of an \gls{mir} that is a fragment of a loop, our
+algorithm automatically shortens any paths between any pair of dependent
+accesses in the \gls{mir}\@, as we use the latency analysis as a component to
+manoeuvre our optimization on the Pareto frontier.  Moreover, we place greater
+weights on dependent accesses with smaller dependence distances, because these
+impact the resulting loop \gls{ii} more significantly than larger distances.
+We use the following formula as the analyzed latency value to guide the
+optimization for \gls{ii} for subexpressions in a loop, where $\mathrm{Deps}$
+is a set of 2-tuple attributes of all inter-iteration dependences:
 \begin{equation}
     L = \max_{\langle l, d \rangle \in \mathrm{Deps}} \frac{l}{d}
 \end{equation}
@@ -166,10 +164,10 @@ sharing of common subexpressions, but cannot analyze resource binding, which
 allows common operations to be shared across clock cycles. For instance, in
 the floating-point expression $a + (b + c)$, the two additions can be computed
 using one addition operator only. In this paper, we develop a new resource
-usage analysis that fully understands how resources are shared in an FPGA
+usage analysis that fully understands how resources are shared in an \gls{fpga}
 implementation of numerical programs.
 
-We rely on the foundation of \SOAP{}, which counts the number $n_\opsymbol$
+We rely on the foundation of \soap{}, which counts the number $n_\opsymbol$
 of each type of operation $\opsymbol$, while maximally sharing common
 subexpressions.  In a pipelined loop, we compute a lower bound $a_\opsymbol$
 on the number of instances of $\opsymbol$ that must be allocated, using
@@ -180,10 +178,11 @@ multipliers.  Integer operators are typically not shared~\cite{cong15}, so the
 number of operations is the number of allocated instances.
 
 For straight-line code, non-pipelined loops, and different loops, we use a
-simple ALAP scheduling~\cite{wang_hls} to estimate resource utilization.
+simple \gls{alap} scheduling~\cite{wang_hls} to estimate resource utilization.
 
-Finally, we accumulate the number of LUTs and DSP elements for all allocated
-operators, which is the estimated resource utilization for the full program.
+Finally, we accumulate the number of \glspl{lut} and \gls{dsp} elements for all
+allocated operators, which is the estimated resource utilization for the full
+program.
 % \todo{JW: Still need to reconcile this with the fact that the SOAP tool
 % only seems to output the LUT count.}
 
@@ -199,7 +198,7 @@ These intervals accumulate all values that are assigned to the array, and
 never shrink the range bounded by these intervals when we assign new values to
 an array location.  Additionally, because most of the loops in our benchmark
 programs consist of nested loops and have large iterations, we modified the
-analysis routine in \SOAP{} to analyze only a small fraction of loop execution,
+analysis routine in \soap{} to analyze only a small fraction of loop execution,
 and use our dependence analysis to detect whether errors are accumulated
 across iterations, in order to extrapolate the total round-off errors from the
 results.

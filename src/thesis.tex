@@ -16,13 +16,23 @@
 % \input{acknowledgement}         % INCLUDE: acknowledgement
 % \cleardoublepage
 
+\pdfbookmark[0]{Table of Contents}{Table of Contents}
+
 \setcounter{tocdepth}{2}        % define depth of toc
 \tableofcontents                % display table of contents
-\cleardoublepage
+\clearpage
 
+\pdfbookmark[1]{List of Figures}{List of Figures}
 \listoffigures
+\clearpage
+
+\pdfbookmark[1]{List of Tables}{List of Tables}
 \listoftables
-\cleardoublepage
+
+\renewcommand*{\glsclearpage}{%
+\clearpage\pdfbookmark[1]{List of Acronyms}{List of Acronyms}}%
+\printglossary[type=\acronymtype, style=super, title=List of Acronyms]%
+\glsresetall%
 
 % Body matter
 \pagestyle{maincontentstyle}    % fancy header and footer
@@ -115,7 +125,9 @@
 \input{progopt/introduction}
 \input{progopt/syntax}
 \input{progopt/metasemantics}
-\input{progopt/transformations}
+\input{progopt/accuracy}
+\input{progopt/resource}
+\input{progopt/equivalent}
 \input{progopt/code_generation}
 \input{progopt/results}
 \input{progopt/conclusion}

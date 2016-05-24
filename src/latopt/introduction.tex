@@ -11,7 +11,7 @@
 % designs~\cite{bdti_xilinx}.
 
 Numerical C programs typically spend most of their time in loops.  For this
-reason, HLS tools adopt state-of-the-art \emph{polyhedral compilation}
+reason, \gls{hls} tools adopt state-of-the-art \emph{polyhedral compilation}
 techniques~\cite{canis14} to synthesize loops to run as fast as possible.  This
 is achieved by pipelining them to maximally exploit parallelism across loop
 iterations.  Certain program transformations, such as conventional program
@@ -23,8 +23,8 @@ these equivalences, is fundamentally constrained by data dependences that
 are carried across iterations, \ie~\emph{inter-iteration dependences}.  To
 relax these constraints, we must use equivalence rules in real arithmetic
 (\eg~associativity and distributivity), in tandem with the conventional rules
-above to enable much more efficiently pipelined RTL designs.  A simple example
-of this is the summation of all elements in an array:
+above to enable much more efficiently pipelined \gls{rtl} designs.  A simple
+example of this is the summation of all elements in an array:
 \begin{lstlisting}
   float sum = 0;
   for (int i = 0; i < N; i++)
@@ -59,22 +59,22 @@ Section~\ref{lo:sec:results} that more efficient implementations are possible.
 % to apply steps of transformations using equivalence rules to \emph{optimally}
 % trade off latency, resources and numerical accuracy.
 
-% Existing HLS tools consider these rewrites to be unsafe, and thus make very
-% limited use of them when restructuring floating-point data-paths.  For
-% instance, Vivado HLS~\cite{vivado_hls} has only a very simple \emph{expression
-% balancing} feature that uses associativity to improve latency, and only
-% expressions with either additions or multiplications are optimized.  Moreover,
-% it does not produce optimal loop pipelining, because it does not take
-% into account the implications of these transformations on inter-iteration
-% dependences and does not explore partial loop unrolling.  In addition, Vivado
-% HLS cannot reason about how this feature affects numerical accuracy; there is
-% no guarantee that this transformation will not result in a catastrophically
-% inaccurate implementation.
+% Existing HLS tools consider these rewrites to be unsafe, and thus make
+% very limited use of them when restructuring floating-point data-paths.
+% For instance, \gls{vhls}~\cite{vivado_hls} has only a very simple
+% \emph{expression balancing} feature that uses associativity to improve
+% latency, and only expressions with either additions or multiplications are
+% optimized.  Moreover, it does not produce optimal loop pipelining, because
+% it does not take into account the implications of these transformations on
+% inter-iteration dependences and does not explore partial loop unrolling.  In
+% addition, \gls{vhls} cannot reason about how this feature affects numerical
+% accuracy; there is no guarantee that this transformation will not result in a
+% catastrophically inaccurate implementation.
 
 % In response, we have developed a tool---a fully automatic source-to-source
-% optimizer---that augments Vivado HLS, by optimizing a given program using these
+% optimizer---that augments \gls{vhls}, by optimizing a given program using these
 % transformations.  Our optimizer discovers not only one, but a wide spectrum of
-% program candidates.  When synthesized in Vivado HLS, these candidates trade
+% program candidates.  When synthesized in \gls{vhls}, these candidates trade
 % off three performance metrics of great importance to engineers: run time,
 % resource usage and round-off error.  Here, run time refers to the latency in
 % clock cycles, resource usage refers to the number of look-up tables (LUTs)
@@ -85,15 +85,15 @@ Section~\ref{lo:sec:results} that more efficient implementations are possible.
 % programs, known as the \emph{Pareto frontier}: those programs $P$ for which the
 % tool has found no $P'$ that improves on $P$ in all three metrics.
 
-In contrast to the expression balancing optimization pass in Vivado HLS,
+In contrast to the expression balancing optimization pass in \gls{vhls},
 our tool \emph{automatically} produces results that are significantly
 better than \emph{manually} tuning partial unrolling factors and expression
-balancing \verb|#pragma|s in Vivado HLS, because it is fully aware of how
+balancing \verb|#pragma|s in \gls{vhls}, because it is fully aware of how
 data dependences are carried across iterations, and uses this to steer the
 optimization process.  Our tool is also fully aware of the impact these
 transformations could have on round-off errors, and minimizes them in the
 optimization process, as we treat numerical accuracy as one of the three
-simultaneous objectives.  Furthermore, Vivado HLS only generates one result
+simultaneous objectives.  Furthermore, \gls{vhls} only generates one result
 which does not necessarily improve over the original code.
 
 % Generating candidate optimizations na{\"\i}vely would produce a combinatorial
@@ -106,7 +106,7 @@ which does not necessarily improve over the original code.
 % by intelligently pruning the set of candidates as it progresses up the
 % input program's abstract syntax tree.
 
-We also exploit \SOAP{}'s ability to analyze the numerical accuracy of
+We also exploit \soap{}'s ability to analyze the numerical accuracy of
 a given program.  To analyze the run time and resource utilization of a
 given program, we use a variant of the \emph{iterative modulo scheduling}
 algorithm~\cite{rau94} that computes fundamental lower bounds of these metrics.
@@ -116,9 +116,9 @@ Loops~\cite{livermore} and PolyBench~\cite{polybench} benchmark suites.  Our
 tool obtained a wide selection of Pareto-optimized programs.  Programs with
 the best latency obtained speedups of up to $12\times$ ($7\times$ on average
 across the suite), and increases in accuracy of up to $7\times$ ($2.7\times$
-on average), while using up to $4\times$ ($2.5\times$ on average) more look-up
-tables (LUTs).  We were unable to decrease the resource utilization in any of
-the benchmarks, as they have no redundant computations.
+on average), while using up to $4\times$ ($2.5\times$ on average) more
+\glspl{lut}.  We were unable to decrease the resource utilization in any of the
+benchmarks, as they have no redundant computations.
 
 \begin{trivlist}\item{\bf Our contributions}
 
@@ -141,12 +141,12 @@ the benchmarks, as they have no redundant computations.
     the latency and resource usage of a given optimized candidate
     (Section~\ref{lo:sec:performance_analysis}).
 
-    \item Incorporating the above-mentioned techniques, we have developed
-    the first optimizer to \emph{automatically} and \emph{safely} produce
-    optimized programs (and subsequent RTL implementations with Vivado HLS) on
+    \item Incorporating the above-mentioned techniques, we have developed the
+    first optimizer to \emph{automatically} and \emph{safely} produce optimized
+    programs (and subsequent \gls{rtl} implementations with \gls{vhls}) on
     the three-dimensional Pareto frontier of options that trade off run time,
     accuracy, and area.  Our improvements on latency are notably better than
-    the only ones produced by Vivado HLS's \emph{unsafe} optimizations. We have
+    the only ones produced by \gls{vhls}'s \emph{unsafe} optimizations. We have
     evaluated our tool on a suite of Livermore Loops and PolyBench benchmarks
     (Section~\ref{lo:sec:results}).
 

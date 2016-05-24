@@ -1,32 +1,32 @@
 The main focus of this thesis is to devise optimization methods to efficiently
 rewrite numerical programs by automatically varying the structure of their
 control- and data-paths for an improved trade-off relationship among numerical
-accuracy, throughput and resource utilization for high-level synthesis (HLS).
-This chapter therefore provides a review of recent developments in related work
-and various concepts that closely relate to the foundation of this central
-problem.  This section serves to highlight the main research topic to be
-discussed in depth in each section.
+accuracy, throughput and resource utilization for \gls{hls}\@.  This chapter
+therefore provides a review of recent developments in related work and various
+concepts that closely relate to the foundation of this central problem.  This
+section serves to highlight the main research topic to be discussed in depth in
+each section.
 
-We introduce various computing architectures, and explain the pros and cons
-of each one in Section~\ref{bg:sec:fpga}.  We then explain in detail how
-field-programmable gate arrays can be used as an alternative to general-purpose
-processors such as CPUs and GPUs to accelerate computational-intensive
-applications, by drawing comparisons of architectural differences to
-processors.  This is then followed by an overview of how a traditional
-synthesis tool flow compiles RTL implementations into circuits by taking Altera
-Quartus II~\cite{quartus} as an example.
+We introduce various computing architectures, and explain the pros and
+cons of each one in Section~\ref{bg:sec:fpga}.  We then explain in detail
+how field-programmable gate arrays can be used as an alternative to
+general-purpose processors such as \glspl{cpu} and \glspl{gpu} to accelerate
+computational-intensive applications, by drawing comparisons of architectural
+differences to processors.  This is then followed by an overview of how a
+traditional synthesis tool flow compiles \gls{rtl} implementations into
+circuits by taking Altera Quartus II~\cite{quartus} as an example.
 
-Because of the ever-increasing complexity of applications designed
-into circuits, low-level approaches such as RTL design become humanly
-intractable~\cite{gajski}, a gradual adoption of HLS tools has been
-observed in the FPGA community in recent years.  For this reason, in
+Because of the ever-increasing complexity of applications designed into
+circuits, low-level approaches such as \gls{rtl} design become humanly
+intractable~\cite{gajski}, a gradual adoption of \gls{hls} tools has been
+observed in the \gls{fpga} community in recent years.  For this reason, in
 Section~\ref{bg:sec:high_level_synthesis}, we review the current state and
-advantages of HLS, and describe the stages employed by these tools to compile
-a program in a high-level language into digital circuits.  Because run time
-is one of our optimization objective, we use modulo SDC scheduling to further
-examine in greater detail how it can make loops to run as efficiently as
-possible by pipelining them.  The module SDC scheduling algorithm is used by
-HLS tools such as LegUp~\cite{legup}.
+advantages of \gls{hls}, and describe the stages employed by these tools to
+compile a program in a high-level language into digital circuits.  Because
+run time is one of our optimization objective, we use modulo \gls{sdc}
+scheduling to further examine in greater detail how it can make loops to run as
+efficiently as possible by pipelining them.  The module \gls{sdc} scheduling
+algorithm is used by \gls{hls} tools such as LegUp~\cite{legup}.
 
 The methods discussed in this thesis rely heavily on the static analysis of
 numerical programs based on abstract interpretation~\cite{cousot77}.  In
@@ -37,28 +37,29 @@ both---in order to compute an approximation of them efficiently.  We informally
 introduce this theory, by way of reviewing it with a progressive program
 analysis example.
 
-Intermediate representations (IRs) are often used to facilitate program
-optimization and program analysis.  Section~\ref{bg:sec:intermediate} we
-therefore study in detail the existing IRs designed for program optimization.
-We take a closer at how the SSA and CFG approach of LLVM~\cite{llvm_ir}
+\Glspl{ir} are often used to facilitate program optimization and program
+analysis.  Section~\ref{bg:sec:intermediate} we therefore study in detail
+the existing \glspl{ir} designed for program optimization.  We take a closer
+at how the \gls{ssa} and \gls{cfg} approach of \gls{llvm}~\cite{llvm_ir}
 encodes a simple program example.  As this technique limits itself on
-optimizing a single IR of a program, a novel approach known as equality
+optimizing a single \gls{ir} of a program, a novel approach known as equality
 saturation~\cite{tate09} which uses a data structure to simultaneously
 represent multiple optimization candidates, is further examined.
 
-In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior work
-on restructuring arithmetic expressions and numerical programs.  We examine
-existing optimization passes in software compilers and HLS tools.  Since HLS
-tools are LLVM-based and compile C or C++ programs, they borrow the concept
-from software compiler frameworks, such as LLVM, of including optimization
-passes that may improve performance of floating-point computations, while
-potentially sacrificing numerical accuracies.  On the other hand, we look
-at methods that could improve accuracy by simultaneously exploring multiple
-rewrites to expression candidates.  Due to the full set of equivalent programs
-of an initial program is often computationally intractable, these methodologies
-either make extensive use of heuristics, or abstract interpretation techniques
-introduced in Section~\ref{bg:sec:abstract_interpretation}, in order to compute
-an under-approximation (a potentially smaller set) of the set of all equivalent
+In Section~\ref{bg:sec:discovering_equivalent_programs} we review prior
+work on restructuring arithmetic expressions and numerical programs.  We
+examine existing optimization passes in software compilers and \gls{hls}
+tools.  Since \gls{hls} tools are \gls{llvm}-based and compile C or C++
+programs, they borrow the concept from software compiler frameworks, such as
+\gls{llvm}, of including optimization passes that may improve performance
+of floating-point computations, while potentially sacrificing numerical
+accuracies.  On the other hand, we look at methods that could improve accuracy
+by simultaneously exploring multiple rewrites to expression candidates.
+Due to the full set of equivalent programs of an initial program is often
+computationally intractable, these methodologies either make extensive
+use of heuristics, or abstract interpretation techniques introduced in
+Section~\ref{bg:sec:abstract_interpretation}, in order to compute an
+under-approximation (a potentially smaller set) of the set of all equivalent
 programs.
 
 % Section~\ref{bg:sec:wordlength} explores alternative methods, known as

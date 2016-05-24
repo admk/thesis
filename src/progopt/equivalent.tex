@@ -1,17 +1,24 @@
-\subsection{Equivalent Structure Analysis}
-\label{po:sub:equivalence_analysis}
+\section{Equivalent Structure Analysis}
+\label{po:sec:equivalence_analysis}
 
-In this section, we start by taking one step further from simple arithmetic
-equivalence relations such as associativity, commutativity and distributivity
-describe in Chapter~\ref{chp:stropt}.  We define additional equivalent
-relations for substitution, conditional and fixpoint expressions to fully
-enable the equivalence transformations of MIRs.  Then we go on to improve the
+The next step is to use the analyses of accuracy and resource usage of
+equivalent structures in \glspl{mir} to efficiently discover optimized
+equivalent \glspl{mir}.  In this section, equivalent relations from
+Section~\ref{so:sec:equivalent} of Chapter~\ref{chp:stropt} are extended
+for control-flow structures, and we guide this process efficiently with our
+analyses of accuracy and resource usage.
+
+We start by taking one step further from simple arithmetic equivalence
+relations such as associativity, commutativity and distributivity described
+in Chapter~\ref{chp:stropt}.  We define additional equivalent relations
+for substitution, conditional and fixpoint expressions to fully enable the
+equivalence transformations of \glspl{mir}.  Then we go on to improve the
 methods described in \soap~to explore more equivalent structures, but still in
 an efficient and scalable way.
 
-\subsubsection{Equivalence Relations}
+\subsection{Equivalence Relations}
 
-The \soap~framework formally defines a set of equivalent relations
+The \soap~framework formally defines a set of equivalent relations:
 \begin{equation}
     \eqrel \subset \aexprset \times \aexprset \subset M \times M
 \end{equation}
@@ -57,7 +64,7 @@ unrolling on fixpoint expressions:
     \label{po:eq:unroll}
 \end{equation}
 Here $x \in \varset$, $p_\mu$ is a function that computes the unrolling
-of the loop MIR $\mu$, where
+of the loop \gls{mir} $\mu$, where
 \begin{align}
     p_\mu^0(\mu^\prime) &= \mu^\prime \\
     p_\mu^k(\mu^\prime) &= p_\mu(p_\mu^{k - 1}(\mu^\prime))
@@ -98,10 +105,10 @@ must be true.  For instance, in a conditional expression $\select{x < y}{(x
 + y) + z}{x}$, because the subexpression $(x + y) + z$ is equivalent to $x
 + (y + z)$, it also has an equivalent expression $\select{x < y}{x + (y +
 z)}{x}$.  We define similar rules respectively for the conditional, fixpoint
-and substitution operators.  Finally we also have an analogous rule for MIRs,
-which formalizes that if any subexpressions $\mu(x)$ of an MIR $\mu$ has
-an equivalent expression $e_x$, then the MIR also has an equivalent MIR by
-replacing the expression $\mu(x)$ with $e_x$.
+and substitution operators.  Finally we also have an analogous rule for
+\glspl{mir}, which formalizes that if any subexpressions $\mu(x)$ of an
+\gls{mir} $\mu$ has an equivalent expression $e_x$, then the \gls{mir} also has
+an equivalent \gls{mir} by replacing the expression $\mu(x)$ with $e_x$.
 \begin{equation}
     \begin{aligned}
         \inference{%
@@ -143,7 +150,7 @@ replacing the expression $\mu(x)$ with $e_x$.
     \label{po:eq:tree}
 \end{equation}
 
-\subsubsection{Discovering Equivalent Structures Efficiently}
+\subsection{Discovering Equivalent Structures Efficiently}
 
 As we discussed earlier, discovering the full set of equivalent expressions
 by finding the transitive closure of the relations is infeasible because of
@@ -175,8 +182,8 @@ propagated to its parent node to repeat the above process, until the root node
 is reached and we arrive at a set of equivalent expressions of the original
 expression under optimization.
 
-We extend optimizations to support not only simple arithmetic expressions
-but also conditional, substitution and fixpoint expressions, and MIRs.  This
+We extend optimizations to support not only simple arithmetic expressions but
+also conditional, substitution and fixpoint expressions, and \glspl{mir}.  This
 enables full program transformations.  For conditional expressions of the form
 $\select{b}{e_1}{e_2}$, we first optimize the Boolean expression $b$.  Then
 we use each equivalent expression of $b$ to constraint the program state for
@@ -189,18 +196,18 @@ for each of them discovered, we compute a new program state $\sigma^\sharp_0
 expressions are optimized in three steps.  Initially, partially unrolled
 versions are discovered using the rules defined in~\eqref{po:eq:unroll}.  Then
 for each unrolled version, we obtain its loop invariant using the algorithm
-illustrated in Figure~\ref{po:alg:fix}, and the loop invariant is then used to
-optimize its child nodes, which are the Boolean expression and the loop MIR\@.
-Finally, a set of equivalent fixpoint expressions can be derived by combining
-equivalent child nodes together, and $\closure(\sigma^\sharp)$ is again used to
-optimize the fixpoint expressions.
+illustrated in Figure~\ref{po:alg:fix}, and the loop invariant is then used
+to optimize its child nodes, which are the Boolean expression and the loop
+\gls{mir}\@.  Finally, a set of equivalent fixpoint expressions can be derived
+by combining equivalent child nodes together, and $\closure(\sigma^\sharp)$ is
+again used to optimize the fixpoint expressions.
 
-MIRs can be optimized by optimizing their expressions.  However, because
-an MIR consists of multiple expressions and each has its own accuracy,
-we need a strategy to quantify the accuracy of an MIR\@.  As discussed
+\glspl{mir} can be optimized by optimizing their expressions.  However, because
+a \gls{mir} consists of multiple expressions and each has its own accuracy,
+we need a strategy to quantify the accuracy of a \gls{mir}\@.  As discussed
 in~\cite{martel09}, programs can have multiple return variables, there are many
 strategies to measure the accuracy of such a program and it could depend on
 preferences and requirements of the program under optimization.  In~\newsoap,
-we allow different strategies to optimize MIRs, optimization can be tuned to
-minimize, such as, error bounds, mean squared errors, average errors, as well
-as the geometric mean values of errors.
+we allow different strategies to optimize \glspl{mir}, optimization can be
+tuned to minimize, such as, error bounds, mean squared errors, average errors,
+as well as the geometric mean values of errors.

@@ -1,26 +1,28 @@
 \section{Code Generation}
 \label{po:sec:code_generation}
 
-The final stage is to translate the optimized MIR back to a program in its
-original syntax.  As discussed earlier, the MA produces an abstraction of the
-program, which means there are generally many ways of generating different
-programs from the same MIR\@.  For this reason, certain heuristic optimizations
-are performed before or during code generation, such as branch and loop fusion
-transformations explained in our resource usage analysis to produce a unique
-and deterministic translation from the MIR\@.
+The final stage is to translate the optimized \gls{mir} back to a program
+in its original syntax.  As discussed earlier, the \gls{ma} produces an
+abstraction of the program, which means there are generally many ways of
+generating different programs from the same \gls{mir}\@.  For this reason,
+certain heuristic optimizations are performed before or during code generation,
+such as branch and loop fusion transformations explained in our resource
+usage analysis to produce a unique and deterministic translation from the
+\gls{mir}\@.
 
 Our code generation is carried out in three stages.  The first stage applies
-the transformations outlined in Section~\ref{po:sub:resource_usage_analysis}
+the transformations outlined in Section~\ref{po:sec:resource_usage_analysis}
 to perform loop and branch fusion, and to allow sharing of expressions
-across nested MIRs. After the first stage, we perform a simple one-to-one
-mapping from MIRs to program code.  This process is a breadth-first traversal
-of the MIR, it keeps removing nodes that has no data flows to other nodes
-in the MIR and translate each node into one statement, and repeat this
-process until the MIR is empty.  The final step of our code generation, is
-to perform code sinking, which moves parts of the code so that when their
-results are not needed, they are not executed~\cite{llvm}.  For instance,
-the result of the statement ``$\assignstmt{x}{x + 1}$'' is only used in the
-true-branch of the program ``$\assignstmt{y}{x + 1} \semicolon$ $\iflit~(x <
-1)$ $\thenlit~(\assignstmt{y}{y + 1})$ $\elselit~(\assignstmt{y}{x})$''.  In
-this final step of code generation, we move this statement into the true-branch
-of the \iflit~statement, so it may be evaluated only when needed.
+across nested \glspl{mir}. After the first stage, we perform a simple
+one-to-one mapping from \glspl{mir} to program code.  This process is a
+breadth-first traversal of the \gls{mir}, it keeps removing nodes that
+has no data flows to other nodes in the \gls{mir} and translate each
+node into one statement, and repeat this process until the \gls{mir}
+is empty.  The final step of our code generation, is to perform code
+sinking, which moves parts of the code so that when their results are not
+needed, they are not executed~\cite{llvm}.  For instance, the result of
+the statement ``$\assignstmt{x}{x + 1}$'' is only used in the true-branch
+of the program ``$\assignstmt{y}{x + 1} \semicolon$ $\iflit~(x < 1)$
+$\thenlit~(\assignstmt{y}{y + 1})$ $\elselit~(\assignstmt{y}{x})$''.  In this
+final step of code generation, we move this statement into the true-branch of
+the \iflit~statement, so it may be evaluated only when needed.

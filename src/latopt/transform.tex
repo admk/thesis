@@ -1,76 +1,79 @@
 \section{Structural Optimization}
 \label{lo:sec:structural_optimization}
 
-From a numerical program, we can generate an MIR using the translation in
-Section~\ref{lo:sec:intermediate}.  The next step is to transform the MIR, and
-discover MIRs that are equivalent to the original MIR in real arithmetic, but
-may execute differently in finite-precision arithmetic because of round-off
-errors.
+From a numerical program, we can generate an \gls{mir} using the translation
+in Section~\ref{lo:sec:intermediate}.  The next step is to transform the
+\gls{mir}, and discover \glspl{mir} that are equivalent to the original
+\gls{mir} in real arithmetic, but may execute differently in finite-precision
+arithmetic because of round-off errors.
 
 \subsection{Algorithm}
 \label{lo:sub:algorithm}
 
-% Our optimization starts by partitioning the MIR into sub-MIRs.  This further
-% reduces the size of the search space, \ie~equivalent MIRs reachable using our
-% transformation rules.  This speeds up the rest of the optimization process,
-% because these rules are not applied on partition boundaries.
+% Our optimization starts by partitioning the \gls{mir} into sub-\glspl{mir}.
+% This further reduces the size of the search space, \ie~equivalent \glspl{mir}
+% reachable using our transformation rules.  This speeds up the rest of the
+% optimization process, because these rules are not applied on partition
+% boundaries.
 
 As discussed in Section~\ref{lo:sec:introduction}, even a small expression
-could have a huge number of equivalent ones.  Exhaustively discovering all
-equivalent MIRs would result in combinatorial explosion of the number of
-equivalent MIRs in the search space.  For this reason, we base ourselves on an
-algorithm from \SOAP{} that search efficiently, by discovering equivalences
-in a bottom-up hierarchy.  In this section we discuss the improvements we
-have made to the algorithm which further increases the performance of this
-algorithm.
+could have a huge number of equivalent ones.  Exhaustively discovering
+all equivalent \glspl{mir} would result in combinatorial explosion of the
+number of equivalent \glspl{mir} in the search space.  For this reason, we
+base ourselves on an algorithm from \soap{} that search efficiently, by
+discovering equivalences in a bottom-up hierarchy.  In this section we discuss
+the improvements we have made to the algorithm which further increases the
+performance of this algorithm.
 
-Our first contribution is that instead of optimizing the MIR immediately, we
-start by partitioning the MIR into multiple smaller sub-MIRs.  In turn, each
-are optimized separately and generate a set of equivalent sub-MIRs.  We then
-select combinations from these sub-MIRs to be merged, this generates a set of
-MIRs that are equivalent to the original.  Finally, we preserve those MIRs
-merged on the Pareto frontier.
+Our first contribution is that instead of optimizing the \gls{mir} immediately,
+we start by partitioning the \gls{mir} into multiple smaller sub-\glspl{mir}.
+In turn, each are optimized separately and generate a set of equivalent
+sub-\glspl{mir}.  We then select combinations from these sub-\glspl{mir}
+to be merged, this generates a set of \glspl{mir} that are equivalent to
+the original.  Finally, we preserve those \glspl{mir} merged on the Pareto
+frontier.
 
 Figure~\ref{lo:alg:optimize} shows the pseudocode of the optimization
-algorithm, it takes as an input an MIR graph, and produces a set of equivalent
-graphs that are estimated to be Pareto-optimal when converted into C programs
-and synthesized into circuits.  Although this algorithm deals with a special
-case, \ie~a root node $op$ with two child subtrees $e_1, e_2$, it can
-easily be generalized to an arbitrary number of child subtrees.  Here, $e
-\stackrel{r}{\rightsquigarrow} e'$ means $e^\prime$ can be obtained by
+algorithm, it takes as an input an \gls{mir} graph, and produces a set of
+equivalent graphs that are estimated to be Pareto-optimal when converted into
+C programs and synthesized into circuits.  Although this algorithm deals with
+a special case, \ie~a root node $op$ with two child subtrees $e_1, e_2$, it
+can easily be generalized to an arbitrary number of child subtrees.  Here,
+$e \stackrel{r}{\rightsquigarrow} e'$ means $e^\prime$ can be obtained by
 transforming part of the graph $e$ in accordance with the transformation rule
 $r$.  The next section discusses the transformation rules we used.
 
-The algorithm starts by discovering equivalences in the leaves of an MIR,
+The algorithm starts by discovering equivalences in the leaves of an \gls{mir},
 and progress upwards for equivalent structures of the individual components
 that make up the graph, until the roots of the graph, where we have a set of
-equivalent MIRs to the original MIR\@.  As it traverses through the MIR, the
-algorithm calculates the performance metrics at each node, using the analyses
-presented in the next section.  Transformations that are not Pareto-optimal are
-immediately pruned from the search space, thus reducing the average complexity
-of the algorithm.
+equivalent \glspl{mir} to the original \gls{mir}\@.  As it traverses through
+the \gls{mir}, the algorithm calculates the performance metrics at each node,
+using the analyses presented in the next section.  Transformations that are not
+Pareto-optimal are immediately pruned from the search space, thus reducing the
+average complexity of the algorithm.
 
 Our second contribution is the \textsc{Prune} function.  We rely on this
-function to efficiently steer the direction of our Pareto frontier as we
-discover new candidates.  It takes as an input the set of equivalent MIRs
-that we have discovered, and prune MIRs in this set to reduce its size, this
-keeps the size of discovered MIRs tractable.  The \SOAP{} framework prunes the
-MIRs that are Pareto-suboptimal, leaving only those that are on the Pareto
-frontier.  However, because our Pareto frontier is three-dimensional, there is
-a large increase in the number of Pareto-optimal MIRs.  This Pareto pruning
-approach is no longer feasible for our benchmark examples.  To tackle this,
-we introduce another step in \textsc{Prune} to further decrease the number of
-MIRs in the set by sampling.  We developed a new sampling algorithm, inspired
-by Poisson-disk sampling algorithm~\cite{bridson07}, which samples the Pareto
-frontier by first randomly selecting one point, then iteratively grows the set
-of points by adding the neighbours from the point that are separated by at
-lease a certain distance, we search by bisection for the distance that keeps
-20\% of all point in the Pareto frontier.  This method is superior to random
-sampling, because random sampling often samples points that are close together,
-which usually are very similar implementations.
+function to efficiently steer the direction of our Pareto frontier as
+we discover new candidates.  It takes as an input the set of equivalent
+\glspl{mir} that we have discovered, and prune \glspl{mir} in this set to
+reduce its size, this keeps the size of discovered \glspl{mir} tractable.  The
+\soap{} framework prunes the \glspl{mir} that are Pareto-suboptimal, leaving
+only those that are on the Pareto frontier.  However, because our Pareto
+frontier is three-dimensional, there is a large increase in the number of
+Pareto-optimal \glspl{mir}.  This Pareto pruning approach is no longer feasible
+for our benchmark examples.  To tackle this, we introduce another step in
+\textsc{Prune} to further decrease the number of \glspl{mir} in the set by
+sampling.  We developed a new sampling algorithm, inspired by Poisson-disk
+sampling algorithm~\cite{bridson07}, which samples the Pareto frontier by first
+randomly selecting one point, then iteratively grows the set of points by
+adding the neighbours from the point that are separated by at lease a certain
+distance, we search by bisection for the distance that keeps 20\% of all point
+in the Pareto frontier.  This method is superior to random sampling, because
+random sampling often samples points that are close together, which usually are
+very similar implementations.
 
 We found that with our improvements, the algorithm is significantly faster than
-the original optimization algorithm in \SOAP, with a 5-fold increase in speed,
+the original optimization algorithm in \soap, with a 5-fold increase in speed,
 at a cost of less points on the Pareto frontier.
 
 \todo{Move this algorithm to Chapter~stropt.}
@@ -106,7 +109,7 @@ at a cost of less points on the Pareto frontier.
     \end{algorithmic}
     \caption{%
         The algorithm we used for the efficient discovery of equivalent
-        structures in MIRs.
+        structures in \glspl{mir}.
     }
     \label{lo:alg:optimize}
 \end{figure}
@@ -165,26 +168,27 @@ c)}
     this work.}\label{lo:tab:rules}
 \end{table}
 
-\SOAP{} provides a range of equivalence rules that are used in the
+\soap{} provides a range of equivalence rules that are used in the
 optimization, such as associativity, distributivity, commutativity, constant
 propagation, and partial loop unrolling.  In Table~\ref{lo:tab:rules}, we list
 those rules that proved effective when minimizing loop latencies.  Although
-these rules are used to transform MIRs, we present before-and-after examples
-written in C to allow the effect of each rule to be readily understand.
+these rules are used to transform \glspl{mir}, we present before-and-after
+examples written in C to allow the effect of each rule to be readily
+understand.
 
 Our new rules, the access reduction rules, with formal definitions below and
 examples in Table~\ref{lo:tab:rules}, remove extraneous data dependences that
 arise after partial unrolling.  These rules, along with partial loop unrolling,
 mostly do not really impact latency, because they are very well studied in
-polyhedral compilation, and tools such as Vivado HLS can make use of them
+polyhedral compilation, and tools such as \gls{vhls} can make use of them
 automatically.  However, they give the necessary freedom to arithmetic rules
 to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
 \bar{j}$ are subscripts, and $e, e^\prime$ are expressions:
 \begin{itemize}
 
     \item \emph{Multiple reads}, eliminates the second of two reads of the same
-    location.  It arises naturally from the MIR, as common subexpressions are
-    shared.
+    location.  It arises naturally from the \gls{mir}, as common subexpressions
+    are shared.
 
     \item \emph{Multiple writes}, eliminates a write that is overwritten:
     \begin{equation}
@@ -205,7 +209,8 @@ to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
             \rightsquigarrow \access{A}{\bar{j}},
         \text{if~} \bar{i} \not\equiv \bar{j}
     \end{equation}
-    We visualize this rule also in the following sample MIR transformation:
+    We visualize this rule also in the following sample \gls{mir}
+    transformation:
     \begin{equation}
         \label{lo:eq:indep_reads_mir}
         \begin{tikzpicture}[mir]
@@ -253,10 +258,10 @@ to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
 
 These rules may not seem powerful on their own, but when combined with other
 structural rules, they enable our tool to detect dependences that can be
-removed in the MIR\@.  This could in turn allow more opportunities for the
-rules to further reduce loop latency.  By way of illustration, we optimize the
-following program for latency, which computes a Fibonacci series generalized to
-real numbers:
+removed in the \gls{mir}\@.  This could in turn allow more opportunities
+for the rules to further reduce loop latency.  By way of illustration, we
+optimize the following program for latency, which computes a Fibonacci series
+generalized to real numbers:
 \begin{lstlisting}
     for (int i = 2; i < 1023; i++)
         A[i] = A[i - 1] + A[i - 2];

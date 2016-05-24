@@ -20,7 +20,7 @@ same Pareto frontier that Martel's method could discover, while having up to
 50\% shorter run time. Because we consider an accuracy/area trade-off, we
 find that we can not only have the most accurate implementation discovered by
 Martel, but also an option that is only 0.0005\% less accurate, but uses 7\%
-fewer LUTs.
+fewer \glspl{lut}.
 
 We go beyond the optimization of a small expression, by generating results in
 Figure~\ref{so:fig:multi_expr_32} to show that the same technique is applicable
@@ -35,7 +35,7 @@ $e_x$ and $e_y$, with input ranges $a \in [1, 2], b \in [10, 20], c \in [10,
     \end{aligned}
 \end{equation}
 
-We generated and optimized RTL implementations of $e_x$ and
+We generated and optimized \gls{rtl} implementations of $e_x$ and
 $e_y$ simultaneously using \frontiertrace{} and \greedytrace{}
 with the depth limits indicated by the numbers in the legend of
 Figure~\ref{so:fig:multi_expr_32}. Note that because the expressions
@@ -47,13 +47,13 @@ than \marteltrace{}, because of its poor scalability discussed earlier, our
 computer ran out of memory before we could produce any results. If we normalize
 the time allowed for each method and compare the performance, we found that
 \greedytrace{} with a depth limit $3$ takes takes slightly less time than
-\frontiertrace{} with a depth limit $2$, but produces a generally better
-Pareto frontier. The alternative implementations of the original expression
-provided by the Pareto frontier of \greedytrace{} can either reduce the LUTs
+\frontiertrace{} with a depth limit $2$, but produces a generally better Pareto
+frontier. The alternative implementations of the original expression provided
+by the Pareto frontier of \greedytrace{} can either reduce the \glspl{lut}
 used by approximately 10\% when accuracy is not crucial, or can be about 10\%
 more accurate if resource is not our concern.  It also enables the ability to
 choose different trade-off options, such as an implementation that is 7\% more
-accurate and uses 7\% fewer LUTs than the original expression.
+accurate and uses 7\% fewer \glspl{lut} than the original expression.
 
 Furthermore, Figure~\ref{so:fig:multi_expr_vary_width} varies the mantissa
 width of the floating-point format, and presents the Pareto frontier
@@ -78,16 +78,17 @@ $x^6 + y^4 z^2 + y^2 z^4 - 3 x^2 y^2 z^2$, which is known to be difficult to
 evaluate accurately, especially using inputs $x\in[-0.99, 1]$, $y\in[1, 1.01]$,
 $z\in[-0.01, 0.01]$.
 
-Finally, Figure~\ref{so:fig:area} demonstrates the accuracy of the area estimation
-used in our analysis. It compares the actual LUTs necessary with the estimated
-number of LUTs using our semantics, by synthesizing more than 6000 equivalent
-expressions derived from $a + b + c$, $(a + 1) \times (b + 1) \times (c + 1)$,
-$e_x$, and $e_y$ using varying mantissa widths. The dotted line indicates exact
-area estimation, a scatter points that is close to the line means the area
-estimation for that particular implementation is accurate. The solid black line
-represents the linear regression line of all scatter points. On average, our
-area estimation is a 6.1\% over-approximation of the actual number of LUTs, and
-the worst case over-approximation is 7.7\%.
+Finally, Figure~\ref{so:fig:area} demonstrates the accuracy of the area
+estimation used in our analysis. It compares the actual \glspl{lut} necessary
+with the estimated number of \glspl{lut} using our semantics, by synthesizing
+more than 6000 equivalent expressions derived from $a + b + c$, $(a + 1) \times
+(b + 1) \times (c + 1)$, $e_x$, and $e_y$ using varying mantissa widths. The
+dotted line indicates exact area estimation, a scatter points that is close
+to the line means the area estimation for that particular implementation is
+accurate. The solid black line represents the linear regression line of all
+scatter points. On average, our area estimation is a 6.1\% over-approximation
+of the actual number of \glspl{lut}, and the worst case over-approximation is
+7.7\%.
 \newcommand{\figsize}{0.5}
 \begin{figure}[ht]
     \centering

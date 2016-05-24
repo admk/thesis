@@ -28,11 +28,12 @@ All elements of input arrays and matrices are set to be single-precision
 floating-point values bounded by 0 and 1.  We optimized all of these benchmark
 examples using our tool, specifically targeting the Xilinx Virtex7 device
 running at 333~MHz, for the three objectives of accuracy, resource utilization
-and latency simultaneously.  We then used Vivado HLS 2015.2~\cite{vivado_hls}
-to synthesize the resulting optimized programs into RTL implementations for
-exact latency information, and performed place-and-route using Vivado Design
-Suite 2015.2~\cite{vivado_ds}, to obtain exact resource utilization statistics.
-Our tool produces a three-dimensional Pareto frontier for each program.
+and latency simultaneously.  We then used \gls{vhls} 2015.2~\cite{vivado_hls}
+to synthesize the resulting optimized programs into \gls{rtl} implementations
+for exact latency information, and performed place-and-route using Vivado
+Design Suite 2015.2~\cite{vivado_ds}, to obtain exact resource utilization
+statistics.  Our tool produces a three-dimensional Pareto frontier for each
+program.
 
 \subsection{Results}
 
@@ -51,7 +52,7 @@ Our tool produces a three-dimensional Pareto frontier for each program.
 \newcommand\Shade{\cellcolor{black!10}}
 \newcommand\name[1]{\texttt{\scriptsize #1}}
 $\begin{array}{l|r|r|r|r|r|r|r|r|r}
-\multicolumn{1}{c|}{\text{Name}} & \multicolumn{1}{c|}{\text{DSPs}} & \multicolumn{2}{c|}{\text{LUTs}} & \multicolumn{2}{c|}{\text{Error}} & \multicolumn{1}{c|}{\text{Clock}} & \multicolumn{3}{c}{\text{Latency}}
+  \multicolumn{1}{c|}{\text{Name}} & \multicolumn{1}{c|}{\text{\glspl{dsp}}} & \multicolumn{2}{c|}{\text{\glspl{lut}}} & \multicolumn{2}{c|}{\text{Error}} & \multicolumn{1}{c|}{\text{Clock}} & \multicolumn{3}{c}{\text{Latency}}
 \\
 & & & \multicolumn{1}{c|}{\text{ratio}} & &
 \multicolumn{1}{c|}{\text{ratio}} & \multicolumn{1}{c|}{\text{(ns)}} & \multicolumn{1}{c|}{\text{(cycles)}} & \multicolumn{1}{c|}{\text{(s)}} &
@@ -147,9 +148,9 @@ Table~\ref{lo:tab:results}.
         \end{axis}
     \end{tikzpicture}
     \caption{%
-        Comparisons of our estimated LUT counts against actual LUT counts from
-        Vivado HLS\@.}
-    \label{lo:fig:lut}
+        Comparisons of our estimated \gls{lut} counts against actual \gls{lut}
+        counts from \gls{vhls}\@.
+    }\label{lo:fig:lut}
 \end{figure}
 
 \begin{figure}[ht]
@@ -175,7 +176,7 @@ Table~\ref{lo:tab:results}.
     \end{tikzpicture}
     \caption{%
         Comparisons of our estimated latency statistics against actual latency
-        from Vivado HLS\@.}
+        from \gls{vhls}\@.}
     \label{lo:fig:lat}
 \end{figure}
 
@@ -250,14 +251,14 @@ Table~\ref{lo:tab:results}.
     \label{lo:fig:seidel}
 \end{figure*}
 
-Figure~\ref{lo:fig:lut} compares our estimated LUT counts (vertical axis)
-against the exact LUT counts (horizontal axis) obtained by synthesizing RTL
-implementations of each program in Table~\ref{lo:tab:results}.  Although our
-estimates deviate from the exact values, because we compute lower bounds on
-resource utilizations, and finite state machines synthesized and address
-calculation are not taken into account, our estimate can still accurately
-predict the general trend---a linear regression of all scatter points finds
-$R^2 = 0.9344$.
+Figure~\ref{lo:fig:lut} compares our estimated \gls{lut} counts (vertical axis)
+against the exact \gls{lut} counts (horizontal axis) obtained by synthesizing
+\gls{rtl} implementations of each program in Table~\ref{lo:tab:results}.
+Although our estimates deviate from the exact values, because we compute
+lower bounds on resource utilizations, and finite state machines synthesized
+and address calculation are not taken into account, our estimate can still
+accurately predict the general trend---a linear regression of all scatter
+points finds $R^2 = 0.9344$.
 
 Figure~\ref{lo:fig:lat} compares our latency estimates (vertical axis)
 against the actual latency values (horizontal axis). The solid line
@@ -283,8 +284,8 @@ also the most accurate one: it minimizes round-off errors by approximately
 2.5$\times$. It is worth noting that our tool can detect that as it explores
 deep levels of partial loop unrolling, we start to see a diminishing return
 in performance as it hits a bottleneck in memory bandwidth.  This is due to
-the fact that Vivado HLS synthesizes dual port RAMs for arrays, and in one
-clock cycle we can only read from the memory allocating array twice.  Our
+the fact that \gls{vhls} synthesizes dual port \glspl{ram} for arrays, and in
+one clock cycle we can only read from the memory allocating array twice.  Our
 optimization flow is aware of this bottleneck and stops exploring further loop
 unrolling.
 
@@ -302,8 +303,8 @@ As demonstrated by Figure~\ref{lo:fig:lat}, our tool generally produces
 accurate latency estimates. However, we have discovered a few notable
 discrepancies. For instance, \verb|gemver|, \verb|mvt| and \verb|syr2k| all
 have significant differences between our estimated latency and the actual
-latency from synthesized RTL implementations.  An inspection of these programs
-reveals that they all share a common programming idiom:
+latency from synthesized \gls{rtl} implementations.  An inspection of these
+programs reveals that they all share a common programming idiom:
 %
 \begin{lstlisting}
   for (int i=0; i<N; i++)
@@ -311,7 +312,7 @@ reveals that they all share a common programming idiom:
       x[i] += ...;
 \end{lstlisting}
 %
-We found that Vivado HLS occasionally fails to find the optimal schedule,
+We found that \gls{vhls} occasionally fails to find the optimal schedule,
 predicted by our tool, that could pipeline this loop as tightly as possible.
 By rewriting the above code into:
 %
@@ -324,8 +325,8 @@ By rewriting the above code into:
   }
 \end{lstlisting}
 %
-We fix this problem, and enable Vivado HLS to generate a hardware
-implementation with the expected $\II$. The ratios in parentheses in
+We fix this problem, and enable \gls{vhls} to generate a hardware
+implementation with the expected \gls{ii}. The ratios in parentheses in
 Table~\ref{lo:tab:results} reflect the speedup by performing this simple fix.
 
 %%% Local Variables:

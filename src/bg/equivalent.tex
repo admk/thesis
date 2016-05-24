@@ -14,11 +14,12 @@ methods of expressions, followed by those of general numerical programs.
 \subsubsection{Software Compilers}
 
 It is common knowledge to software programmers that a typical optimizing
-compiler, such as GCC~\cite{gcc} and Clang~\cite{clang}, has some traditional
-static analysis-based optimization passes such as dead code elimination, loop
-strength reduction and constant propagation.  These optimization passes,
-however, limit themselves by producing implementations that do not impact
-numerical accuracy, \ie~they compute the same output given identical inputs.
+compiler, such as \gls{gcc}~\cite{gcc} and Clang~\cite{clang}, has some
+traditional static analysis-based optimization passes such as dead code
+elimination, loop strength reduction and constant propagation.  These
+optimization passes, however, limit themselves by producing implementations
+that do not impact numerical accuracy, \ie~they compute the same output given
+identical inputs.
 
 A less well-known fact about these compilers is that they also support a
 variety of optimization passes that are not enabled by default.  These options,
@@ -32,9 +33,9 @@ computed results must be rounded to the nearest representable values.  These
 discrepancies, when accumulated, could potentially result in wildly inaccurate
 outputs.
 
-There are a number of compiler options in GCC~\cite{gcc} that specifically
-performs the above optimizations.  For example, the following options exist to
-enable expression-rewriting heuristics:
+There are a number of compiler options in \gls{gcc}~\cite{gcc} that
+specifically performs the above optimizations.  For example, the following
+options exist to enable expression-rewriting heuristics:
 \begin{itemize}
 
     \item \verb|-fassociative-math| enables arithmetic expression rewriting by
@@ -57,10 +58,10 @@ enable expression-rewriting heuristics:
 An extra optimization option, which encompasses the above options, can be used
 to enable them all together; it further highlights the \emph{unsafe} nature
 of these transformations in its name, \ie~\verb|-funsafe-math-optimizations|.
-Besides GCC, Clang, which uses the LLVM framework, provides a similar option,
-\verb|-enable-unsafe-fp-math| to use arithmetic equivalences to reduce the
-number of floating-point operations in a program, by possibly sacrificing
-numerical accuracy.
+Besides \gls{gcc}, Clang, which uses the \gls{llvm} framework, provides a
+similar option, \verb|-enable-unsafe-fp-math| to use arithmetic equivalences
+to reduce the number of floating-point operations in a program, by possibly
+sacrificing numerical accuracy.
 
 % To give an example, the value $\sqrt{2}$, being irrational, cannot be
 % represented exactly in single-precision floating point, and thus must be
@@ -68,23 +69,24 @@ numerical accuracy.
 
 \subsubsection{High-Level Synthesis Tools}
 
-In addition to the unsafe arithmetic expression rewriting heuristics inherited
-from the LLVM framework, Vivado HLS~\cite{vivado_hls} and LegUp~\cite{legup},
-which are both LLVM-based, can make use of hardware-specific optimization
-passes to allow greater parallelism in synthesized circuit, thus improving
-throughput.  The newly designed transformation to allow data-flow graphs to be
-restructured to improve loop parallelism, which allows more computation across
-loop iterations to overlap, and subsequently faster programs.  Xilinx's Vivado
-HLS has a similar feature called \emph{expression balancing}~\cite{vivado_hls},
-which aims to balance an arithmetic expression tree using associativity.  Tree
-height reduction~\cite{nicolau91} further incorporates distributivity and
-control-flow rewriting.  However, neither of these methods produces optimal
-loop pipelining, as they do not examine the implications of loop-carried
-dependences.  For example, a loop body:
+In addition to the unsafe arithmetic expression rewriting heuristics
+inherited from the \gls{llvm} framework, \gls{vhls}~\cite{vivado_hls}
+and LegUp~\cite{legup}, which are both \gls{llvm}-based, can make use
+of hardware-specific optimization passes to allow greater parallelism
+in synthesized circuit, thus improving throughput.  The newly designed
+transformation to allow data-flow graphs to be restructured to improve
+loop parallelism, which allows more computation across loop iterations to
+overlap, and subsequently faster programs.  Xilinx's \gls{vhls} has a similar
+feature called \emph{expression balancing}~\cite{vivado_hls}, which aims
+to balance an arithmetic expression tree using associativity.  Tree height
+reduction~\cite{nicolau91} further incorporates distributivity and control-flow
+rewriting.  However, neither of these methods produces optimal loop pipelining,
+as they do not examine the implications of loop-carried dependences.  For
+example, a loop body:
 \begin{lstlisting}
     sum = ((sum + A[i]) + B[i]) + C[i];
 \end{lstlisting}\vspace{-15pt}
-when synthesized in Vivado HLS with expression balancing, will produce a
+when synthesized in \gls{vhls} with expression balancing, will produce a
 schedule which corresponds to the following:
 \begin{lstlisting}
     sum = (sum + A[i]) + (B[i] + C[i]);
@@ -110,7 +112,7 @@ It is notable that, by further delaying the addition of \verb|sum|, the loop
 now has only a delay of $1$ adder between consecutive iterations.  This
 technique can greatly reduce the run time of pipelined loops, especially if the
 inter-iteration dependences has a long chain of additions.  However, similar to
-Vivado HLS, they only apply associativity in their restructuring.
+\gls{vhls}, they only apply associativity in their restructuring.
 
 \subsubsection{Polynomial Factorization}
 
@@ -120,8 +122,8 @@ easily be applied by a compiler.  Several techniques take one step further,
 by focusing on multivariate polynomials, and factorizing them to minimize
 the number of arithmetic operations in an expression.  These approaches are
 applicable to both software and hardware designs, as they minimize the number
-of operations in an expression, the throughput of the optimized design can
-be reduced.  In addition, in an FPGA circuit, this will also translate to a
+of operations in an expression, the throughput of the optimized design can be
+reduced.  In addition, in an \gls{fpga} circuit, this will also translate to a
 reduction of resources utilized.
 
 It is well known that the Horner scheme is the optimal way to
@@ -138,8 +140,8 @@ factorization of polynomials, in order to eliminate common subexpressions, and
 subsequently reduce addition and multiplication counts for a faster software
 implementation.  However it is not possible to choose different optimization
 levels with their method.  Peymandoust~\etal~\cite{peymandoust} present an
-approach that only deals with the factorization of polynomials in HLS using
-\groebner~bases.  The weaknesses of this are its dependence on a set of
+approach that only deals with the factorization of polynomials in \gls{hls}
+using \groebner~bases.  The weaknesses of this are its dependence on a set of
 library expressions~\cite{hosangadi} and the high computational complexity of
 \groebner~bases.
 
@@ -148,10 +150,10 @@ library expressions~\cite{hosangadi} and the high computational complexity of
 The above approaches utilize a number of heuristics to rewrite expressions, and
 do not explore all possible rewrites in full by taking into account additional
 equivalence relations.  This could limit their applicability to a small number
-of special cases.  The implementation obtained therefore is often likely
-to be suboptimal, as further improvements are possible.  More importantly,
-none of the above mentioned techniques and tools aim to minimize, or even
-analyze, the impact of their transformations on numerical accuracy.  HLS tools
+of special cases.  The implementation obtained therefore is often likely to
+be suboptimal, as further improvements are possible.  More importantly, none
+of the above mentioned techniques and tools aim to minimize, or even analyze,
+the impact of their transformations on numerical accuracy.  \Gls{hls} tools
 therefore generally disable these unsafe features by default for floating-point
 computations.  It is in general a good practice to avoid them, if numerical
 accuracy is a critical factor to ensure the correctness of the application
@@ -208,25 +210,27 @@ provided for two distinct approaches, APEG and Herbie.
 
 \subsubsection{APEG}
 
-The APEG proposed by Ioualalen~\etal~\cite{ioualalen} was inspired by E-PEG,
-originally introduced by Tate~\etal~\cite{tate09}\footnote{E-PEG and equality
-saturation is discussed in Section~\ref{bg:sub:equality_saturation}.}.  E-PEGs,
-originally intended to discover equivalent structure in programs but not
-arithmetic expressions, nevertheless include equivalence rules that are similar
-to the ones that exist in real arithmetic.  For instance, distributivity can by
-applied over nodes such as $\theta$ and $\mathrm{eval}$ nodes.
+The APEG proposed by Ioualalen~\etal~\cite{ioualalen} was inspired by
+\gls{epeg}, originally introduced by Tate~\etal~\cite{tate09}\footnotemark[1].
+\glspl{epeg}, originally intended to discover equivalent structure in programs
+but not arithmetic expressions, nevertheless include equivalence rules
+that are similar to the ones that exist in real arithmetic.  For instance,
+distributivity can by applied over nodes such as $\theta$ and $\mathrm{eval}$
+nodes.
+\footnotetext[1]{\gls{epeg} and equality saturation is discussed in
+Section~\ref{bg:sub:equality_saturation}.}
 
-The APEG is similar in construction to the E-PEG, which is also a graph-based
-structure, and promotes the maximal sharing of common subtrees.  The major
-difference is that because of the lack of control-flow in the program, APEGs
-are acyclic, and do not consist of nodes that correspond to control-flows.
-APEGs supersede arithmetic expression by allowing all possible nodes in an
-arithmetic expression, \ie~it can contain leaf nodes such as a constant
-value or a variable identifier, unary or binary arithmetic operators that
-respectively have one or two child nodes.  In addition, to allow an APEG to
-encode exponential number of equivalent expressions within a polynomial space,
-it further introduces two different kinds of nodes that efficiently model
-equivalences.
+The APEG is similar in construction to the \gls{epeg}, which is also a
+graph-based structure, and promotes the maximal sharing of common subtrees.
+The major difference is that because of the lack of control-flow in the
+program, APEGs are acyclic, and do not consist of nodes that correspond to
+control-flows.  APEGs supersede arithmetic expression by allowing all possible
+nodes in an arithmetic expression, \ie~it can contain leaf nodes such as a
+constant value or a variable identifier, unary or binary arithmetic operators
+that respectively have one or two child nodes.  In addition, to allow an APEG
+to encode exponential number of equivalent expressions within a polynomial
+space, it further introduces two different kinds of nodes that efficiently
+model equivalences.
 
 Firstly, the APEG defines a node containing an \emph{abstraction box},
 \fbox{$\opsymbol, \left(p_1, p_2, \mathellipsis, p_n\right)$}\,, where
@@ -242,13 +246,13 @@ children can represent up to $(2n - 3){!!}$ equivalent expressions without
 commutativity~\cite{ioualalen, mouilleron}, as commutativity do not impact
 numerical accuracy for commutative operators.
 
-Secondly, in an analogous fashion to the E-PEG, the APEG additionally
+Secondly, in an analogous fashion to the \gls{epeg}, the APEG additionally
 admits a new kind of nodes which can be used to enclose a set of equivalent
 subexpressions.  Defined as $\langle p_1, p_2, \mathellipsis, p_n \rangle$,
 the \emph{equivalent class} is a node which signifies all children subtrees
 with root nodes $p_1, p_2, \mathellipsis, p_n$ represent expressions that are
 mathematically equivalent.  This is analogous to forming equivalence edges in
-E-PEGs.
+\glspl{epeg}.
 
 \begin{figure}[ht]
     \centering
@@ -275,10 +279,9 @@ utilizes the static analysis of floating-point errors introduced in
 Section~\ref{bg:sec:abstract_interpretation}.  For instance, consider an
 APEG with $n$ equivalent classes, each contains $2$ different choices, in
 the worst case, this may amount to a search of $2^n$ distinct equivalent
-expressions, so as to determine the optimal solution.  To resolve this
-problem, Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search
-heuristic to reduce the size of the search space.\footnote{The exact technique
-is not explained in their original contribution.}  Additionally, as it was
+expressions, so as to determine the optimal solution.  To resolve this problem,
+Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic to
+reduce the size of the search space\footnotemark[2].  Additionally, as it was
 explained earlier, the time complexity to search for the optimal parsing of an
 abstraction box is double factorial.  They hence make use of another heuristic,
 which greedily pairs up terms in an abstraction box $B = \text{\fbox{$+,
@@ -297,6 +300,8 @@ $p_i$ and $p_j$ are subsequently removed from $B$, and a new subtree
 is then added to $B$.  The above greedy pairing procedure is then iteratively
 repeated until finally one node is left in $B$; this last node is therefore
 the expression with an improved numerical accuracy obtained in the process.
+\footnotetext[2]{The exact technique is not explained in their original
+contribution.}
 
 Ioualalen~\etal~\cite{ioualalen} found their APEG approach can reduce round-off
 errors in expressions by up to 50\%.  They further proved the correctness of
@@ -312,7 +317,7 @@ distributivity and commutativity, and $\Pi_\rhd$ is the final saturated APEG\@.
 
 \subsubsection{Herbie}
 
-Unlike the APEG approach which focuses on building an IR which can
+Unlike the APEG approach which focuses on building an \gls{ir} which can
 represent exponentially many equivalent expressions, Herbie, introduced by
 Panchekha \etal~\cite{panchekha15}, on the other hand, place emphasis on
 building an algorithm to efficiently improve numerical accuracy by arithmetic
@@ -326,20 +331,19 @@ $\hat{p}$, due to round-off errors, for a common input $i \in I$.  However,
 because expressions contain irrational computations such as square roots,
 and transcendental functions, \eg~trigonometry, logarithm and~\etc, exact
 computation is generally unattainable as it could require infinite precision
-in floating-point.  Instead, Herbie resorts to the \emph{multiple-precision
-floating-point reliability} (MPFR) library, and iteratively increases the
-precision used to compute the approximate results for $e$, until the leading
-64 bits in the result remain identical across iteration for all randomly
-sampled inputs $i \in I$.  Evaluating $e$ in the final precision $p$, therefore
-produces an \emph{almost exact} (AE)\footnote{%
+in floating-point.  Instead, Herbie resorts to \gls{mpfr}, and iteratively
+increases the precision used to compute the approximate results for $e$, until
+the leading 64 bits in the result remain identical across iteration for all
+randomly sampled inputs $i \in I$.  Evaluating $e$ in the final precision $p$,
+therefore produces an \emph{almost exact} (AE)\footnotemark[3] result for
+$e$.  It is notable that in formulae, the glyph $\hat{\,}$ is used to denote
+approximation, whereas the absence of $\hat{\,}$ indicates an AE result.
+\footnotetext[3]{%
     The original paper~\cite{panchekha15} uses ``exact'' to describe what is in
     fact a floating-point value with a precision $p$, which approximates the
     exact value.  Because this could potentially mislead, ``almost exact'' is
     used here instead.
 }
-result for $e$.  It is notable that in formulae, the glyph $\hat{\,}$ is used
-to denote approximation, whereas the absence of $\hat{\,}$ indicates an AE
-result.
 
 An iterative accuracy refinement procedure is then carried out to optimize an
 initial expression $e_0$.  This process identifies operators in the expression
@@ -354,14 +358,12 @@ a binary operator $+$ which accepts two input arguments $e_1$ and $e_2$,
 where each argument are subexpressions.  To guarantee the correctness of
 the round-off error analysis of $+$, its subexpressions are evaluated
 into respective AE values $v_1$ and $v_2$ for a given input $i$.  Using
-$v_1$ and $v_2$ as inputs, the operator $+$ is then evaluated twice, in
-precision $\hat{p}$ and in AE precision $p$ to produce $\hat{v}_i$ and $v_i$
-respectively.  The error between $x = \hat{v}_+$ and $y = v_+$ is defined
-as follows~\cite{panchekha15, schkufza14}, which counts the number of
-floating-point values between the approximate and exact results\footnote{%
-    $\mathsf{FP}$ is the set of floating-point values in a precision which was
-    not mentioned by the original author~\cite{panchekha15}.
-}:
+$v_1$ and $v_2$ as inputs, the operator $+$ is then evaluated twice,
+in precision $\hat{p}$ and in AE precision $p$ to produce $\hat{v}_i$
+and $v_i$ respectively.  The error between $x = \hat{v}_+$ and $y =
+v_+$ is defined as follows~\cite{panchekha15, schkufza14}, which counts
+the number of floating-point values between the approximate and exact
+results\footnotemark[4]:
 \begin{equation}
     \mathcal{E}(x, y) = \log_2 \left| \left\{
         z \in \mathsf{FP} \mid \min(x, y) \leq z \leq \max(x, y)
@@ -373,8 +375,12 @@ equivalently:
 \begin{equation}
     \mathrm{Error} = \sum_{i \in I} \mathcal{E}(\hat{v}_i, v_i).
 \end{equation}
-The top $M$ (Panchekha~\etal~\cite{panchekha15} uses $M = 4$) operators with
-the largest errors are then selected to be rewritten in the next stage.
+The top $M$ operators with the largest errors are then selected to be rewritten
+in the next stage.  Panchekha~\etal~use $M = 4$ in~\cite{panchekha15}.
+\footnotetext[4]{%
+    $\mathsf{FP}$ is the set of floating-point values in a precision which was
+    not mentioned by the original author~\cite{panchekha15}.
+}
 
 The second step is to rewrite the arithmetic expression, using the information
 gathered in the previous step about the largest local errors in the expression.
@@ -447,11 +453,12 @@ arithmetic expressions; for a complete numerical program transformation, not
 only is it necessary to support sequential execution of straight-line code,
 but also control-flow structures such as conditional branches and loops.
 However, the techniques in this research area to optimize numerical accuracy
-are currently not mature enough to be used in compilers and HLS tools.
+are currently not mature enough to be used in compilers and \gls{hls} tools.
 
-Tate~\etal~\cite{tate09} with their E-PEGs, enable equivalent programs to be
-discovered efficiently.  However their method do not consider the implications
-of rewriting arithmetic expressions in the data-flow on numerical accuracy.
+Tate~\etal~\cite{tate09} with their \glspl{epeg}, enable equivalent programs
+to be discovered efficiently.  However their method do not consider the
+implications of rewriting arithmetic expressions in the data-flow on numerical
+accuracy.
 
 Damouche~\etal~\cite{damouche15} developed a new semantics-based method, built
 on top of the foundation of APEGs from Ioualalen~\etal~\cite{ioualalen}, for

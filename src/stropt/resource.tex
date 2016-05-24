@@ -1,12 +1,13 @@
 \section{Resource Usage Analysis}
 \label{so:sec:resource}
 
-Here we define similar formal semantics which calculate an approximation to the
-FPGA resource usage of an expression, taking into account common subexpression
-elimination. This is important as, for example, rewriting $a \times b + a
-\times c$ as $a \times (b + c)$ in the larger expression $(a \times b + a
-\times c) + {(a \times b)}^2$ causes the common subexpression $a \times b$ to
-be no longer present in both terms. Our analysis must capture this.
+Here we define similar formal semantics which calculate an approximation to
+the \gls{fpga} resource usage of an expression, taking into account common
+subexpression elimination. This is important as, for example, rewriting $a
+\times b + a \times c$ as $a \times (b + c)$ in the larger expression $(a
+\times b + a \times c) + {(a \times b)}^2$ causes the common subexpression $a
+\times b$ to be no longer present in both terms. Our analysis must capture
+this.
 
 The analysis proceeds by labelling subexpressions. Intuitively, the
 set of labels $\labelset$, is used to assign unique labels to unique
@@ -34,10 +35,12 @@ $\lambda(l) = x$ and $\lambda(l^\prime) = \bot$.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.6]{sample_tree}
-    \caption{The DFG for the sample expression.}\label{so:fig:sample_tree}
+    \caption{%
+        The \gls{dfg} for the sample expression.
+    }\label{so:fig:sample_tree}
 \end{figure}
-For example, for the DFG in Figure~\ref{so:fig:sample_tree} we have for the
-variables $a$ and $b$:
+For example, for the \gls{dfg} in Figure~\ref{so:fig:sample_tree} we have for
+the variables $a$ and $b$:
 \begin{equation}
     \begin{aligned}
         (l_a, \lambda_a) &= (\fresh(a), [\fresh(a)\mapsto{a}])
@@ -46,8 +49,8 @@ variables $a$ and $b$:
     \end{aligned}
     \label{so:eq:variable_env}
 \end{equation}
-Then the environments are propagated in the flow direction of the DFG, using
-the following formulation of the labeling semantics:
+Then the environments are propagated in the flow direction of the \gls{dfg},
+using the following formulation of the labeling semantics:
 \begin{equation}
     \begin{aligned}
         (l_x, \lambda_x) \circ (l_y, \lambda_y)
@@ -92,14 +95,14 @@ Finally, for the full expression $(a + b) \times (a + b)$:
 \end{equation}
 From the above derivation, it is clear that the semantics capture the reuse
 of subexpressions. The estimation of area is performed by counting, for an
-expression, the numbers of additions, subtractions and multiplications in
-the final labeling environment, then calculating the number of LUTs used to
-synthesize the expression. If the number of operators is $n_\circ$ where
-$\circ\in\{+,-,\times\}$, then the number of LUTs in total for the expressions
-is estimated as $\sum_{\circ\in\{+,-,\times\}} A_\circ n_\circ$, where the
-value $A_\circ$ denotes the number of LUTs per $\circ$ operator, which is
-dependent on the type of the operator and the floating-point format used to
-generate the operator.
+expression, the numbers of additions, subtractions and multiplications in the
+final labeling environment, then calculating the number of \glspl{lut} used
+to synthesize the expression. If the number of operators is $n_\circ$ where
+$\circ\in\{+,-,\times\}$, then the number of \glspl{lut} in total for the
+expressions is estimated as $\sum_{\circ\in\{+,-,\times\}} A_\circ n_\circ$,
+where the value $A_\circ$ denotes the number of \glspl{lut} per $\circ$
+operator, which is dependent on the type of the operator and the floating-point
+format used to generate the operator.
 
 In the following sections, we use the function $\area: \aexprset\to\naturalset$
 to denote our resource usage analysis.

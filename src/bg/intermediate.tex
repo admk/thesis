@@ -1,28 +1,28 @@
 \section{Intermediate Representations}
 \label{bg:sec:intermediate}
 
-Intermediate representations (IRs) are data structures designed to be
-independent of the machine architecture and source language.  They are often
-invented with the intention to ease program analysis and optimization in mind,
-by abstracting information from the original program that are irrelevant to our
-objectives.  In this section, we introduce several categories of existing IRs,
-and delve deeper into the advantages and disadvantages of each.
+\Glspl{ir} are data structures designed to be independent of the machine
+architecture and source language.  They are often invented with the intention
+to ease program analysis and optimization in mind, by abstracting information
+from the original program that are irrelevant to our objectives.  In this
+section, we introduce several categories of existing \glspl{ir}, and delve
+deeper into the advantages and disadvantages of each.
 
 \subsection{Static Single Assignment Form and Control-Flow Graph}
 \label{bg:sub:ssa_cfg}
 
-Traditionally, \emph{static single assignment} (SSA) form~\cite{alpern88,
-rau92} together with \emph{control-flow graph} (CFG) are used to represent
-data- and control-flow of a program~\cite{cytron91}, because they are more
-favorable program representations on which optimization passes can be
-implemented, when compared to the original HLL or the output language.  SSA can
-be advantageous in implementing conventional optimization techniques, \eg~code
-motion~\cite{cytron86}, removing redundant computations~\cite{rosen88},
-and constant propagation~\cite{cytron91}.  Because the LLVM intermediate
-representation (LLVM IR)~\cite{llvm_ir} is based on SSA and CFG, and is
-commonly used in many HLS tools such as LegUp~\cite{legup}, we introduce SSA
-and CFG by compiling the dot-product example in Figure~\ref{bg:lst:dotprod}
-into as shown in Figure~\ref{bg:lst:dotprod_ll}.
+Traditionally, \gls{ssa} form~\cite{alpern88, rau92} together with \gls{cfg}
+are used to represent data- and control-flow of a program~\cite{cytron91},
+because they are more favorable program representations on which optimization
+passes can be implemented, when compared to the original \gls{hll} or the
+output language.  \Gls{ssa} can be advantageous in implementing conventional
+optimization techniques, \eg~code motion~\cite{cytron86}, removing redundant
+computations~\cite{rosen88}, and constant propagation~\cite{cytron91}.
+Because the \gls{llvmir}~\cite{llvm_ir} is based on \gls{ssa} and \gls{cfg},
+and is commonly used in many \gls{hls} tools such as LegUp~\cite{legup},
+we introduce \gls{ssa} and \gls{cfg} by compiling the dot-product
+example in Figure~\ref{bg:lst:dotprod} into \gls{llvmir} as shown in
+Figure~\ref{bg:lst:dotprod_ll}.
 \begin{figure}[ht]
     \centering
     \begin{lstlisting}[language=LLVM]
@@ -51,42 +51,43 @@ define float @dotprod(
 }
     \end{lstlisting}
     \caption{%
-        The compiled and optimized LLVM IR output from the dot-product example
-        in Figure~\ref{bg:lst:dotprod}.
+        The compiled and optimized \gls{llvmir} output from the dot-product
+        example in Figure~\ref{bg:lst:dotprod}.
     }\label{bg:lst:dotprod_ll}
 \end{figure}
 
-The LLVM IR of our example function consists of parts that are known as
-\emph{basic blocks} (BB), each BB in turn often contains a label that
-uniquely identifies the BB, a list of LLVM IR statements in SSA form
+The \gls{llvmir} of our example function consists of parts that are known
+as \glspl{bb}, each \gls{bb} in turn often contains a label that uniquely
+identifies the \gls{bb}, a list of \gls{llvmir} statements in \gls{ssa} form
 without any branches, \ie~the statements are executed sequentially, and a
-terminator instruction, which is typically a branch instruction that leads
-the control-flow to a different BB, by referencing a BB label, or a function
-return.
+terminator instruction, which is typically a branch instruction that leads the
+control-flow to a different \gls{bb}, by referencing a \gls{bb} label, or a
+function return.
 
-The LLVM framework implicitly constructs a CFG from the IR code, which is a
-directed graph representing the control-flow of a program.  The vertices in
-the CFG constitute BBs, while the edges indicate the control-flow directions
-(\ie~branches to other BBs), often with predicate attributes to determine
-whether the branch is taken.  For instance, we consider the first line of third
-BB in Figure~\ref{bg:lst:dotprod_ll}:
+The \gls{llvm} framework implicitly constructs a \gls{cfg} from the \gls{ir}
+code, which is a directed graph representing the control-flow of a program.
+The vertices in the \gls{cfg} constitute \glspl{bb}, while the edges indicate
+the control-flow directions (\ie~branches to other \glspl{bb}), often with
+predicate attributes to determine whether the branch is taken.  For instance,
+we consider the first line of third \gls{bb} in Figure~\ref{bg:lst:dotprod_ll}:
 \begin{lstlisting}[language=LLVM, basicstyle=\tt]
     ; <label>:2     ; preds = %2 %0
 \end{lstlisting}\vspace{-16.5pt}
 which indicates it has a label value $2$ and the control-flow coming to this
-BB is from either BB2 or BB0, here we use BB$n$ as a shorthand denoting a
-BB labelled $n$.  Additionally, this BB ends with the branch terminator
-instruction:
+\gls{bb} is from either \gls{bb}2 or \gls{bb}0, here we use \gls{bb}$n$ as a
+shorthand denoting a \gls{bb} labelled $n$.  Additionally, this \gls{bb} ends
+with the branch terminator instruction:
 \begin{lstlisting}[language=LLVM, basicstyle=\tt]
     br i1 %exitcond, label %1, label %2
 \end{lstlisting}\vspace{-16.5pt}
-This instruction directs the control-flow to BB1 or BB2, and the variable
-\verb|%exitcond| in the terminator instruction decides which branch is taken.
-Finally, the complete CFG is shown in Figure~\ref{bg:fig:dotprod_cfg}.  It is
-noteworthy that BB2 has two edges that leads to either \verb|BB1| or \verb|BB2|
-itself.  If \verb|%exitcond| evaluates to false (\textbf{ff}), then another
-iteration of BB2 will commence, otherwise (\textbf{tt}) the exit condition is
-satisfied and will lead the control-flow to \verb|BB1|.
+This instruction directs the control-flow to \gls{bb}1 or \gls{bb}2,
+and the variable \verb|%exitcond| in the terminator instruction decides
+which branch is taken.  Finally, the complete \gls{cfg} is shown in
+Figure~\ref{bg:fig:dotprod_cfg}.  It is noteworthy that \gls{bb}2 has two edges
+that leads to either \verb|BB1| or \verb|BB2| itself.  If \verb|%exitcond|
+evaluates to false (\textbf{ff}), then another iteration of \gls{bb}2 will
+commence, otherwise (\textbf{tt}) the exit condition is satisfied and will lead
+the control-flow to \verb|BB1|.
 \begin{figure}[ht]
     \centering
     \tikzstyle{block} = [
@@ -111,13 +112,15 @@ satisfied and will lead the control-flow to \verb|BB1|.
         \draw [->] (bb2) to[out=-150, in=150, loop]
             node[auto, swap]{\textbf{ff}} (bb2);
     \end{tikzpicture}
-    \caption{The CFG of the LLVM IR code in Figure~\ref{bg:lst:dotprod_ll}.
+    \caption{%
+        The \gls{cfg} of the \gls{llvmir} code in
+        Figure~\ref{bg:lst:dotprod_ll}.
     }\label{bg:fig:dotprod_cfg}
 \end{figure}
 
-Each BB contains sequential computations that are represented by SSA
-instructions.  The SSA form describes the operations in the original
-program, such that each variable in it is assigned exactly one value.
+Each \gls{bb} contains sequential computations that are represented by
+\gls{ssa} instructions.  The \gls{ssa} form describes the operations in the
+original program, such that each variable in it is assigned exactly one value.
 
 The sequence of instructions that assigns to \verb|%3|-\verb|%9| in
 Figure~\ref{bg:lst:dotprod_ll} carries out most of the computations in the
@@ -125,28 +128,29 @@ program.  It starts by reading \verb|A[i]| and \verb|B[i]|, multiplying them
 together, then add the result with \verb|d| to form a new variable, and
 finally, the iteration value is accumulated by $1$.  It may seem unusual that
 both the accumulated sum of products and the iteration value are not assigned
-to \verb|d| and \verb|i| respectively.  We can imagine two BBs, one initializes
-\verb|d| and \verb|i| to zeros, the other accumulates these two variables in
-a loop.  As all variables must be assigned once only, one of the BBs should
-use different names for these two variables.  When the control-flow of these
-two BBs join, we must introduce a way to read from the variables that are
-assigned in the two BBs in the succeeding BB\@.  A new instruction, called the
-$\phi$-function is therefore defined for our purpose.  The $\phi$-function
-accepts two variable names as its inputs, and produce the value of either
-variable as its output, determined by which preceding BB the control-flow came
-from.  For example, in LLVM IR, the instruction:
+to \verb|d| and \verb|i| respectively.  We can imagine two \glspl{bb}, one
+initializes \verb|d| and \verb|i| to zeros, the other accumulates these two
+variables in a loop.  As all variables must be assigned once only, one of
+the \glspl{bb} should use different names for these two variables.  When the
+control-flow of these two \glspl{bb} join, we must introduce a way to read
+from the variables that are assigned in the two \glspl{bb} in the succeeding
+\gls{bb}\@.  A new instruction, called the $\phi$-function is therefore defined
+for our purpose.  The $\phi$-function accepts two variable names as its inputs,
+and produce the value of either variable as its output, determined by which
+preceding \gls{bb} the control-flow came from.  For example, in \gls{llvmir},
+the instruction:
 \begin{lstlisting}[language=LLVM, basicstyle=\tt]
     %d.01 = phi float [ 0.000000e+00, %0 ], [ %8, %2 ]
 \end{lstlisting}\vspace{-16.5pt}
-shows that if the control-flow originated from BB0, then a constant zero is
-returned, otherwise the control-flow had to come from BB2 and the value of
-\verb|%8| is used instead.
+shows that if the control-flow originated from \gls{bb}0, then a constant zero
+is returned, otherwise the control-flow had to come from \gls{bb}2 and the
+value of \verb|%8| is used instead.
 
-The rationale of SSA is that we can abstract away anti- and output dependences
-by never assigning to the same variable twice, while only true data-flow
-dependences remain.  Anti-dependence is a dependence relation when a read
-operation must precede a write to the same variable, and output dependence is
-when two writes refer to the same location.  By removing these dependences
+The rationale of \gls{ssa} is that we can abstract away anti- and output
+dependences by never assigning to the same variable twice, while only true
+data-flow dependences remain.  Anti-dependence is a dependence relation when a
+read operation must precede a write to the same variable, and output dependence
+is when two writes refer to the same location.  By removing these dependences
 and deferring the analysis of them, certain program optimization analyses
 can run much more efficiently.  Analyses that may benefit from this include
 scheduling~\cite{rau94}, and liveness analysis (figure out the life time
@@ -154,75 +158,75 @@ of variables to reduce register requirements)~\cite{cytron91}, detecting
 opportunities of parallelism~\cite{cytron87}, and finding equivalent parts in
 the program~\cite{alpern88}.
 
-In a cyclic CFG, the control-flow could potentially revisit a BB, and
-instructions in this BB will inevitably assign a different value to the
-same variable, which forms anti- and output dependences, which could have a
-detrimental effect on efficient loop pipelining in some computing machines.  An
-alternative IR, the \emph{dynamic single assignment} (DSA) form~\cite{rau92}
-can therefore be used in place of the SSA to address this issue.  The DSA
-defines a linear sequence of virtual registers for each variable, such that
-every time the variable is assigned in a dynamic execution path, a new virtual
-register is used.
+In a cyclic \gls{cfg}, the control-flow could potentially revisit a \gls{bb},
+and instructions in this \gls{bb} will inevitably assign a different value to
+the same variable, which forms anti- and output dependences, which could have
+a detrimental effect on efficient loop pipelining in some computing machines.
+An alternative \gls{ir}, the \gls{dsa} form~\cite{rau92} can therefore be used
+in place of the \gls{ssa} to address this issue.  The \gls{dsa} defines a
+linear sequence of virtual registers for each variable, such that every time
+the variable is assigned in a dynamic execution path, a new virtual register is
+used.
 
-\subsubsection{Alternatives to SSA and CFG}
+\subsubsection{Alternatives to \gls{ssa} and \gls{cfg}}
 
-There are a number of alternative IRs that are similar in construction to
-the SSA and CFG approach in LLVM IR\@.  For instance, the data-dependence
-graph~\cite{rau94} introduced in Section~\ref{bg:sub:sdc} are designed
-for the purpose of capturing data-flow dependences in polyhedral methods.
-\emph{Data-flow graph} (DFG) is a popular alternative to SSA, which is often
-a directed acyclic graph (DAG) that do not contain cyclic paths.  In general,
-a DFG's vertices are input, output and operation nodes, and the edges capture
-the dependences between these nodes.  Both of them, however, generally do
-not preserve enough information for us to reconstruct a program from the
-graph itself.  A group of data structures, known as \emph{control/data flow
-graphs} (CDFGs)~\cite{orailoglu86}, is commonly used to represent programs in
-HLS tools, \eg~SPARK~\cite{gupta04}.  A CDFG resembles a CFG such as the one
-used in LLVM IR, but in lieu of using sequential instructions in SSA form in
-graph vertices, each vertex contains a \emph{data-flow graph} (DFG), where no
-SSA temporary variables are used and data-flow dependences can by explicitly
-identified by edges.
+There are a number of alternative \glspl{ir} that are similar in construction
+to the \gls{ssa} and \gls{cfg} approach in \gls{llvmir}\@.  For instance, the
+data-dependence graph~\cite{rau94} introduced in Section~\ref{bg:sub:sdc} are
+designed for the purpose of capturing data-flow dependences in polyhedral
+methods. \gls{dfg} is a popular alternative to \gls{ssa}, which is often a
+\gls{dag} that do not contain cyclic paths.  In general, a \gls{dfg}'s vertices
+are input, output and operation nodes, and the edges capture the dependences
+between these nodes.  Both of them, however, generally do not preserve enough
+information for us to reconstruct a program from the graph itself.  A group of
+data structures, known as \gls{cdfg}~\cite{orailoglu86}, is commonly used to
+represent programs in \gls{hls} tools, \eg~SPARK~\cite{gupta04}.  A \gls{cdfg}
+resembles a \gls{cfg} such as the one used in \gls{llvmir}, but in lieu of
+using sequential instructions in \gls{ssa} form in graph vertices, each vertex
+contains a \gls{dfg}, where no \gls{ssa} temporary variables are used and
+data-flow dependences can by explicitly identified by edges.
 
 
 \subsection{Equality Saturation}
 \label{bg:sub:equality_saturation}
 
-The IRs we discussed above are all used to analyze and transform the underlying
-program structure, so as to produce a new representation of the optimized
-program.  In a conventional optimizing compiler, program optimization is
-often carried out in a sequence of transformation passes, where each pass
-accepts a program, often written in a certain IR, and produces an optimized
-program in the IR\@.  The traditional practice is to always apply these
-optimization phases in a fixed order, but a good ordering of these phases
-is crucial to achieve a good optimized result, and the optimal ordering
+The \glspl{ir} we discussed above are all used to analyze and transform the
+underlying program structure, so as to produce a new representation of the
+optimized program.  In a conventional optimizing compiler, program optimization
+is often carried out in a sequence of transformation passes, where each pass
+accepts a program, often written in a certain \gls{ir}, and produces an
+optimized program in the \gls{ir}\@.  The traditional practice is to always
+apply these optimization phases in a fixed order, but a good ordering of these
+phases is crucial to achieve a good optimized result, and the optimal ordering
 varies across applications being compiled~\cite{almagor04}.  The process of
 finding the optimal ordering is known as the \emph{phase-ordering problem},
 which is in general undecidable~\cite{touati06} and hence is a difficult
-problem.  Moreover, programs running CPUs or GPUs usually care only about
-their throughput, in contrast, designs on FPGAs concern us with additional
-objectives besides run time, such as power consumption and resource utilization
-that impact the quality of synthesized circuit.  Multiple designs that
-trade-off these objectives could exist, and which design to choose relies
-on the specifics of the use case.  It is therefore sensible to explore the
-design space by optimizing multiple objectives simultaneously.  For the
-above reasons, it is desirable to have an IR and the associated optimization
-procedures to efficiently discover equivalent structures that lead to different
-implementations of the original program.
+problem.  Moreover, programs running \glspl{cpu} or \glspl{gpu} usually care
+only about their throughput, in contrast, designs on \glspl{fpga} concern us
+with additional objectives besides run time, such as power consumption and
+resource utilization that impact the quality of synthesized circuit.  Multiple
+designs that trade-off these objectives could exist, and which design to
+choose relies on the specifics of the use case.  It is therefore sensible to
+explore the design space by optimizing multiple objectives simultaneously.
+For the above reasons, it is desirable to have an \gls{ir} and the associated
+optimization procedures to efficiently discover equivalent structures that lead
+to different implementations of the original program.
 
 In software, a novel approach called \emph{equality saturation} is proposed
 in~\cite{tate09} to find multiple possible optimized variants of the original
-program, and subsequently deal with the phase-ordering problem.  It creates
-a new graph-based IR, \emph{program expression graph} (PEG), to encode the
-effects of executing the program.
+program, and subsequently deal with the phase-ordering problem.  It creates a
+new graph-based \gls{ir}, \gls{peg}, to encode the effects of executing the
+program.
 
-To begin, we review the structure of the PEG, by considering a simple loop
-example in Figure~\ref{bg:fig:factorial}.  By understanding how the PEG can
-be evaluated for the output values, we can interpret how the PEG captures the
-control- and data-flow information of the program.  PEGs, similar to arithmetic
-expressions expressed in a tree structure, can be evaluated in a bottom-up
-fashion, by recursively propagating computed values from the leave nodes to the
-root of the tree.  However, unlike arithmetic expressions which are acyclic,
-edges in PEGs may form cycles to express loops in the original program.
+To begin, we review the structure of the \gls{peg}, by considering a simple
+loop example in Figure~\ref{bg:fig:factorial}.  By understanding how the
+\gls{peg} can be evaluated for the output values, we can interpret how the
+\gls{peg} captures the control- and data-flow information of the program.
+\glspl{peg}, similar to arithmetic expressions expressed in a tree structure,
+can be evaluated in a bottom-up fashion, by recursively propagating computed
+values from the leave nodes to the root of the tree.  However, unlike
+arithmetic expressions which are acyclic, edges in \glspl{peg} may form cycles
+to express loops in the original program.
 \begin{figure}[ht]
     \newsavebox{\factlstbox}
     \begin{lrbox}{\factlstbox}
@@ -242,21 +246,22 @@ while (y <= 10)
             \usebox{\factlstbox}
         \end{minipage}\label{bg:lst:factorial_c}
     }
-    \subfloat[The resulting PEG.]{%
+    \subfloat[The resulting \gls{peg}.]{%
         \begin{minipage}{0.5\textwidth}
             \includegraphics[width=\textwidth]{bg/fig/factorial_peg.png}
         \end{minipage}\label{bg:fig:factorial_peg}
     }
     \caption{%
         A simple loop which computes the factorial of 10, and the resulting
-        PEG\@.  This example and its PEG, showing computations that lead to the
-        final \texttt{x} and \texttt{y}, is taken from~\cite{tate09}.
+        \gls{peg}\@.  This example and its \gls{peg}, showing computations
+        that lead to the final \texttt{x} and \texttt{y}, is taken
+        from~\cite{tate09}.
     }\label{bg:fig:factorial}
 \end{figure}
 
 \subsubsection{Data-Flow Nodes}
 
-All loops in the PEG are formed by $\theta$ nodes, which is used in the
+All loops in the \gls{peg} are formed by $\theta$ nodes, which is used in the
 following form:
 \begin{center}
     \vspace{-16.5pt}
@@ -352,7 +357,7 @@ The subsequent $\neg$ node then negates all elements in the list:
 
 The $\theta$ node encodes an infinite sequence of computed values, whereas
 the output value of the program is a scalar.  By further representing
-control-flow information in PEG, it becomes possible to refer to a
+control-flow information in \gls{peg}, it becomes possible to refer to a
 single value in this sequence, as the output of the program.  To do so,
 Tate~\etal~\cite{tate09} further introduce $\mathrm{pass}$ and $\mathrm{eval}$
 nodes.  The $\mathrm{pass}$ node finds the first true ($\truelit$) value
@@ -370,43 +375,43 @@ factorial of 10.
 
 By using $\mathrm{pass}$ and $\mathrm{eval}$ nodes to represent the
 control-flow in an algebraic fashion, and mixing data- and control-flows
-together in the graphical representation, PEGs provide us with greater
-opportunities to optimize data-flow across control-flow boundaries and
-\emph{vice versa}.  Simple equivalence rules can be defined for these nodes
-algebraically.  For instance, arithmetic operators can be distributed
+together in the graphical representation, \glspl{peg} provide us with
+greater opportunities to optimize data-flow across control-flow boundaries
+and \emph{vice versa}.  Simple equivalence rules can be defined for these
+nodes algebraically.  For instance, arithmetic operators can be distributed
 over $\theta$ and $\mathrm{eval}$, \eg~$\mathrm{eval}(j, k) + i \equiv
 \mathrm{eval}(j + i, k)$.  Complex transformations can therefore be deductively
 constructed from these simple equivalence rules.
 
 \subsubsection{Equivalence Finding}
 
-By applying transformation passes to the PEG, their approach detects the
-incremental modifications, and append these changes to the original PEG\@.  The
-new changes, represented as extra structures in the PEG, are linked to their
-corresponding equivalent nodes by equivalence edges.  These edges indicate a
-pair of subgraphs are equivalent, forming a PEG with equivalent structures,
-or named E-PEG, that could capture multiple PEGs in the same structure.  The
-resulting E-PEG is similar to the one in Figure~\ref{bg:fig:epeg}, where dashed
-edges indicate equivalences.  It is notable that each edge allows a binary
-choice, therefore the number of PEGs can be represented in an E-PEG could be
-exponential in the number of equivalence edges.
+By applying transformation passes to the \gls{peg}, their approach detects
+the incremental modifications, and append these changes to the original
+\gls{peg}\@.  The new changes, represented as extra structures in the
+\gls{peg}, are linked to their corresponding equivalent nodes by equivalence
+edges.  These edges indicate a pair of subgraphs are equivalent, forming a
+\gls{epeg}, that could capture multiple \glspl{peg} in the same structure.  The
+resulting \gls{epeg} is similar to the one in Figure~\ref{bg:fig:epeg}, where
+dashed edges indicate equivalences.  It is notable that each edge allows a
+binary choice, therefore the number of \glspl{peg} can be represented in an
+\gls{epeg} could be exponential in the number of equivalence edges.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.8\linewidth]{bg/fig/epeg.png}
-    \caption{An simple E-PEG example, taken from~\cite{tate09}.
+    \caption{An simple \gls{epeg} example, taken from~\cite{tate09}.
     }\label{bg:fig:epeg}
 \end{figure}
 
-By repeatedly applying all possible passes to the E-PEG, this graph will
+By repeatedly applying all possible passes to the \gls{epeg}, this graph will
 eventually saturate, \ie~no more equivalent structure can be added to the graph
 because all possible equivalences are now discovered.  This process and the
-resulting E-PEG is more space-time efficient than enumerating all possible PEGs
-along the path, because E-PEG encourages sharing common subgraphs, even across
-equivalent edges.  This saturated graph can always be produced regardless of in
-what order we apply the passes, hence preventing the phase-ordering problem.
-Furthermore, E-PEG defers the decision of whether an optimization should be
-committed until we have reached full saturation, allowing the global optima to
-be discovered.  In contrast, because each optimization pass in a conventional
-compiler is performed once, the compilers must make the decision to commit
-changes immediately after applying the optimization, which consequently often
-results in local optima.
+resulting \gls{epeg} is more space-time efficient than enumerating all possible
+\glspl{peg} along the path, because \gls{epeg} encourages sharing common
+subgraphs, even across equivalent edges.  This saturated graph can always be
+produced regardless of in what order we apply the passes, hence preventing
+the phase-ordering problem.  Furthermore, \gls{epeg} defers the decision
+of whether an optimization should be committed until we have reached full
+saturation, allowing the global optima to be discovered.  In contrast, because
+each optimization pass in a conventional compiler is performed once, the
+compilers must make the decision to commit changes immediately after applying
+the optimization, which consequently often results in local optima.

@@ -1,24 +1,26 @@
 \section{Equivalent Expressions Analysis}
 \label{so:sec:equivalent}
 
-In earlier sections, we introduce semantics that define additions and
-multiplications on intervals, then gradually transition to error semantics that
-compute bounds of values and errors, as well as labelling environments that
-allow common subexpression elimination, by defining arithmetic operations on
-these structures. In this section, we now take the leap from not only analyzing
-an expression for its quality, to defining arithmetic operations on sets of
-equivalent expressions, and use these rules to discover equivalent expressions.
-Before this, it is necessary to formally define equivalent expressions and
-functions to discover them.
+In Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background}, we introduce
+semantics that define additions and multiplications on intervals, then
+gradually transition to error semantics that compute bounds of values and
+errors.  In Section~\ref{so:sec:resource}, an alternative semantics that
+eliminate common subexpressions are introduced, which we call the labelling
+environments.  The environments define the meaning of arithmetic operations
+on the environments.  In this section, we now take the leap from not only
+analyzing an expression for its quality, to defining arithmetic operations on
+sets of equivalent expressions, and use these rules to discover equivalent
+expressions.  Before this, it is necessary to formally define equivalent
+expressions and functions to discover them.
 
 \subsection{Discovering Equivalent Expressions}
 
 From an expression, a set of equivalent expressions can be discovered by our
 \emph{equivalence relation} $\eqrel$ on the set of all arithmetic expressions
-$\aexprset$, and $\eqrel \subset \aexprset\times\aexprset$.  It is noteworthy
-that a relation is said to be an equivalence relation when it is reflexive,
-symmetric and transitive, \ie~for all $e_1, e_2, e_3 \in \aexprset$, we
-have the following rules in our inference system:
+$\aexprset$, and $\eqrel$ is a strict subset of $\aexprset\times\aexprset$.  It
+is noteworthy that a relation is said to be an equivalence relation when it is
+reflexive, symmetric and transitive, \ie~for all $e_1, e_2, e_3 \in \aexprset$,
+we have the following rules in our inference system:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Reflexivity}] & \quad &
@@ -74,10 +76,10 @@ explored with our relation:
         & [\mathrm{Distrib}_5 (/)] & \quad &
             e_1 / e_3 + e_2 / e_4 \eqrel
             (e_1 \times e_4 + e_2 \times e_3) / (e_3 \times e_4), \\
-        & [\mathrm{Distrib}_6] & \quad &
+        & [\mathrm{Distrib}_6 (-)] & \quad &
             \forall \opsymbol \in \{ +, - \}:
             -(e_1 \opsymbol e_2) \eqrel (-e_1) \opsymbol (-e_2), \\
-        & [\mathrm{Distrib}_7] & \quad &
+        & [\mathrm{Distrib}_7 (-)] & \quad &
             \forall \opsymbol \in \{ \times, / \}:
             -(e_1 \opsymbol e_2)
             \eqrel (-e_1) \opsymbol e_2 \eqrel e_1 \opsymbol (-e_2).
@@ -185,18 +187,18 @@ transitivity in~\eqref{so:eq:equivalence_relation} from $\eqrel$, as
 we can have the flexibility to apply $\eqgenrel$ in a series of steps
 to generate equivalent expressions.  Secondly, we further disallow
 symmetry in~\eqref{so:eq:equivalence_relation} for the reduction rules
-in~\ref{so:eq:constant_propagation}~and~\ref{so:eq:common_reduction} to reduce
-the space-time complexity of the search space, because often performance
+in~\eqref{so:eq:constant_propagation}~and~\eqref{so:eq:common_reduction} to
+reduce the space-time complexity of the search space, because often performance
 metrics, such as accuracy and resource usage, improve when the number of terms
 in the expression is reduced.
 
 \begin{definition}
-    We call a function an \emph{equivalent expression generator} (EEG) function
-if and only if the function takes as an input an initial set of equivalent
-expressions, and generates a set of equivalent expressions.
+    We call a function an \gls{eeg} function if and only if the function takes
+    as an input an initial set of equivalent expressions, and generates a set
+    of equivalent expressions.
 \end{definition}
 
-For instance, an EEG function $\eqstep: \powersetof\aexprset \to
+For instance, an \gls{eeg} function $\eqstep: \powersetof\aexprset \to
 \powersetof\aexprset$, where $\powersetof\aexprset$ denotes the power set of
 $\aexprset$, can be defined as follows:
 \begin{equation}
@@ -208,9 +210,9 @@ $\aexprset$, can be defined as follows:
 where $\epsilon$ is a set of equivalent expressions.
 
 \begin{definition}
-    We say an EEG function $f$ is \emph{$\cup$-distributive} if and only if
-    the function satisfies $f(\epsilon_a \cup \epsilon_b) = f(\epsilon_a) \cup
-    f(\epsilon_b)$.
+    We say an \gls{eeg} function $f$ is \emph{$\cup$-distributive} if and only
+    if the function satisfies $f(\epsilon_a \cup \epsilon_b) = f(\epsilon_a)
+    \cup f(\epsilon_b)$.
 \end{definition}
 \begin{corollary}
     By the definition of $\eqstep$ in~\eqref{so:eq:eqstep}, it is clear that
@@ -222,7 +224,8 @@ where $\epsilon$ is a set of equivalent expressions.
 
 We further define a functional $\closure_N: ( \powersetof\aexprset \to
 \powersetof\aexprset ) \to ( \powersetof\aexprset \to$ $\powersetof\aexprset
-)$, which takes as an input a EEG function and produces another EEG function:
+)$, which takes as an input a \gls{eeg} function and produces another \gls{eeg}
+function:
 \begin{equation}
     f^\prime (\epsilon) \defeq
         \bigcup_{i = 0}^N f^i(\epsilon),
@@ -230,13 +233,13 @@ We further define a functional $\closure_N: ( \powersetof\aexprset \to
     \label{so:eq:transitive_generator}
 \end{equation}
 here, $f$ and $f^\prime$, respectively the input and output of $\closure_N$,
-are both EEG functions.  In the rest of the section, we omit the brackets
-surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N
-(f)$ can be written as $\closure_N f$.
+are both \gls{eeg} functions.  In the rest of the section, we omit the brackets
+surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N (f)$ can
+be written as $\closure_N f$.
 
 \begin{lemma}
     $\closure_N f(\epsilon) = \epsilon \cup f \left( \closure_{N-1} f(\epsilon)
-    \right)$ for any $\cup$-distributive EEG function $f$.
+    \right)$ for any $\cup$-distributive \gls{eeg} function $f$.
     {}\label{so:lem:transitive}
 \end{lemma}
 \begin{proof}
@@ -265,23 +268,27 @@ by $f$, from an initial set of equivalent expressions $\epsilon$:
         \bigcup_{i = 0}^\infty \eqstep^i(\epsilon).
     \label{so:eq:transitive_closure}
 \end{equation}
-Alternatively, we can view $\closure_\infty (f)$ as computing the
-least fixpoint of $f$.  We may further omit the $\infty$ from
-$\closure_\infty$ to denote the transitive closure, \eg~the above example
-in~\ref{so:eq:transitive_closure} can be simplified to be $\closure \eqstep
-(\epsilon)$.
+Alternatively, we can view $\closure_\infty f$ as computing the
+least fixpoint of $g$:
+\begin{equation}
+    \lfp g = \bigcup_{i = 0}^\infty g^i(\varnothing),
+    \quad \text{where~} g(\varepsilon) \defeq f(\varepsilon) \cup \epsilon.
+\end{equation}
+We may further omit the $\infty$ from $\closure_\infty$ to denote the
+transitive closure, \eg~the above example in~\eqref{so:eq:transitive_closure}
+can be simplified to be $\closure \eqstep (\epsilon)$.
 
 In practice, it is often infeasible to generate the full transitive closure of
 a given expression, we therefore impose further constraints on how we discover
 equivalent expressions.
 
-First, instead of exploring the full transitive closure, that is, by allowing
+Firstly, instead of exploring the full transitive closure, that is, by allowing
 the number of steps $N$ in~\eqref{so:eq:transitive_generator} to be infinite,
 we may restrict $N$ to be a small finite value to allow a smaller set of
 equivalent expressions to be computed.
 
-Second, the complexity of equivalent expression finding is reduced by fixing
-the structure of subexpressions at a certain depth $k$ in the original
+Secondly, the complexity of equivalent expression finding is reduced by
+fixing the structure of subexpressions at a certain depth $k$ in the original
 expression.  The definition of depth is given as follows: first the root of
 the parse tree of an expression is assigned depth $d = 1$; then we recursively
 define the depth of a node as one more than the depth of its greatest-depth
@@ -303,11 +310,12 @@ in~\eqref{so:eq:transitive_closure} is at least $\bigo((2n - 3)\,!!)$ where $n$
 is the number of terms in an expression, as we discussed earlier.
 
 Finally, we use the iterative algorithm in Figure~\ref{so:alg:closure} to
-efficiently compute $\closure_N f$, where $f$ is a $\cup$-distributive EEG\@.
-In each iteration, we keep track of the equivalent expressions that are newly
-discovered in the current iteration, so that in the next iteration we apply
-$\eqgenrel$ only to those expressions, to avoid redundant computation.  We then
-continue to prove that this algorithm indeed computes $\closure_N f$.
+efficiently compute $\closure_N f$, where $f$ is a $\cup$-distributive
+\gls{eeg}\@.  In each iteration, we keep track of the equivalent expressions
+that are newly discovered in the current iteration, so that in the next
+iteration we apply $\eqgenrel$ only to those expressions, to avoid redundant
+computation.  We then continue to prove that this algorithm indeed computes
+$\closure_N f$.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
@@ -327,14 +335,14 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
     \end{algorithmic}
     \caption{%
         Our algorithm to discover a set of equivalent expressions with
-        a $\cup$-distributive EEG $f$ from an initial set of equivalent
+        a $\cup$-distributive \gls{eeg} $f$ from an initial set of equivalent
         expressions $\epsilon$.
     }\label{so:alg:closure}
 \end{figure}
 \begin{theorem}
     In the algorithm in Figure~\ref{so:alg:closure}, at iteration $n$, the set
     of equivalent expressions $s_n$ computes exactly $\closure_n f(\epsilon)$,
-    if $f$ is a $\cup$-distributive EEG\@.
+    if $f$ is a $\cup$-distributive \gls{eeg}\@.
 \end{theorem}
 \begin{proof}
     We start by assuming that at iteration $m > 0$, $s_m = \closure_m
@@ -386,9 +394,9 @@ continue to prove that this algorithm indeed computes $\closure_N f$.
 
 \subsection{Pareto Frontier}
 
-Because we optimize expressions in two quality metrics, \ie~the accuracy
-of computation and the estimate of FPGA resource utilization, there is a
-trade-off between them. We desire the largest subset of all equivalent
+Because we optimize expressions in two quality metrics, \ie~the accuracy of
+computation and the estimate of \gls{fpga} resource utilization, there is
+a trade-off between them. We desire the largest subset of all equivalent
 expressions $E$ discovered such that in this subset, no expression dominates
 any other expression, in terms of having both better area and better
 accuracy. This subset is known as the \emph{Pareto frontier}~\cite{legriel10}.
@@ -400,7 +408,7 @@ prune suboptimal ones in one pass.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
-        \Function{Frontier}{$\epsilon$}
+        \Function{$\frontier$}{$\epsilon$}
             \State{$\mathit{frontier} \gets \epsilon$}
             \For{$e \in \epsilon$}
                 \For{$e^\prime \in \epsilon$}
@@ -454,8 +462,8 @@ constructs a set of equivalent subexpressions for the parent node from two
 child expressions, and uses the depth limited equivalence function $\closure
 \eqstep_k$ to work out a larger set of equivalent expressions. To reduce
 computation effort, we select only those expressions on the Pareto frontier
-for the propagation in the DFG\@. Although in worst case the complexity of
-this process is exponential, the selection by Pareto optimality accelerates
+for the propagation in the \gls{dfg}\@. Although in worst case the complexity
+of this process is exponential, the selection by Pareto optimality accelerates
 the algorithm significantly. For example, for the subexpression $a + b$ of our
 sample expression:
 \begin{equation}
@@ -476,28 +484,28 @@ sample expression:
                 \right).
     \end{aligned}
 \end{equation}
-Alternatively, we could view the semantics in terms of DFGs representing the
-algorithm for finding equivalent expressions. The parsing of an expression
-directly determines the structure of its DFG\@. For instance, consider the
-tree structure of the expression $e_0 = (a + b) \times (a + b)$, as shown in
-Figure~\ref{so:fig:sample_tree}. This tree structure can be used to generate
-a DFG illustrated in Figure~\ref{so:fig:tree_expr_flow}, which when data-flow
-analysis is applied, discovers a set of equivalent expressions to $e_0$. The
-circles labeled $3$ and $7$ in this diagram are shorthands for the operation
-$E_+$ and $E_\times$ respectively, where $E_+$ and $E_\times$ is defined
-in~\eqref{so:eq:equivalence_semantics}.
+Alternatively, we could view the semantics in terms of \glspl{dfg} representing
+the algorithm for finding equivalent expressions. The parsing of an expression
+directly determines the structure of its \gls{dfg}\@. For instance, consider
+the tree structure of the expression $e_0 = (a + b) \times (a + b)$, as shown
+in Figure~\ref{so:fig:sample_tree}. This tree structure can be used to generate
+a \gls{dfg} illustrated in Figure~\ref{so:fig:tree_expr_flow}, which when
+data-flow analysis is applied, discovers a set of equivalent expressions to
+$e_0$. The circles labeled $3$ and $7$ in this diagram are shorthands for the
+operation $E_+$ and $E_\times$ respectively, where $E_+$ and $E_\times$ is
+defined in~\eqref{so:eq:equivalence_semantics}.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.6]{tree_expr_flow}
-    \caption{The DFG for finding equivalent expressions of
+    \caption{The \gls{dfg} for finding equivalent expressions of
     $(a + b) \times (a + b)$.}\label{so:fig:tree_expr_flow}
 \end{figure}
 
 For our example in Figure~\ref{so:fig:tree_expr_flow},
-similar to the construction of data flow equations in
+similar to the construction of data-flow equations in
 Section~\ref{bg:sec:abstract_interpretation} of Chapter~\ref{chp:background},
-we can produce a set of equations from the data flow of the DFG, which now
-produces equivalent expressions:
+we can produce a set of equations from the data-flow of the \gls{dfg}, which
+now produces equivalent expressions:
 \begin{equation}
     \begin{aligned}
         \enter{1} &= \enter{1} \cup \{a\}, &
@@ -513,15 +521,15 @@ produces equivalent expressions:
     \end{aligned}
     \label{so:eq:tree_expr_flow}
 \end{equation}
-Because of loops in the DFG, it is no longer trivial to find the solution.  In
-general, the analysis equations are solved iteratively, using the DFA approach
-discussed in Section~\ref{bg:sub:data_flow} of Chapter~\ref{chp:background}. We
-can regard the set of equations as a single transfer function $F$ as in
-\eqref{so:eq:transfer_function}, where the function $F$ takes as input
-the variables $A(1), \ldots, A(10)$ appearing in the right-hand sides of
-\eqref{so:eq:tree_expr_flow} and outputs the values $A(1), \ldots, A(10)$
-appearing in the left-hand sides. Our aim is then to find an input $\vec{x}$ to
-$F$ such that $F(\vec{x}) = \vec{x}$, \ie~a fixpoint of $F$.
+Because of loops in the \gls{dfg}, it is no longer trivial to find the
+solution.  In general, the analysis equations are solved iteratively, using
+the \gls{dfa} approach discussed in Section~\ref{bg:sub:data_flow} of
+Chapter~\ref{chp:background}. We can regard the set of equations as a single
+transfer function $F$ as in \eqref{so:eq:transfer_function}, where the function
+$F$ takes as input the variables $A(1), \ldots, A(10)$ appearing in the
+right-hand sides of \eqref{so:eq:tree_expr_flow} and outputs the values $A(1),
+\ldots, A(10)$ appearing in the left-hand sides. Our aim is then to find an
+input $\vec{x}$ to $F$ such that $F(\vec{x}) = \vec{x}$, \ie~a fixpoint of $F$.
 \begin{equation}
       F((\enter{1}, \ldots, \enter{10}))
     = (\enter{1} \cup \{a\}, \ldots, \frontier(\enter{9})).
@@ -552,15 +560,15 @@ bottom-up hierarchy.
 
 The problem with the semantics above is that the time complexity of $\closure
 \eqstep_k$ scales poorly, since the worst case number of subexpressions needed
-to explore increases exponentially with $k$. Therefore an alternative method
-is to optimize it by changing the structure of the DFG slightly, as shown in
-Figure~\ref{so:fig:tree_expr_flow_greedy}. The difference is that at each
+to explore increases exponentially with $k$. Therefore an alternative method is
+to optimize it by changing the structure of the \gls{dfg} slightly, as shown
+in Figure~\ref{so:fig:tree_expr_flow_greedy}. The difference is that at each
 iteration, the Pareto frontier filters the results to decrease the number of
 expressions to process for the next iteration.
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.6]{tree_expr_flow_greedy}
-    \caption{The alternative DFG for $(a + b) \times (a + b)$.
+    \caption{The alternative \gls{dfg} for $(a + b) \times (a + b)$.
     }\label{so:fig:tree_expr_flow_greedy}
 \end{figure}
 

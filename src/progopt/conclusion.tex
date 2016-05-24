@@ -1,15 +1,15 @@
 \section{Summary}
 \label{po:sec:conclusion}
 
-In this chapter, we propose a new method and develop a tool that performs general
-numerical program transformation for the trade-off optimization among accuracy,
-and two resource related metrics, LUT and DSP utilizations.  To optimize a
-numerical program, it starts by abstracting the program into a metasemantic
-intermediate representation (MIR), which we designed to extract the essence of
-executing the program, and removes unnecessary informations such as temporary
-variables, interleaving of non-dependent statement, and \etc.  The MIR is then
+In this chapter, we propose a new method and develop a tool that performs
+general numerical program transformation for the trade-off optimization
+among accuracy, and two resource related metrics, \gls{lut} and \gls{dsp}
+utilizations.  To optimize a numerical program, it starts by abstracting the
+program into a \gls{mir}, which we designed to extract the essence of executing
+the program, and removes unnecessary informations such as temporary variables,
+interleaving of non-dependent statement, and \etc.  The \gls{mir} is then
 optimized efficiently by discovering a wide range of equivalent trade-off
-implementations of the original MIR\@.  An optimized MIR can then be chosen to
-be translated into a numerical program.  By using our tool, we optimize the
-accuracy of our sample applications by up to 65\% in actual program executions.
-
+implementations of the original \gls{mir}\@.  An optimized \gls{mir} can then
+be chosen to be translated into a numerical program.  By using our tool, we
+optimize the accuracy of our sample applications by up to 65\% in actual
+program executions.
