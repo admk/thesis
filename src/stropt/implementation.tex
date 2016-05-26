@@ -1,27 +1,31 @@
 \section{Implementation}
 \label{so:sec:implementation}
 
-The majority of our tool, \soap, is implemented in Python. For computing
-errors in real arithmetic, we use exact arithmetic based on rational
-numbers within the \gls{gmp} library~\cite{gmp}. We also use the \gls{mpfr}
-library~\cite{mpfr} for access to floating-point rounding modes and arbitrary
-precision floating-point computation.
+The majority of \soap, is implemented in Python.  For computing errors in
+real arithmetic, we use exact arithmetic based on rational numbers within the
+\gls{gmp} library~\cite{gmp}.  In case when exact arithmetic is not possible
+because of high computational costs, floating-point arithmetic can be used
+to efficiently and safely bound round-off error values.  We also use the
+\gls{mpfr} library~\cite{mpfr} for access to floating-point rounding modes and
+arbitrary precision floating-point computation.
 
 Because of the workload of equivalent expression finding, the underlying
 algorithm is optimized in many ways. First, for each iteration, the relation
-finding function $\eqstep_k$ is only applied to newly discovered expressions in
-the previous iteration, using the algorithm in Figure~\ref{so:alg:closure}. The
-second optimization is to cache results of function calls such as $\eqstep_k$,
-$\area$ and $\error$, since there is a large chance that these results
-from subexpressions are reused several times, subexpressions are also
-maximally shared to eliminate duplication in memory. Third, the computation of
-$\eqstep_k$ is fully multithreaded.
+finding function $\eqstep_k$ is only applied to newly discovered expressions
+in the previous iteration, using the algorithm in Figure~\ref{so:alg:closure}.
+The second optimization is to cache results of function calls such as
+$\eqstep_k$, $\area$ and $\error$, since there is a large chance that these
+results from subexpressions are reused several times, subexpressions are also
+maximally shared to eliminate duplication in memory.  Thirdly, the computation
+of $\eqstep_k$ is fully multi-threaded.
 
 The resource statistics of operators are provided using FloPoCo~\cite{flopoco}
-and \gls{xst}~\cite{xst}. Initially, For each combination of an operator, an
-exponent width between 5 and 16, and a mantissa width ranging from 10 to 113,
-2496 distinct implementations are generated using FloPoCo. All of them are
-optimized to use \gls{dsp} blocks. They are then synthesized using \gls{xst},
-targeting a Virtex-6 \gls{fpga} device (XC6VLX760). Because \glspl{lut} are
-generally more contrained resources than \gls{dsp} blocks in floating-point
-computations, we provide synthesis statistics in \glspl{lut} only.
+and \gls{xst}~\cite{xst}.  Initially, For each combination of an operator,
+an exponent width between 5 and 16, and a mantissa width ranging from 10 to
+113, a total of 2496 distinct implementations are generated using FloPoCo.
+All of them are optimized to use \gls{dsp} blocks.  They are then synthesized
+using \gls{xst}, targeting a Virtex-6 \gls{fpga} device (XC6VLX760).  Because
+\glspl{lut} are generally more constrained resources than \gls{dsp} blocks in
+floating-point computations, we provide synthesis statistics in \glspl{lut}
+only.  Finally, an \gls{rtl} code generation backend can produce synthesizable
+code from an optimized candidate expression.

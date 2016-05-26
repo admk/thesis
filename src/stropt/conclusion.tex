@@ -2,21 +2,21 @@
 \label{so:sec:conclusion}
 
 We provide a formal approach to the optimization of arithmetic expressions
-for both accuracy and resource usage in high-level synthesis. Our method and
-the associated tool, \soap, encompass three kind of semantics that describe
-the accumulated roundoff errors, count operators in expressions considering
-common subexpression elimination, and derive equivalent expressions. For a
-set of input expressions, the proposed approach works out the respective
-sets of equivalent expressions in a hierarchical bottom-up fashion, with a
-windowing depth limit and Pareto selection to help reduce the complexity of
-equivalent expression discovery. Using our tool, we improve either the accuracy
-of our sample expressions or the resource utilization by up to 60\%, over the
-originals under single precision. Our tool enables a high-level synthesis tool
-to optimize the structure as well as the precision of arithmetic expressions,
-then to automatically choose an implementation that satisfies accuracy and
-resource usage constraints.
+for both accuracy and resource usage in high-level synthesis. The method
+proposed in this chapter and the associated tool, \soap, encompass three kind
+of semantics that describe the accumulated roundoff errors, count operators in
+expressions considering common subexpression elimination, and derive equivalent
+expressions. For a set of input expressions, the proposed approach works out
+the respective sets of equivalent expressions in a hierarchical bottom-up
+fashion, with a windowing depth limit and Pareto selection to help reduce the
+complexity of equivalent expression discovery. Using our tool, we improve
+either the accuracy of our sample expressions or the resource utilization by
+up to 60\%, over the originals under single precision. Our tool enables a
+high-level synthesis tool to optimize the structure as well as the precision
+of arithmetic expressions, then to automatically choose an implementation that
+satisfies accuracy and resource usage constraints.
 
-Because of the semantics nature of our approach, it provides the necessary
+Because we underpin our approach in formal semantics, it provides the necessary
 foundation which permits us to extend the method for general numerical program
 transformation in high-level synthesis. Therefore in Chapter~\ref{chp:progopt},
 we base ourselves on the methodologies developed in this chapter, and propose

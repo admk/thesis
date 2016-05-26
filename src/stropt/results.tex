@@ -4,16 +4,16 @@
 Because Martel's approach defers selecting optimal options until the end of
 equivalent expression discovery, we developed a method that could produce
 exactly the same set of equivalent expressions from the traces computed by
-Martel, and has the same time complexity, but we adopted it to generate
-a Pareto frontier from the discovered expressions, instead of only error
-bounds.  This allows us to compare \marteltrace{}, \ie~our implementation
+Martel, and has the same time complexity. The difference is that we adopted it
+to generate a Pareto frontier from the discovered expressions, instead of only
+error bounds.  This allows us to compare \marteltrace{}, \ie~our implementation
 of Martel's method, against our methods \frontiertrace{} and \greedytrace{}
 discussed in Section~\ref{so:sec:equivalent}.  Figure~\ref{so:fig:martel}
 optimizes the expression ${(a + b)}^2$ using the three methods above, all
-using depth limit $3$, and the input ranges are $a \in [5, 10]$ and $b \in [0,
-0.001]$~\cite{martel07}. The IEEE754 single precision floating-point format
-with rounding to nearest was used for the evaluation of accuracy and area
-estimation. The scatter points represent different implementations of the
+using depth limit $3$, and the input ranges are $a \in [5, 10]$ and $b \in
+[0, 0.001]$~\cite{martel07}. The IEEE 754 single-precision floating-point
+format with rounding to nearest was used for the evaluation of accuracy and
+area estimation. The scatter points represent different implementations of the
 original expression that have been explored and analyzed, and the (overlapping)
 lines denote the Pareto frontiers. In this example, our methods produce the
 same Pareto frontier that Martel's method could discover, while having up to
@@ -39,21 +39,22 @@ We generated and optimized \gls{rtl} implementations of $e_x$ and
 $e_y$ simultaneously using \frontiertrace{} and \greedytrace{}
 with the depth limits indicated by the numbers in the legend of
 Figure~\ref{so:fig:multi_expr_32}. Note that because the expressions evaluate
-to large values, the errors are also relatively large. We set the depth
-limit to $2$ and found that \greedytrace{} executes up to $10\times$ faster
-than \frontiertrace{}, while discovering a subset of the Pareto frontier of
+to large values, the errors are also relatively large. We set the depth limit
+to $2$ and found that \greedytrace{} executes up to $10\times$ faster than
+\frontiertrace{}, while discovering a sizable subset of the Pareto frontier of
 \frontiertrace{}. Also our methods are significantly faster and more scalable
 than \marteltrace{}, because of its poor scalability discussed earlier, our
-computer ran out of memory before we could produce any results. If we normalize
-the time allowed for each method and compare the performance, we found that
-\greedytrace{} with a depth limit $3$ takes takes slightly less time than
-\frontiertrace{} with a depth limit $2$, but produces a generally better Pareto
-frontier. The alternative implementations of the original expression provided
-by the Pareto frontier of \greedytrace{} can either reduce the \glspl{lut}
-used by approximately 10\% when accuracy is not crucial, or can be about 10\%
-more accurate if resource is not our concern.  It also enables the ability to
-choose different trade-off options, such as an implementation that is 7\% more
-accurate and uses 7\% fewer \glspl{lut} than the original expression.
+computer ran out of 8 GB of memory before we could produce any results. If we
+normalize the time allowed for each method and compare the performance, we
+found that \greedytrace{} with a depth limit $3$ takes takes slightly less time
+than \frontiertrace{} with a depth limit $2$, but produces a generally better
+Pareto frontier. The alternative implementations of the original expression
+provided by the Pareto frontier of \greedytrace{} can either reduce the
+\glspl{lut} used by approximately 10\% when accuracy is not crucial, or can
+be about 10\% more accurate if resource is not our concern.  It also enables
+the ability to choose different trade-off options, such as an implementation
+that is 7\% more accurate and uses 7\% fewer \glspl{lut} than the original
+expression.
 
 Furthermore, Figure~\ref{so:fig:multi_expr_vary_width} varies the mantissa
 width of the floating-point format, and presents the Pareto frontier
