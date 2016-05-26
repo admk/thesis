@@ -70,16 +70,16 @@ The vertices in the \gls{cfg} constitute \glspl{bb}, while the edges indicate
 the control-flow directions (\ie~branches to other \glspl{bb}), often with
 predicate attributes to determine whether the branch is taken.  For instance,
 we consider the first line of third \gls{bb} in Figure~\ref{bg:lst:dotprod_ll}:
-\begin{lstlisting}[language=LLVM, basicstyle=\tt]
+\begin{lstlisting}[language=LLVM]
     ; <label>:2     ; preds = %2 %0
-\end{lstlisting}\vspace{-16.5pt}
+\end{lstlisting}\vspace{-15pt}
 which indicates it has a label value $2$ and the control-flow coming to this
 \gls{bb} is from either \gls{bb}2 or \gls{bb}0, here we use \gls{bb}$n$ as a
 shorthand denoting a \gls{bb} labelled $n$.  Additionally, this \gls{bb} ends
 with the branch terminator instruction:
-\begin{lstlisting}[language=LLVM, basicstyle=\tt]
+\begin{lstlisting}[language=LLVM]
     br i1 %exitcond, label %1, label %2
-\end{lstlisting}\vspace{-16.5pt}
+\end{lstlisting}\vspace{-15pt}
 This instruction directs the control-flow to \gls{bb}1 or \gls{bb}2,
 and the variable \verb|%exitcond| in the terminator instruction decides
 which branch is taken.  Finally, the complete \gls{cfg} is shown in
@@ -139,9 +139,9 @@ for our purpose.  The $\phi$-function accepts two variable names as its inputs,
 and produce the value of either variable as its output, determined by which
 preceding \gls{bb} the control-flow came from.  For example, in \gls{llvmir},
 the instruction:
-\begin{lstlisting}[language=LLVM, basicstyle=\tt]
+\begin{lstlisting}[language=LLVM]
     %d.01 = phi float [ 0.000000e+00, %0 ], [ %8, %2 ]
-\end{lstlisting}\vspace{-16.5pt}
+\end{lstlisting}\vspace{-15pt}
 shows that if the control-flow originated from \gls{bb}0, then a constant zero
 is returned, otherwise the control-flow had to come from \gls{bb}2 and the
 value of \verb|%8| is used instead.

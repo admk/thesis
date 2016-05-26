@@ -38,10 +38,10 @@ $e_x$ and $e_y$, with input ranges $a \in [1, 2], b \in [10, 20], c \in [10,
 We generated and optimized \gls{rtl} implementations of $e_x$ and
 $e_y$ simultaneously using \frontiertrace{} and \greedytrace{}
 with the depth limits indicated by the numbers in the legend of
-Figure~\ref{so:fig:multi_expr_32}. Note that because the expressions
-evaluate to large values, the errors are also relatively large. We set the
-depth limit to $2$ and found that \greedytrace{} executes much faster than
-\frontiertrace{}, while discovering a subset of the Pareto frontier of
+Figure~\ref{so:fig:multi_expr_32}. Note that because the expressions evaluate
+to large values, the errors are also relatively large. We set the depth
+limit to $2$ and found that \greedytrace{} executes up to $10\times$ faster
+than \frontiertrace{}, while discovering a subset of the Pareto frontier of
 \frontiertrace{}. Also our methods are significantly faster and more scalable
 than \marteltrace{}, because of its poor scalability discussed earlier, our
 computer ran out of memory before we could produce any results. If we normalize

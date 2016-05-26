@@ -129,7 +129,7 @@ subset of them.
     \centering
 \begin{tabular}{@{}l@{~~~}l@{}}
 \hline
-\multicolumn{2}{c}{\bf Arithmetic Rules}
+\multicolumn{2}{c}{\textbf{Arithmetic Rules}}
 \\\hline
 \emph{Associativity} & \texttt{(a + b) + c} $~\rightsquigarrow~$ {\tt a + (b +
 c)}
@@ -146,11 +146,11 @@ c)}
 \\\hline
 \emph{Division} & \texttt{a / (5 / b)} $~\rightsquigarrow~$ \texttt{a * b * 0.2}
 \\\hline\hline
-\multicolumn{2}{c}{\bf Control Flow Restructuring Rules}
+\multicolumn{2}{c}{\textbf{Control Flow Restructuring Rules}}
 \\\hline
 \emph{Partial loop unrolling} & \tstack{\texttt{for(i=0;i<1000;i++)\string{C\textsubscript{i};\string}} $~\rightsquigarrow~$ \\ \texttt{for(i=0;i<1000;i+=2)\string{C\textsubscript{i}; C\textsubscript{i+1};\string}}}
 \\\hline\hline
-\multicolumn{2}{c}{\bf Access Reduction Rules}
+\multicolumn{2}{c}{\textbf{Access Reduction Rules}}
 \\\hline
 \emph{Multiple reads} & \texttt{x=A[i-{}-]; y=A[i+1];} $~\rightsquigarrow~$ \texttt{x=A[i-{}-]; y=x;}
 \\\hline

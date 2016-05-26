@@ -586,6 +586,15 @@ define~\cite{nielson99}:
         l \subseteq \gamma (m),
         \label{bg:eq:galois}
     \end{equation}
+    alternatively the following property may sometimes be easier to work with:
+    \begin{equation}
+        l \subseteq \gamma(\alpha(l))
+        \quad
+        \text{~and~}
+        \quad
+        \alpha(\gamma(m)) \sqsubseteq m.
+        \label{bg:eq:galois}
+    \end{equation}
 \end{definition}\vspace{-16.5pt}
 The Gal\"ois connection above can often be concisely written as:
 \begin{equation}
@@ -905,20 +914,21 @@ x^\sharp_2$ and error terms:
             \mu^\sharp_1 \times \mu^\sharp_2 +
             \rounddown{x^\sharp_1 \times x^\sharp_2}
         \right).
-    \label{bg:eq:error_arithmetic}
+    \label{bg:eq:error_arithmetic_mult}
 \end{equation}
 
 The addition, subtraction and multiplication of intervals follow
 the standard rules of interval arithmetic defined earlier
-in~\eqref{bg:eq:interval_operations}.  In~\eqref{bg:eq:error_arithmetic}, the
-function $\rounddownop: \intervalset \to \intervalset$ determines the range
-of round-off error due to the floating-point computation under one of the
-\emph{rounding modes} $\circ \in \{ -\infty, \infty, 0, \neg0, \sim \}$ which
-are round towards negative infinity, towards infinity, towards zero, away from
-zero and towards nearest floating-point value respectively.  It is defined as:
+in~\eqref{bg:eq:interval_operations}.  In~\eqref{bg:eq:error_arithmetic}
+and~\eqref{bg:eq:error_arithmetic_mult}, the function $\rounddownop:
+\intervalset \to \intervalset$ determines the range of round-off error due to
+the floating-point computation under one of the \emph{rounding modes} $\circ
+\in \{ -\infty, \infty, 0, \neg0, \sim \}$ which are round towards negative
+infinity, towards infinity, towards zero, away from zero and towards nearest
+floating-point value respectively.  It is defined as:
 \begin{equation}
     \begin{aligned}
-        & \downarrow^\sharp_\circ(\interval{a}{b}) = \left\{
+        & \downarrow^\sharp_\circ(\interval{a}{b}) \defeq \left\{
             \begin{aligned}
                 & \left[ -\frac{z}{2}, \frac{z}{2}\right]
                     & \quad \circ & \text{~is~}\sim, \\
@@ -945,7 +955,7 @@ floating-point bound from a real bound, by rounding the infimum $a$ and
 supremum $b$ of the input interval $\interval{a}{b}$:
 \begin{equation}
     \roundupop\left(\left[a, b\right]\right)
-    = {\left[
+    \defeq {\left[
         \uparrow_\circ{\left(a\right)},
         \uparrow_\circ{\left(b\right)}
     \right]}_\floatset.
@@ -960,7 +970,7 @@ Initially, for real-valued variables, the following function can be used to
 convert an interval of real values into a value in the error domain.
 \eqref{bg:eq:cast}:
 \begin{equation}
-    \mathrm{cast}\left(x^\sharp\right) = \left(
+    \mathrm{cast}\left(x^\sharp\right) \defeq \left(
         \roundup{x^\sharp}, \rounddown{x^\sharp}
     \right)
     \label{bg:eq:cast}

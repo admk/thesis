@@ -34,6 +34,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage[toc]{appendix}
 \usepackage{booktabs}   % for \toprule and \bottomrule
 \usepackage{colortbl}   % for \rowcolor, \cellcolor, etc.
 \usepackage{color}
@@ -98,7 +99,7 @@
 
 \lstset{%
   language=C,
-  basicstyle=\singlespacing\tt,
+  basicstyle=\singlespacing\ttfamily,
   columns=fixed,
   mathescape=true,
   keywordstyle=\bfseries,
@@ -148,7 +149,6 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 % names of stuff
 \newcommand{\soap}{SOAP}
 \newcommand{\SOAP}{SOAP}
-\newcommand{\newsoap}{\textsf{SOAP2}}
 \newcommand{\numimp}{\textsf{NumImp}}
 
 \newcommand{\groebner}{Gr{\"o}bner}
@@ -169,7 +169,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \DeclareMathOperator{\error}{\mathrm{Error}}
 \DeclareMathOperator{\abserr}{\mathrm{AbsError}}
 \DeclareMathOperator{\abs}{\mathrm{abs}}
-\DeclareMathOperator{\frontier}{\textsc{Frontier}}
+\DeclareMathOperator{\frontier}{\mathsf{fr}}
+\DeclareMathOperator{\closure}{\mathsf{cl}}
 
 \newcommand{\integerset}{\ensuremath\mathbb{Z}}
 \newcommand{\naturalset}{\ensuremath\mathbb{N}}
@@ -209,6 +210,9 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\aexprset}{\ensuremath\mathbf{AExpr}}
 \newcommand{\bexprset}{\ensuremath\mathbf{BExpr}}
 \newcommand{\stmtset}{\ensuremath\mathbf{Stmt}}
+\newcommand{\eqexprset}{\aexprset_\equiv}
+\newcommand{\eqexprpowerset}{\powersetof\eqexprset}
+\newcommand{\absexprset}{\aexprset^\sharp_\equiv}
 
 % program syntax
 \DeclareMathOperator{\notop}{\mathtt{not}}
@@ -274,7 +278,6 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 % optimization
 \DeclareMathOperator{\optimize}{\textsc{O}}
 \newcommand{\optfunc}[1]{\ensuremath\optimize\left[#1\right]}
-\DeclareMathOperator{\closure}{\textsc{C}}
 
 % misc
 \newcommand{\identity}{\mathrm{id}}

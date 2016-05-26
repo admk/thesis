@@ -1,0 +1,209 @@
+\chapter{Sound Acceleration of Equivalent Expression Discovery}
+\label{app:sound_acceleration}
+
+The functions used in Section~\ref{so:sub:scalable} can sometimes be slow to
+compute using a na\"ive implementation.  By using abstract interpretation and
+the properties of certain \gls{eeg} functions, we can further accelerate the
+computation.
+
+We start by defining a property of the \gls{eeg} functions used in
+Section~\ref{so:sub:scalable} known as \emph{$\cup$-distributive}, then propose
+a new algorithm to accelerate the computation of $\closure_N f (\epsilon)$,
+where $f$ is a $\cup$-distributive \gls{eeg}\@.
+\begin{definition}
+    We say an \gls{eeg} function $f$ is \emph{$\cup$-distributive} if and only
+    if the function satisfies $f(\epsilon_a \cup \epsilon_b) = f(\epsilon_a)
+    \cup f(\epsilon_b)$.
+\end{definition}
+\begin{corollary}
+    By the definition of $\eqstep$ in~\eqref{so:eq:eqstep}, it is clear that
+    $\eqstep$ is $\cup$-distributive.
+    {}\label{so:cor:union}
+\end{corollary}
+
+Figure~\ref{so:alg:closure} proposes an accelerated algorithm to efficiently
+compute $\closure_N f(\epsilon)$, where $f$ is a $\cup$-distributive
+\gls{eeg}\@.
+\begin{figure}[ht]
+    \centering
+    \begin{algorithmic}
+        \Function{Closure}{$f$, $N$, $\epsilon$}
+            \State{$s_0 \gets \epsilon$}
+            \State{$s^\prime_0 \gets \epsilon$}
+            \For{$i \gets 1, \ldots, N$}
+                \State{$s^\prime_i \gets
+                    f \left(s^\prime_{i-1}\right) - s_{i-1}$}
+                \State{$s_i \gets s_{i-1} \cup s^\prime_i$}
+                \If{$s^\prime_i = \emptyset$}
+                    \State{\Return{$s_i$}}
+                \EndIf{}
+            \EndFor{}
+            \State{\Return{$s_i$}}
+        \EndFunction{}
+    \end{algorithmic}
+    \caption{%
+        Our algorithm to compute $\closure_N f (\epsilon)$, which discovers a
+        set of equivalent expressions with a $\cup$-distributive \gls{eeg} $f$
+        from an initial set of equivalent expressions $\epsilon$.
+    }\label{so:alg:closure}
+\end{figure}
+
+We then continue to prove that this algorithm $\textsc{Closure}(f, N,
+\epsilon)$ indeed computes $\closure_N f(\epsilon)$.  Firstly, we prove the
+following lemma:
+\begin{lemma}
+    $\closure_N f(\epsilon) = \epsilon \cup f \left( \closure_{N-1} f(\epsilon)
+    \right)$ for any $\cup$-distributive \gls{eeg} function $f$.
+    {}\label{so:lem:transitive}
+\end{lemma}
+\begin{proof}
+    Following~\eqref{so:eq:transitive_generator}, $\closure_N f(\epsilon) =
+    f^0(\epsilon) \cup f^1(\epsilon) \cup \cdots \cup f^N(\epsilon)$.  Because
+    $f$ is $\cup$-distributive, we apply distributivity to the right-hand side
+    to derive:
+    \begin{equation}
+        \closure_N f(\epsilon) = \epsilon \cup f\left(
+            f^0(\epsilon) \cup f^1(\epsilon) \cup \cdots \cup f^{N-1}(\epsilon)
+        \right),
+    \end{equation}
+    which equals to $\epsilon \cup f\left( \closure_{N-1} f(\epsilon) \right)$
+    by definition.
+\end{proof}
+Then this allows us to deduce that the algorithm indeed computes $\closure_N
+f(\epsilon)$:
+\begin{theorem}
+    In the algorithm in Figure~\ref{so:alg:closure}, at iteration $n$, the set
+    of equivalent expressions $s_n$ computes exactly $\closure_n f(\epsilon)$,
+    if $f$ is a $\cup$-distributive \gls{eeg}\@.
+    \label{so:thm:closure}
+\end{theorem}
+\begin{proof}
+    We start by assuming that at iteration $m > 0$, $s_m = \closure_m
+    f(\epsilon)$, and we prove this equality still holds if substitute $m$ with
+    $m + 1$.  From the algorithm, we can deduce:
+    \begin{equation*}
+        s_{m+1}
+        = s_m \cup s^\prime_{m+1}
+        = s_m \cup \left( f \left( s^\prime_m \right) - s_m \right)
+        = s_m \cup f \left( s^\prime_m \right)
+        = s_m \cup f \left(
+            f \left( s^\prime_{m-1} \right) - s_{m-1}
+        \right).
+    \end{equation*}
+    We substitute $s_m$ using Lemma~\ref{so:lem:transitive} to get:
+    \begin{equation*}
+        s_{m+1}
+        = \epsilon \cup f \left( s_{m-1} \right) \cup
+        f \left(
+            f \left( s^\prime_{m-1} \right) - s_{m-1}
+        \right).
+    \end{equation*}
+    Using distributivity of $f$ over $\cup$ and the iteration $m$ of the
+    algorithm, we can derive:
+    \begin{equation*}
+        s_{m+1}
+        = \epsilon \cup f \left(
+            s_{m-1} \cup \left(
+                f \left( s^\prime_{m-1} \right) - s_{m-1}
+            \right)
+        \right)
+        = \epsilon \cup f \left( s_m \right).
+    \end{equation*}
+    Finally, we make use of the assumption $s_m = \closure_m f(\epsilon)$,
+    followed by Lemma~\ref{so:lem:transitive} to show:
+    \begin{equation*}
+        s_{m+1}
+        = \epsilon \cup f \left(
+            \closure_m f(\epsilon)
+        \right)
+        = \closure_{m+1} f(\epsilon).
+    \end{equation*}
+    It is trivial that $s_0 = \epsilon = \closure_0 f(\epsilon)$, by induction,
+    $s_n = \closure_n f(\epsilon)$ thus holds for all $n \in \naturalset$.
+\end{proof}
+
+Unfortunately, in the alternative method \greedytrace{}, we cannot make use of
+the efficient algorithm in Figure~\ref{so:alg:closure} to compute $\closure_N
+\left( \frontier \circ \eqstep_k \right)$ directly.  The reason is that in
+general, $\frontier \circ \eqstep_k$ is not $\cup$-distributive.  Imagine two
+equivalent expressions $e_1$ and $e_2$, and $e_1$ strictly dominates $e_2$,
+\ie~$e_1$ is better than $e_2$ in terms of accuracy and resources, then we can
+observe that:
+\begin{equation}
+    \frontier \left( \left\{ e_1 \right\} \cup \left\{ e_2 \right\} \right)
+    = \frontier \left( \left\{ e_1, e_2 \right\} \right)
+    = \left\{ e_1 \right\},
+\end{equation}
+which is not equal to:
+\begin{equation}
+    \frontier \left( \left\{ e_1 \right\} \right) \cup
+    \frontier \left( \left\{ e_2 \right\} \right)
+    = \left\{ e_1 \right\} \cup \left\{ e_2 \right\}.
+\end{equation}
+
+To resolve this, following \acrlong{ai} discussed in
+Section~\ref{bg:sec:abstract_interpretation} of Chapter~\ref{chp:background},
+we can introduce a new abstract domain to the power set of equivalent
+expressions.  This new domain reduces the computation effort of equivalent
+expression discovery, because it is a simpler domain with fewer elements than
+the power set.
+
+The abstract domain, represented by $\lattice{\absexprset}{\sqsubseteq}$, can
+be inductively defined using the following Gal\"ois connection:
+\begin{equation}
+    \lattice{\eqexprpowerset}{\subseteq}
+    \galois{\alpha}{\gamma}
+    \lattice{\absexprset}{\sqsubseteq},
+\end{equation}
+where its abstraction and concretization functions are defined as follows:
+\begin{equation}
+    \begin{aligned}
+        \alpha(\epsilon) &= \frontier(\epsilon), \quad
+        \gamma(\epsilon^\sharp) &= \epsilon^\sharp.
+    \end{aligned}
+\end{equation}
+Specifically, $\alpha$ is identical to $\frontier$, and $\gamma$ is simply the
+identity function, \ie~it returns the input as its output.
+
+The partial ordering on them ($\sqsubseteq$) and the join operator ($\sqcup$)
+can then be defined inductively as follows using the Gal\"ois connection:
+\begin{equation}
+    \begin{aligned}
+        \epsilon^\sharp_1 \sqsubseteq \epsilon^\sharp_2 &\defeq
+            \left( \epsilon^\sharp_1 \sqcup \epsilon^\sharp_2 \right)
+            = \epsilon^\sharp_2, \\
+        \epsilon^\sharp_1 \sqcup \epsilon^\sharp_2 &\defeq
+            \alpha\left(
+                \gamma\left( \epsilon^\sharp_1 \right) \cup
+                \gamma\left( \epsilon^\sharp_2 \right)
+            \right).
+    \end{aligned}
+\end{equation}
+Additionally, an abstract variant of an arbitrary \gls{eeg} $f$ can also be
+inductively defined:
+\begin{equation}
+    f^\sharp (\epsilon^\sharp)
+    = \alpha \circ f \circ \gamma \left(\epsilon^\sharp\right)
+    = \frontier\left(f\left(\epsilon^\sharp\right)\right),
+\end{equation}
+
+Finally, the abstract variant of $\closure_N f$ can be proposed with a simple
+modification to the algorithm in Figure~\ref{so:alg:closure}, by replacing
+$\cup$ with $\sqcup$ in $s_i \gets s_{i-1} \cup s^\prime_i$, we now have
+an abstract closure function:
+\begin{equation}
+    \closure^\sharp_N f^\sharp (\epsilon)
+    = \bigsqcup_{n \in \naturalset} {f^\sharp}^n (\epsilon),
+\end{equation}
+that operates with an abstract \gls{eeg} $f^\sharp$.  The correctness of this
+formulation can be proved by adapting Theorem~\ref{so:thm:closure} to the
+modified algorithm.  The alternative method, \greedytrace{} which computes
+$\closure^\sharp_N \eqstep_k^\sharp$, where $\eqstep_k^\sharp = \frontier \circ
+\eqstep_k$ can finally be accelerated using the modified algorithm.  Moreover,
+the discovery is further accelerated with the new algorithm because of the
+property:
+\begin{equation}
+    f^\sharp\left(\epsilon^\sharp_1 \sqcup \epsilon^\sharp_2\right)
+    \sqsubseteq f^\sharp\left(\epsilon^\sharp_1\right)
+    \sqcup f^\sharp\left(\epsilon^\sharp_2\right).
+\end{equation}
