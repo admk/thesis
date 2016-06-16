@@ -143,7 +143,7 @@ is scheduled to the latest opportunity, while respecting the order of data
 dependences.  Because the expression is eventually used in a loop, and the
 \gls{ii} of the loop is critical to how fast the loop can execute, it is
 necessary to start optimizing for \gls{ii} as soon as possible. Therefore,
-in our latency analysis of an \gls{mir} that is a fragment of a loop, our
+in our latency analysis of a \gls{mir} that is a fragment of a loop, our
 algorithm automatically shortens any paths between any pair of dependent
 accesses in the \gls{mir}\@, as we use the latency analysis as a component to
 manoeuvre our optimization on the Pareto frontier.  Moreover, we place greater

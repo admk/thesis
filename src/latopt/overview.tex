@@ -13,8 +13,8 @@
 We start by introducing a high-level overview of our program optimization
 process (Figure~\ref{lo:fig:overview}).  Our automatic optimization process
 starts by taking as an input, the original numerical program written in C, and
-translates it into an \gls{mir}\@.  An \gls{mir} is a \gls{dag}, and it serves
-as an abstract representation of the original program.  It discards information
+translates it into a \gls{mir}\@.  A \gls{mir} is a \gls{dag}, and it serves as
+an abstract representation of the original program.  It discards information
 about \emph{how} a program is executed, which is dependent on how the program
 is structured in C, but retains the \emph{effect} of program execution, keeping
 only the structure that leads to the final results.  This procedure, explained

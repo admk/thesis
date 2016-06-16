@@ -1,15 +1,13 @@
 \chapter{Sound Acceleration of Equivalent Expression Discovery}
 \label{app:sound_acceleration}
 
-The functions used in Section~\ref{so:sub:scalable} can sometimes be slow to
-compute using a na\"ive implementation.  By using abstract interpretation and
-the properties of certain \gls{eeg} functions, we can further accelerate the
-computation.
-
-We start by defining a property of the \gls{eeg} functions used in
-Section~\ref{so:sub:scalable} known as \emph{$\cup$-distributive}, then propose
-a new algorithm to accelerate the computation of $\closure_N f (\epsilon)$,
-where $f$ is a $\cup$-distributive \gls{eeg}\@.
+The functions used in Section~\ref{so:sub:scalable} can sometimes be slow
+to compute using a na\"ive implementation.  By using \acrlong{ai} and the
+properties of certain \acrfull{eeg} functions, we can further accelerate the
+computation.  We start by defining a property of the \gls{eeg} functions
+used in Section~\ref{so:sub:scalable} known as \emph{$\cup$-distributive},
+then propose a new algorithm to accelerate the computation of $\closure_N f
+(\epsilon)$, where $f$ is a $\cup$-distributive \gls{eeg}\@.
 \begin{definition}
     We say an \gls{eeg} function $f$ is \emph{$\cup$-distributive} if and only
     if the function satisfies $f(\epsilon_a \cup \epsilon_b) = f(\epsilon_a)
@@ -193,17 +191,16 @@ $\cup$ with $\sqcup$ in $s_i \gets s_{i-1} \cup s^\prime_i$, we now have
 an abstract closure function:
 \begin{equation}
     \closure^\sharp_N f^\sharp (\epsilon)
-    = \bigsqcup_{n \in \naturalset} {f^\sharp}^n (\epsilon),
+    \sqsubseteq \bigsqcup_{n \in \naturalset} {f^\sharp}^n (\epsilon),
 \end{equation}
 that operates with an abstract \gls{eeg} $f^\sharp$.  The correctness of this
 formulation can be proved by adapting Theorem~\ref{so:thm:closure} to the
-modified algorithm.  The alternative method, \greedytrace{} which computes
-$\closure^\sharp_N \eqstep_k^\sharp$, where $\eqstep_k^\sharp = \frontier \circ
-\eqstep_k$ can finally be accelerated using the modified algorithm.  Moreover,
-the discovery is further accelerated with the new algorithm because of the
-property:
+modified algorithm with the property:
 \begin{equation}
     f^\sharp\left(\epsilon^\sharp_1 \sqcup \epsilon^\sharp_2\right)
     \sqsubseteq f^\sharp\left(\epsilon^\sharp_1\right)
     \sqcup f^\sharp\left(\epsilon^\sharp_2\right).
 \end{equation}
+The alternative method, \greedytrace{} which computes $\closure^\sharp_N
+\eqstep_k^\sharp$, where $\eqstep_k^\sharp = \frontier \circ \eqstep_k$ can
+finally be accelerated using the modified algorithm.

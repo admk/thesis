@@ -3,43 +3,46 @@
 
 Before we discuss program transform, we first look at the syntax definition
 used to write numerical programs.  Our program transformation optimizes
-\numimp{} programs.  In this section, we formally introduce \numimp, a simple
-imperative language which is a subset of C that supports arithmetic and Boolean
-expressions, conditional branches, as well as \texttt{while} loops.  Our
+programs written in a subset of C99.  In this section, we formally introduce
+the syntax that constitutes a subset of C that supports arithmetic and Boolean
+expressions, conditional branches, as well as \whilelit~and \forlit~loops.  Our
 language allows numerical data types $\inttype$ and $\floattype$, respectively
 stand for integer and floating-point types.
 
 We define $\aexprset, \bexprset$ as the set of arithmetic and Boolean
 expressions respectively, and $\stmtset$ denotes the set of program statements.
 We then have following syntax definition for expressions and \numimp{}
-programs, written in the Backus-Naur Form~\cite{knuth64}:
-\newcommand{\syndef}{\ensuremath\mathbin{::=}}%
-\newcommand{\synor}{\ensuremath\mid}%
+programs, written in the Backus-Naur form~\cite{knuth64}:
 \begin{equation}
+    \newcommand{\syndef}{\ensuremath\mathbin{::=}}%
+    \newcommand{\synor}{\ensuremath\mid}%
     \begin{aligned}
         a \syndef {} &
             n \synor
             x \synor
-            a_1 \odot a_2,
-        \quad b \syndef x < a, \\
+            a_1 \opsymbol a_2, \\
+        b \syndef {} & x < a, \\
         s \syndef {} &
-            x~\texttt{=}~a \semicolon \synor
+            \left[ t \right] x~\texttt{=}~a \semicolon \synor
             s_1~s_2 \synor
-            \iflit~(b)~\{ s_1 \}~\elselit~\{ s_2 \} \synor
-            \whilelit~(b)~\{s\}
+            \iflit~(b)~\{ s_1 \}~\left[\elselit~\{ s_2 \}\right] \synor
+            \whilelit~(b)~\{s\}, \\
+        t \syndef {} & \inttype | \floattype.
     \end{aligned}
     \label{po:eq:program_syntax}
 \end{equation}
-We define $\odot \in \left\{ +, -, \times, / \right\}$ to be the arithmetic
+We define $\opsymbol \in \left\{ +, -, \times, / \right\}$ to be the arithmetic
 operators, $n$ is a numerical constant of type either \inttype{} or \floattype;
 $x \in \varset$ is a variable; $a, a_1, a_2 \in \aexprset$ are arithmetic
-expressions; $b$ ranges over Boolean expressions, $\bexprset$; and similarly,
-$s, s_1, s_2 \in \stmtset$ are program statements.  In our formal definition,
-for the purpose of simplicity, we restrict the Boolean expressions to those
-of the form $x < a$, where $x$ is a variable and $a$ is an expression;
-more complex Boolean expressions are included trivially in our actual
-implementation.  Although \forlit~loop is not explicitly defined in the above
-syntax definition, it can be trivially derived from a \whilelit~loop.
+expressions; $b$ ranges over Boolean expressions, $\bexprset$; $s, s_1, s_2 \in
+\stmtset$ are program statements; and finally, $t$ is an optional keyword that
+specifies the type of a variable.  A term of the form $[v]$ indicates
+$v$ is optional.  In our formal definition, for the purpose of simplicity,
+we restrict the Boolean expressions to those of the form $x < a$, where $x$
+is a variable and $a$ is an expression; more complex Boolean expressions are
+included in our actual implementation.  Although \forlit~loop is not explicitly
+defined in the above syntax definition, it can be trivially expressed using a
+\whilelit~loop.
 
 Furthermore, we introduce the ``\verb|#pragma| \verb|soap begin|'' and
 ``\verb|#pragma| \verb|soap end|'' directives to delimit the code fragment
@@ -47,29 +50,35 @@ to be optimized.  We can also use ``\verb|#pragma| \verb|soap in|'' and
 ``\verb|#pragma| \verb|soap out|'' to provide input ranges and to declare
 output variables, respectively.
 
-As a simple example, the program in Figure~\ref{po:fig:syntax_example} computes
+As a simple example, the program in Figure~\ref{po:lst:syntax_example} computes
 an approximate value of ${\pi^2 a}/6$.  It has two inputs $a$, a floating point
 value between 0 and 1, and $n$, an integer value between 10 and 20, which
 determines the number of iterations for the loop, and a return variable $y$.
 
 \begin{figure}[ht]
+    \centering
+    \begin{minipage}{0.8\textwidth}
     \begin{lstlisting}
+    #pragma soap begin
     #pragma soap in \
         float a = [0.0, 1.0], int n = [10, 20]
     #pragma soap out float y
     x = 0;
-    y = 0.0;
+    y = 0.0f;
     while (x < n) {
         x = x + 1;
         y = y + a / (x * x);
     }
+    #pragma soap end
     \end{lstlisting}
-    \caption{A simple program written with our syntax definition.}
-    \label{po:fig:syntax_example}
+    \end{minipage}
+    \caption{%
+        A simple program, \texttt{basel}, written with our syntax definition.
+    }\label{po:lst:syntax_example}
 \end{figure}
 
-Despite the simplicity of our syntax, it includes all the features of
-a full programming language rather than an expression language used in
+Despite the simplicity of our syntax, it includes all the features of a full
+programming language rather than an arithmetic expression language used in
 Chapter~\ref{chp:stropt}.  We will add support for arrays and matrices in
-Chapter~\ref{chp:latopt}, and show that this can be added with little changes
-to our method.
+Chapter~\ref{chp:latopt}, and show that this can be added with few changes to
+our method.

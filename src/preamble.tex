@@ -34,7 +34,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage[toc]{appendix}
+\usepackage{appendix}
+\usepackage{bookmark}   % for \toprule and \bottomrule
 \usepackage{booktabs}   % for \toprule and \bottomrule
 \usepackage{colortbl}   % for \rowcolor, \cellcolor, etc.
 \usepackage{color}
@@ -55,6 +56,7 @@
 \usepackage{tikz}       % graphs
 \usepackage[obeyDraft,textsize=tiny]{todonotes}
 \usepackage{verbatim}
+\usepackage{xpatch}
 
 \newacronymstyle{em-long-short}
 {%
@@ -85,7 +87,7 @@
 
 \addbibresource{intro/publications.bib}
 
-\usetikzlibrary{positioning,fit,decorations.pathmorphing,shapes}
+\usetikzlibrary{positioning,fit,decorations.pathmorphing,decorations.markings,shapes}
 \graphicspath{{stropt/fig/}{progopt/fig/}{latopt/fig/}}
 \DeclareGraphicsExtensions{.pdf}
 
@@ -146,6 +148,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\etal}{\textit{et~al.}}
 \newcommand{\ie}{\textit{i.e.}}
 
+\newcommand{\textbt}[1]{\texttt{\textbf{#1}}}
+
 % names of stuff
 \newcommand{\soap}{SOAP}
 \newcommand{\SOAP}{SOAP}
@@ -203,6 +207,13 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newtheorem{lemma}{Lemma}[chapter]
 
 % program objects
+\newcommand{\varx}{\texttt{x}}
+\newcommand{\vary}{\texttt{y}}
+\newcommand{\varz}{\texttt{z}}
+\newcommand{\vara}{\texttt{a}}
+\newcommand{\varb}{\texttt{b}}
+\newcommand{\varc}{\texttt{c}}
+\newcommand{\varn}{\texttt{n}}
 \newcommand{\truelit}{\mathbf{tt}}
 \newcommand{\falselit}{\mathbf{ff}}
 \newcommand{\inttype}{\texttt{int}}
@@ -220,27 +231,36 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\orop}{\ensuremath\mathbin\mathtt{or}}
 \newcommand{\semicolon}{\ensuremath\mathbin{;}}
 \newcommand{\assign}{\ensuremath\mathbin{:=}}
-\newcommand{\iflit}{\texttt{if}}
-\newcommand{\thenlit}{\texttt{then}}
-\newcommand{\elselit}{\texttt{else}}
-\newcommand{\whilelit}{\texttt{while}}
-\newcommand{\forlit}{\texttt{for}}
-\newcommand{\dolit}{\texttt{do}}
-\newcommand{\tolit}{\texttt{to}}
-\newcommand{\assignstmt}[2]{\ensuremath{#1}\assign{#2}}
-\newcommand{\skipstmt}{\ensuremath\mathtt{skip}}
+\newcommand{\iflit}{\texttt{\textbf{if}}}
+\newcommand{\elselit}{\texttt{\textbf{else}}}
+\newcommand{\whilelit}{\texttt{\textbf{while}}}
+\newcommand{\forlit}{\texttt{\textbf{for}}}
 \newcommand{\ifstmt}[2]{%
-    \ensuremath\iflit\left(#1\right)\thenlit\left(#2\right)}
-\newcommand{\ifelsestmt}[3]{%
-    \ensuremath\iflit\left(#1\right)\thenlit\left(#2\right)
-    \elselit\left(#3\right)}
-\newcommand{\whilestmt}[2]{%
-    \ensuremath\whilelit\left(#1\right)\dolit\left(#2\right)}
-\newcommand{\forstmt}[2]{%
-    \ensuremath\forlit\left(#1\right)\dolit\left(#2\right)}
+    \texttt{\iflit\,\left(#1\right)\,\left\{#2\right\}}}
+% \newcommand{\whilestmt}[2]{%
+    % \texttt{\whilelit\,\left(#1\right)\,\left\{#2\right\}}}
 
 % metasemantic syntax
+\newcommand{\binarymir}[3]{%
+\tikz[mir, text height=0]{
+    \node[mirnode] (op) at (0, 0) {#1};
+    \node[mirnode] (a1) [below left=of op] {#2};
+    \node[mirnode] (a2) [below right=of op] {#3};
+    \draw[-] (op) -- (a1);
+    \draw[-] (op) -- (a2);
+}}
+\newcommand{\ternarymir}[4]{%
+\tikz[mir, text height=0]{
+    \node[mirnode] (op) at (0, 0) {#1};
+    \node[mirnode] (a1) [below left=of op] {#2};
+    \node[mirnode] (a2) [below=of op] {#3};
+    \node[mirnode] (a3) [below right=of op] {#4};
+    \draw[-] (op) -- (a1);
+    \draw[-] (op) -- (a2);
+    \draw[-] (op) -- (a3);
+}}
 \newcommand{\binopset}{\ensuremath\mathbf{BinOp}}
+\newcommand{\dotop}{\ensuremath\mathbin{.}}
 \newcommand{\qop}{\ensuremath\mathbin{?}}
 \newcommand{\colonop}{\ensuremath\mathbin{:}}
 \newcommand{\select}[3]{\ensuremath#1\qop#2\colonop#3}
@@ -248,6 +268,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \DeclareMathOperator{\fix}{\mathrm{fix}}
 \DeclareMathOperator{\lfp}{\mathrm{lfp}}
 \newcommand{\fixpoint}[1]{\ensuremath\fix\left({#1}\right)}
+\newcommand{\fixpointmir}[3]{\ternarymir{$\fix$}{#1}{#2}{#3}}
+\newcommand{\fixexprmir}{\fixpointmir{$b$}{$\mu_s$}{\varx}}
 \DeclareMathOperator{\accessop}{\mathrm{access}}
 \newcommand{\access}[2]{\ensuremath\accessop\left({#1}, {#2}\right)}
 \DeclareMathOperator{\updateop}{\mathrm{update}}
@@ -276,12 +298,14 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\eqgenrel}{\ensuremath\mathbin{\rhd}}
 
 % optimization
-\DeclareMathOperator{\optimize}{\textsc{O}}
+\DeclareMathOperator{\optimize}{\mathsf{O}}
 \newcommand{\optfunc}[1]{\ensuremath\optimize\left[#1\right]}
 
 % misc
 \newcommand{\identity}{\mathrm{id}}
 \DeclareMathOperator{\labfunc}{\mathrm{Label}}
+\newcommand{\loopinvar}{\sigma^\sharp_\textrm{LI}}
+\newcommand{\loopexit}{\sigma^\sharp_\textrm{LE}}
 
 % latency
 \newcommand\pair[2]{\footnotesize $#1,#2$}
@@ -293,13 +317,13 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand\opsymbol{\otimes}
 
 % Add brackets around a given set of nodes
+\newcommand\bracketticklength{1.5mm}
 \newcommand\brackets[1]{
-\newcommand\ticklength{1.5mm}
 \node[fit=#1, inner sep=0mm, outer sep=0.5mm] (bb) {};
-\draw ([xshift=\ticklength]bb.north west) -- (bb.north west) --
-(bb.south west) -- ([xshift=\ticklength]bb.south west);
-\draw ([xshift=-\ticklength]bb.north east) -- (bb.north east) --
-(bb.south east) -- ([xshift=-\ticklength]bb.south east);
+\draw ([xshift=\bracketticklength]bb.north west) -- (bb.north west) --
+(bb.south west) -- ([xshift=\bracketticklength]bb.south west);
+\draw ([xshift=-\bracketticklength]bb.north east) -- (bb.north east) --
+(bb.south east) -- ([xshift=-\bracketticklength]bb.south east);
 }
 
 \tikzset{%
@@ -311,6 +335,36 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
     inner sep=0.7mm,
     text height=1ex,
     text depth=0ex
-  }
+  },
+  mirnodealt/.style={%
+    inner sep=0.7mm,
+    text depth=0ex
+  },
+  link/.style = {%
+      white,
+      double = black,
+      line width = 1.8pt,
+      double distance = 0.8pt
+  },
+  channel/.style = {%
+      white,
+      double = black,
+      line width = 0.8pt,
+      double distance = 0.4pt
+  },
+  o/.style={
+      shorten >=#1,
+      decoration={
+          markings,
+          mark={
+              at position 1
+              with {
+                  \draw node [circle, draw=black, fill=white, radius=#1, inner sep=#1] {};
+              }
+          }
+      },
+      postaction=decorate
+  },
+  o/.default=1.2pt
 }
 % vim: nospell

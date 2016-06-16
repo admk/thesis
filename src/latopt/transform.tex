@@ -1,7 +1,7 @@
 \section{Structural Optimization}
 \label{lo:sec:structural_optimization}
 
-From a numerical program, we can generate an \gls{mir} using the translation
+From a numerical program, we can generate a \gls{mir} using the translation
 in Section~\ref{lo:sec:intermediate}.  The next step is to transform the
 \gls{mir}, and discover \glspl{mir} that are equivalent to the original
 \gls{mir} in real arithmetic, but may execute differently in finite-precision
@@ -34,7 +34,7 @@ the original.  Finally, we preserve those \glspl{mir} merged on the Pareto
 frontier.
 
 Figure~\ref{lo:alg:optimize} shows the pseudocode of the optimization
-algorithm, it takes as an input an \gls{mir} graph, and produces a set of
+algorithm, it takes as an input a \gls{mir} graph, and produces a set of
 equivalent graphs that are estimated to be Pareto-optimal when converted into
 C programs and synthesized into circuits.  Although this algorithm deals with
 a special case, \ie~a root node $op$ with two child subtrees $e_1, e_2$, it
@@ -43,7 +43,7 @@ $e \stackrel{r}{\rightsquigarrow} e'$ means $e^\prime$ can be obtained by
 transforming part of the graph $e$ in accordance with the transformation rule
 $r$.  The next section discusses the transformation rules we used.
 
-The algorithm starts by discovering equivalences in the leaves of an \gls{mir},
+The algorithm starts by discovering equivalences in the leaves of a \gls{mir},
 and progress upwards for equivalent structures of the individual components
 that make up the graph, until the roots of the graph, where we have a set of
 equivalent \glspl{mir} to the original \gls{mir}\@.  As it traverses through

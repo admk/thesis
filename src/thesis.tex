@@ -190,7 +190,14 @@
 % \mbox{}
 
 \begin{appendices}
-\input{stropt/correctness}
+    \bookmarksetupnext{level=-1}
+    \addappheadtotoc%
+    \makeatletter
+    \addtocontents{toc}{\let\protect\l@chapter\protect\l@section}
+    \makeatother
+    \input{stropt/correctness}
+    \input{progopt/formal}
+    \input{progopt/source}
 \end{appendices}
 
 

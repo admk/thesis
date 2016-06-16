@@ -26,7 +26,7 @@ exploited to automatically optimize implementations for the optimal trade-off
 between resource usage, \ie~the number of \glspl{lut} and \gls{dsp} elements
 utilized, and accuracy when evaluated using floating-point computations.  This
 process generates a Pareto frontier of optimized numerical programs.  For
-example, with single precision floating-point format, the tool found that give
+example, with single-precision floating-point format, the tool finds that given
 an input $x \in [0, 100]$ and $y \in [0, 2]$, then the program:
 \begin{lstlisting}
     if (x < 1) {
@@ -35,16 +35,10 @@ an input $x \in [0, 100]$ and $y \in [0, 2]$, then the program:
         x = x + (y + 0.1);
     }
 \end{lstlisting}
-is most accurate when rewritten in the following form:
-\begin{lstlisting}
-    if (x < 1) {
-        x = (x + 0.1) + y;
-    } else {
-        x = x + (y + 0.1);
-    }
-\end{lstlisting}
-On the other hand, the original program uses fewest resources when
-subexpressions are shared and the \iflit~statement is eliminated:
+is most accurate when the subexpression \verb|(x + y) + 0.1| is rewritten
+as \verb|(x + 0.1) + y|; on the other hand, the original program uses
+fewest resources when subexpressions are shared and the \iflit~statement is
+eliminated:
 \begin{lstlisting}
     x = x + (y + 0.1);
 \end{lstlisting}
@@ -54,16 +48,16 @@ than that of arithmetic expressions.  The reasons are three-fold.  First,
 during program execution, variables are often updated with new values.  Our
 optimization should therefore perform static analysis on the values of
 variables, and use the result to optimize specifically for the trade-off
-between accuracy and resource usage.  Second, it is much more difficult to
-formally define program equivalence, and subsequently, to search efficiently
-for optimized equivalent programs.  Finally, the combinatorial explosion of
+between accuracy and resource usage.  Second, the combinatorial explosion of
 expression equivalence, is further exacerbated by the expressiveness of a
-general numerical program.
+general numerical program.  Finally, it is much more difficult to formally
+define program equivalence, and subsequently, to search efficiently for
+optimized equivalent programs.
 
-The difficulty in defining program equivalence is due to the fact that
-two programs can be identical in function, but have distinct syntactic
-structure because of the expressiveness of a \gls{hll}\@.  For instance, even
-without the introduction of branches and loops, the following two programs in
+The difficulty in defining program equivalence is due to the fact that two
+programs can be identical in function, but have distinct syntactic structure
+because of the expressiveness of a \gls{hll}\@.  For instance, even without
+the introduction of branches and loops, the following two C programs in
 Figure~\ref{bg:fig:equiv_progs} are equivalent, but syntactically, they are
 very different.
 \begin{figure}[ht]
@@ -96,80 +90,68 @@ affect our performance metrics, so that the search space of equivalent programs
 is greatly reduced.
 
 We explored in Section~\ref{bg:sec:intermediate} of
-Chapter~\ref{chp:background} various intermediate representations designed
-for program transformation, and specifically examined \glspl{peg} in closer
-details, because it fits our requirement to abstract away as much irrelevant
-syntactic information as possible.  However, one important shortcoming of the
-\gls{peg} is that it is not suited for the optimization of numerical accuracy.
-By introducing equivalence edges in the graph, the number of elementary cycles
-in the graph could increase exponentially in the number of equivalences that
-have been discovered.  Cycles in graphs require analyzing a large proportion
-of the \gls{ir}, whereas a tree structure can be reasoned in a bottom-up
-hierarchy.  This has significant implications on program transformation.
-First, for the above reason, their approach does not use semantics to
-optimize for numerical accuracy, while we wish to reason about semantics and
-utilize them to steer optimization.  Moreover, tree structure allows us to
-easily support partial loop unrolling by simply extending the equivalence
-relations while avoiding re-evaluation.  In contrast, like~\cite{martel09}
-and~\cite{damouche15}, equality saturation is unable to perform partial
-loop unrolling.  In this chapter, a solution to the above limitations of
-\glspl{peg} is therefore proposed, by introducing a new tree-based intermediate
-representation with fixpoint constructs to specifically tackle the problem of
-program equivalences.
+Chapter~\ref{chp:background} various \acrfullpl{ir} designed for program
+transformation, and specifically examined \acrfull{peg} in closer details,
+because it fits our requirement to abstract away as much irrelevant syntactic
+information as possible.  However, \gls{peg} is not suited for the optimization
+of numerical accuracy because cycles in graphs are used.  Evaluating the
+numerical accuracy of an \gls{ir} with a cyclic structure require analyzing
+a large proportion of the \gls{ir}, whereas a tree structure can be reasoned
+compositionally in a bottom-up hierarchy.  By introducing equivalence edges
+in the graph, the number of elementary cycles in the graph could increase
+exponentially in the number of equivalences that have been discovered,
+which further exacerbates the already high computational demand.  This has
+significant implications for program transformation.  First, for the above
+reason, their approach does not use static analysis to optimize for numerical
+accuracy, while we wish to reason about accuracy and utilize them to steer
+optimization.  Moreover, the tree structure allows us to easily support partial
+loop unrolling by simply extending the equivalence relations while avoiding
+re-evaluation.  In contrast, like~\cite{martel09} and~\cite{damouche15},
+equality saturation is unable to perform partial loop unrolling.  In this
+chapter, a solution to the above limitations of \glspl{peg} is therefore
+proposed, by introducing a new tree-based \gls{ir} with fixpoint constructs to
+specifically tackle the problem of program equivalences.
 
 Additionally, as none of the methods in
 Section~\ref{bg:sec:discovering_equivalent_programs} of
 Chapter~\ref{chp:background} looks at the multiple-objective optimization of
-numerical programs, this thesis is the first to propose a tool that performs
-a semantics-directed and truly restructuring program transformation, which
-optimizes not only arithmetic expressions, but also numerical programs.  The
-tool optimizes for the trade-off between numerical accuracy and resource usage
-when synthesized to \glspl{fpga}.
+numerical programs, this chapter is the first to propose a tool that performs a
+semantics-directed program transformation, which optimizes not only arithmetic
+expressions, but also numerical programs.  The tool optimizes for the trade-off
+between numerical accuracy and resource usage when synthesized to \glspl{fpga}.
 
-The program optimization flow is \emph{safe}, \emph{semantics-directed} and
-\emph{flexible}. \emph{Safety} means that because we make use of formal
-mathematics to optimize programs, our approach can be proved correct, in
-the sense that when executed using exact real arithmetic, the transformed
-version produces exactly the same output values as the original program.
-\emph{Semantics-directed} transformation means that not only do we use
-program syntax, but also the semantics to guide optimization and guarantee
-safety properties of the optimized program.  Our technique obtains when
-necessary, by analyzing the program, a bound and a round-off error bound on
-each variable in every program location.  These information are then used
-to guide program optimization.  By analyzing and manipulating not only the
-syntax, but also the semantics of programs.  The meaning of a \emph{flexible}
-program transformation is three-fold.  First, arithmetic computations can be
-optimized across assignments, \iflit~statements and \whilelit~loops.  Secondly,
-we automatically explore the numerical implications of partial loop unrolling
-and loop splitting, which can create more opportunity for minimizing round-off
-errors, hence further increases range of options in the Pareto frontier of
-trade-offs.  Finally, our method naturally subsumes constant propagation,
-redundant code elimination, and also branch and loop fusions.
+The optimization flow is designed to be \emph{flexible}, and its implications
+are three-fold.  Firstly, arithmetic computations can be optimized across
+assignments, \iflit~statements and \whilelit~loops.  Secondly, we automatically
+explore the numerical implications of partial loop unrolling and loop
+splitting, which can create more opportunity for minimizing round-off errors,
+hence further increases range of options in the Pareto frontier of trade-offs.
+Finally, our method naturally subsumes constant propagation, redundant code
+elimination, and also branch and loop fusions.
 
-% Our tool fits in the familiar setting of the high-level synthesis tool flow, as a front-end that performs the source-to-source optimization of
-
-Our main contributions in this chapter are as follows:
+The main contributions in this chapter are as follows:
 \begin{enumerate}
-    \vspace{-6pt}
-    \item
-        A new intermediate representation of the behaviour of numerical
-        programs, its structure is designed to be manipulated and analyzed
-        with ease.  A new framework of numerical program transformations is
-        developed to enable the back and forth translation between the program
-        and a new \gls{ir}, which preserves the semantics of the original
-        program.
-    \vspace{-6pt}
-    \item
-        Semantics-based analyses that reason about not only the resource
-        utilization (number of \glspl{lut} and \gls{dsp} elements), and safe
-        ranges of values and errors for programs, but also potential errors
-        such as overflows and non-termination.
-    \vspace{-6pt}
-    \item
-        A new tool, \soap, which trades off resource usage and accuracy
-        by providing a safe, semantics-directed and flexible optimization
-        targeting numerical programs for high-level synthesis.
-    \vspace{-6pt}
+
+    \item \acrfull{mir}, A new \gls{ir} of the behaviour of numerical programs.
+    Its structure is designed to be manipulated and analyzed with ease.
+
+    \item Semantics-based analyses that reason about not only the resource
+    utilization (number of \glspl{lut} and \gls{dsp} elements), and safe ranges
+    of values and errors for programs, but also potential errors such as
+    overflows and non-termination.  This provides the cost functions that we
+    wish to minimize by rewriting programs.
+
+    \item A new framework of numerical program transformations is
+    developed based on the methods in Section~\ref{so:sec:equivalent} of
+    Chapter~\ref{chp:stropt}.  It enables the back and forth translation
+    between the program and \gls{mir}, which preserves the semantics of the
+    original program in real arithmetic.
+
+    \item The updated tool, \soap, which trades off resource usage and accuracy
+    by providing a safe, semantics-directed and flexible optimization targeting
+    numerical programs for high-level synthesis.  Experimental results are
+    presented in Section~\ref{po:sec:results}.
+
 \end{enumerate}
 
 This chapter is organized as follows.  We start by defining our

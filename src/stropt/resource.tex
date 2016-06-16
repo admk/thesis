@@ -3,11 +3,11 @@
 
 Here we define similar formal semantics which calculate an approximation to
 the \gls{fpga} resource usage of an expression, taking into account common
-subexpression elimination. This is important as, for example, rewriting $a
-\times b + a \times c$ as $a \times (b + c)$ in the larger expression $(a
-\times b + a \times c) + {(a \times b)}^2$ causes the common subexpression $a
-\times b$ to be no longer present in both terms. Our analysis must capture
-this.
+subexpression elimination. This is important as, for example, rewriting $\vara
+\times \varb + \vara \times \varc$ as $\vara \times (\varb + \varc)$ in the
+larger expression $(\vara \times \varb + \vara \times \varc) + {(\vara \times
+\varb)}^2$ causes the common subexpression $\vara \times \varb$ to be no longer
+present in both terms. Our analysis must capture this.
 
 The analysis proceeds by labelling subexpressions. Intuitively, the
 set of labels $\labelset$, is used to assign unique labels to unique
@@ -34,18 +34,38 @@ $\lambda(l) = x$ and $\lambda(l^\prime) = \bot$.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[scale=0.6]{sample_tree}
+    \tikzstyle{block} = [
+        draw,
+        fill=white,
+        rectangle,
+        minimum height=1.5em,
+        minimum width=1.5em
+    ]
+    \begin{tikzpicture}
+        \node (+) [draw, fill=white, circle] at (0, 0) {$+$};
+        \node (a) [block, left=of +, yshift=4mm] {\vara};
+        \node (b) [block, left=of +, yshift=-4mm] {\varb};
+        \node (*) [draw, fill=white, circle, right=of +] {$\times$};
+        \draw[->] (a) -- node[auto, pos=0]{1} (+);
+        \draw[->] (b) -- node[auto, swap, pos=0]{2} (+);
+        \draw[->] (+) -- (*);
+        \draw[->] (+)
+            to[out=45, in=135]
+            node[auto, pos=0.05]{3}
+            node[auto, pos=0.95]{4} (*);
+    \end{tikzpicture}
     \caption{%
         The \gls{dfg} for the sample expression.
     }\label{so:fig:sample_tree}
 \end{figure}
 For example, for the \gls{dfg} in Figure~\ref{so:fig:sample_tree} we have for
-the variables $a$ and $b$:
+the variables $\vara$ and $\varb$:
 \begin{equation}
     \begin{aligned}
-        (l_a, \lambda_a) &= (\fresh(a), [\fresh(a)\mapsto{a}])
-                   = (l_1, [l_1 \mapsto a]), \\
-        (l_b, \lambda_b) &= (l_2, [l_2 \mapsto b]).
+        (l_\vara, \lambda_\vara)
+            &= (\fresh(\vara), [\fresh(\vara)\mapsto{\vara}])
+             = (l_1, [l_1 \mapsto \vara]), \\
+        (l_\varb, \lambda_\varb) &= (l_2, [l_2 \mapsto \varb]).
     \end{aligned}
     \label{so:eq:variable_env}
 \end{equation}
@@ -53,11 +73,11 @@ Then the environments are propagated in the flow direction of the \gls{dfg},
 using the following formulation of the labeling semantics:
 \begin{equation}
     \begin{aligned}
-        (l_x, \lambda_x) \circ (l_y, \lambda_y)
+        (l_x, \lambda_x) \opsymbol (l_y, \lambda_y)
             &= (l, (\lambda_x\odot\lambda_y)
-                      [l\mapsto{l_x \circ l_y}]), \\
-            \text{where~} l &= \fresh(l_x \circ l_y),
-                          \circ\in\{+, -, \times\}.
+                      [l\mapsto{l_x \opsymbol l_y}]), \\
+            \text{where~} l &= \fresh(l_x \opsymbol l_y),
+                          \opsymbol\in\{+, -, \times\}.
     \end{aligned}
     \label{so:eq:labeling_semantics}
 \end{equation}
@@ -66,41 +86,55 @@ is used to update the mapping in $\lambda_x$, if the mapping does not
 exist in $\lambda_x$, and result in a new environment $\lambda$; and
 $\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.  As
 an example, with the expression in Figure~\ref{so:fig:sample_tree}, using
-\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_a$, $l_2 = l_b$, we
-derive for the subexpression $a + b$:
+\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_\vara$, $l_2 =
+l_\varb$, we derive for the subexpression $\vara + \varb$:
 \begin{equation}
     \begin{aligned}
-        (l_{a + b}, \lambda_{a + b})
-            &= (l_a, \lambda_a) + (l_b, \lambda_b) \\
-            &= (l_3, (\lambda_a \odot \lambda_b) [l_3\mapsto{l_a + l_b}]) \\
-            &  \text{where~} l_3 = \fresh(l_a + l_b) \\
-            &= (l_3, [l_1\mapsto{a}]\odot
-                     [l_2\mapsto{b}]\odot
+        (l_{\vara + \varb}, \lambda_{\vara + \varb})
+            &= (l_\vara, \lambda_\vara) + (l_\varb, \lambda_\varb) \\
+            &= \left(l_3,
+                \left( \lambda_\vara \odot \lambda_\varb \right)
+                    \left[ l_3\mapsto{l_\vara + l_\varb} \right]
+               \right) \\
+            &  \text{where~} l_3 = \fresh(l_a + l_\varb) \\
+            &= (l_3, [l_1\mapsto{\vara}]\odot
+                     [l_2\mapsto{\varb}]\odot
                      [l_3\mapsto{l_1 + l_2}]) \\
-            &= (l_3, [l_1\mapsto{a}, l_2\mapsto{b}, l_3\mapsto{l_1 + l_2}]),
+            &= (l_3, [
+                 l_1\mapsto{\vara},
+                 l_2\mapsto{\varb},
+                 l_3\mapsto{l_1 + l_2}
+               ]),
     \end{aligned}
 \end{equation}
-where $l_a + l_b$ is a syntactic construct to signify that the subexpressions
-with labels $l_a$ and $l_b$ are added to form an expression.
-% \todo{George: I am a little confused by addition here.  What is the definition of ``+'' on labels?  If $l_a + l_b$ should be read purely as a syntactic construct, why does it need a distinct representation as $l_3$?}
-Finally, for the full expression $(a + b) \times (a + b)$:
+where $l_\vara + l_\varb$ is a syntactic construct to signify that the
+subexpressions with labels $l_\vara$ and $l_\varb$ are added to form an
+expression.
+% \todo{George: I am a little confused by addition here.  What is the
+% definition of ``+'' on labels?  If $l_\vara + l_\varb$ should be read purely
+% as a syntactic construct, why does it need a distinct representation as
+% $l_3$?}
+Finally, for the full expression $(\vara + \varb) \times (\vara + \varb)$:
 \begin{equation}
     \begin{aligned}
         (l, \lambda)
-            &= (l_{a + b}, \lambda_{a + b}) \times
-               (l_{a + b}, \lambda_{a + b}) \\
-            &= (l_4, [l_1\mapsto{a}, l_2\mapsto{b},
+            &= (l_{a + \varb}, \lambda_{a + \varb}) \times
+               (l_{a + \varb}, \lambda_{a + \varb}) \\
+            &= (l_4, [l_1\mapsto{\vara}, l_2\mapsto{\varb},
                       l_3\mapsto{l_1 + l_2}, l_4\mapsto{l_3 \times l_3}]).
     \end{aligned}
 \end{equation}
 From the above derivation, it is clear that the semantics capture the reuse
 of subexpressions. The estimation of area is performed by counting, for an
 expression, the numbers of additions, subtractions and multiplications in the
-final labeling environment, then calculating the number of \glspl{lut} used
-to synthesize the expression. If the number of operators is $n_\circ$ where
-$\circ\in\{+,-,\times\}$, then the number of \glspl{lut} in total for the
-expressions is estimated as $\sum_{\circ\in\{+,-,\times\}} A_\circ n_\circ$,
-where the value $A_\circ$ denotes the number of \glspl{lut} per $\circ$
+final labeling environment, then calculating the number of \glspl{lut} used to
+synthesize the expression. If the number of operators is $n_\opsymbol$ where
+$\opsymbol \in \{+, -, \times, /\}$, then the number of \glspl{lut} in total
+for the expressions is estimated as:
+\begin{equation}
+    \sum_{\opsymbol\in\{+,-,\times,/\}} A_\opsymbol n_\opsymbol,
+\end{equation}
+where the value $A_\opsymbol$ denotes the number of \glspl{lut} per $\opsymbol$
 operator, which is dependent on the type of the operator and the floating-point
 format used to generate the operator.
 

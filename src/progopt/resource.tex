@@ -9,37 +9,116 @@ resource usage.  We identify and eliminate common subexpressions when we
 construct \glspl{dag} from programs.  Resource statistics can be estimated
 by accumulating \gls{lut} and \gls{dsp} counts of each operator in the
 \gls{dag}\@.  However, we can further merge multiple nodes into one to reduce
-resource usage.  Conventional compiler optimizations~\cite{kuck81} such as
-branch and loop fusion, as well as redundant code elimination can be applied
-in an equivalent fashion to our \glspl{mir} to share conditional and fixpoint
-operators.
+the estimated resource usage of generated code.  Conventional compiler
+optimizations~\cite{kuck81} such as branch and loop fusion, as well as
+redundant code elimination can be applied in an equivalent fashion to our
+\glspl{mir} to share conditional and fixpoint operators.  This process further
+reintroduces control structures to \glspl{mir}, so that the code generation
+stage can make use of the result to synthesize code without redundant control
+structures.
+
 
 \subsection{Sharing conditional expressions}
 
-In its essence, the sharing of the conditional operator is equivalent to branch
-fusion.  For example, the metasemantic analysis of the program below produces
-the \gls{mir} in Figure~\ref{po:fig:mir_cond_fusion_1}:
-\begin{equation}
-    \begin{aligned}
-        & \iflit~(x < 0)~\thenlit~( \\
-        & \quad \assignstmt{x}{1} \semicolon
-                \assignstmt{y}{2} \\
-        & )~\elselit~( \\
-        & \quad \assignstmt{x}{3} \semicolon
-                \assignstmt{y}{4} \\
-        & )
-    \end{aligned}
-\end{equation}
+In its essence, the sharing of the conditional operator is equivalent to
+branch fusion.  For example, we consider the \gls{mir} of the program in
+Figure~\ref{po:lst:branch_example}.  The \gls{ma} of it produces the \gls{mir}
+in Figure~\ref{po:fig:mir_cond_fusion_1}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{lstlisting}
+        if (x < 0) {
+            x = 1;
+            y = 2;
+        } else {
+            x = 3;
+            y = 4;
+        }
+    \end{lstlisting}
+    \caption{%
+        A simple program to illustrate the sharing of conditional operators.
+    }\label{po:lst:branch_example}
+\end{figure}
 
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion]{%
-        \includegraphics[scale=\mirfigscale]{mir_cond_fusion_1}
-        {}\label{po:fig:mir_cond_fusion_1}
+        % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_1}
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[mirnode] (xq) [right=of x] {$\qop$};
+            \node[mirnode] (1) [below=of xq, yshift=-2mm, inner sep=2mm] {$1$};
+                \node[mirnode] (3) [below right=of xq, yshift=-2mm, inner sep=1mm]
+                    {$3$};
+
+            \node[coordinate] (mid) [right=of xq, xshift=13mm] {};
+            \node[mirnode] (y) [right=of mid, xshift=5mm] {\vary};
+            \node[mirnode] (yq) [right=of y] {$\qop$};
+            \node[mirnode] (2) [below=of yq, inner sep=2mm] {$2$};
+            \node[mirnode] (4) [below right=of yq, inner sep=1mm] {$4$};
+
+            \node[mirnode] (<) [below=of mid, yshift=-2mm] {$<$};
+            \node[mirnode] (xin) [below left=of <] {\varx};
+            \node[mirnode] (0) [below right=of <] {$0$};
+
+            \draw[|->] (x) -- (xq);
+            \draw[|->] (y) -- (yq);
+            \draw[-] (xq) to[out=-135, in=135] (<);
+            \draw[-] (yq) to[out=-135, in=45] (<);
+            \draw[channel,-] (xq) -- (1);
+            \draw[channel,-] (xq) -- (3);
+            \draw[-] (yq) -- (2);
+            \draw[-] (yq) -- (4);
+            \draw[-] (<) -- (xin);
+            \draw[-] (<) -- (0);
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}\label{po:fig:mir_cond_fusion_1}
     }\quad
     \subfloat[After fusion]{%
-        \includegraphics[scale=\mirfigscale]{mir_cond_fusion_2}
-        {}\label{po:fig:mir_cond_fusion_2}
+        % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_2}
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[coordinate] (xmid) [right=of x] {};
+            \node[coordinate] (xout) [right=of xmid] {};
+            \node[coordinate] (mid) [right=of xout] {};
+            \node[mirnode] (y) [right=of mid] {\vary};
+            \node[coordinate] (ymid) [right=of y] {};
+            \node[coordinate] (yout) [right=of ymid] {};
+            %\node[coordinate] (yedge) [right=of yout] {};
+
+            \node[coordinate] (out) [below=of mid, yshift=-2mm] {};
+            \node[mirnode, inner sep=2mm] (?) [below=of out] {$\qop$};
+            \node[mirnode] (<) [below left=of ?, xshift=-10mm, yshift=2mm] {$<$};
+            \node[coordinate] (in1) [below=of ?, yshift=-3mm] {};
+            \node[coordinate] (in2) [below right=of ?, xshift=10mm] {};
+
+            \node[mirnode] (xin) [below left=of <] {\varx};
+            \node[mirnode] (0) [below right=of <] {0};
+            \node[mirnode] (1) [below left=of in1] {1};
+            \node[mirnode] (2) [below right=of in1] {2};
+            \node[mirnode] (3) [below left=of in2] {3};
+            \node[mirnode] (4) [below right=of in2] {4};
+
+            \draw[|->] (x) -- (xmid);
+            \draw[|->] (y) -- (ymid);
+            \draw[-] (yout) to[out=-90, in=45] (out);
+            \draw[-] (xout) to[out=-90, in=135] (out);
+            \draw[o] (?) -- (out);
+
+            \draw[-] (?) -- (<);
+            \draw[-] (<) -- (xin);
+            \draw[-] (<) -- (0);
+            \draw[-] (in1) -- (1);
+            \draw[-] (in1) -- (2);
+            \draw[-] (in2) -- (3);
+            \draw[-] (in2) -- (4);
+            \draw[o] (?) -- (in1);
+            \draw[o] (?) -- (in2);
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}\label{po:fig:mir_cond_fusion_2}
     }
     \caption{The sharing of conditional expressions.}
 \end{figure}
@@ -55,81 +134,217 @@ Figure~\ref{po:fig:mir_cond_fusion_2}, to ``bundle up'' more than one
 conditional expressions, when they all have the same Boolean expression.
 
 
-\subsection{Resource sharing in substitution expressions}
+\subsection{Resource sharing in composition expressions}
 
-Substitution expressions can be fused in an analogous manner.  Any \glspl{mir}
+Composition expressions can be fused in an analogous manner.  Any \glspl{mir}
 $\mu_1$ and $\mu_2$ can be merged to form a new \gls{mir} if there are no
 conflicts in the variable-expression pairing, \ie~for any variable $x$ that
 is assigned an expression in both $\mu_1$ and $\mu_2$, $\mu_1(x)$ is equal
 to $\mu_2(x)$.  A ``bundle'' of expressions can also be created to denote
-the sharing of the substitution operator.  For example, a simple \gls{mir}
+the sharing of the composition operator.  For example, a simple \gls{mir}
 in Figure~\ref{po:fig:mir_sub_fusion_1} can be restructured by fusing both
 variables $x$ and $y$.
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion]{%
-        \includegraphics[scale=\mirfigscale]{mir_sub_fusion_1}
-        {}\label{po:fig:mir_sub_fusion_1}
-    }
+        % \includegraphics[scale=\mirfigscale]{mir_sub_fusion_1}
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[mirnode] (x*) [right=of x] {$\expand$};
+            \node[coordinate] (mid) [right=of x*, xshift=10mm] {};
+            \node[mirnode] (y) [right=of mid] {\vary};
+            \node[mirnode] (y*) [right=of y] {$\expand$};
+
+            \node[mirnode] (xin) [below left=of x*] {\varx};
+            \node[mirnode] (xmir) [below right=of x*] {};
+            \node[mirnode] (zin) [below left=of y*] {\varz};
+            \node[mirnode] (zmir) [below right=of y*] {};
+
+            \draw[-] (x*) -- (xin);
+            \draw[-] (x*) -- (xmir);
+            \draw[-] (y*) -- (zin);
+            \draw[-] (y*) -- (zmir);
+
+            \node[mirnode] (xmirx) [below=of x*] {\varx};
+            \node[mirnode] (xmir+) [right=of xmirx] {$+$};
+            \node[mirnode] (xmirxin) [below left=of xmir+] {\varx};
+            \node[mirnode] (xmir1) [below right=of xmir+] {$1$};
+            \draw[|->] (xmirx) -- (xmir+);
+            \draw[-] (xmir+) -- (xmirxin);
+            \draw[-] (xmir+) -- (xmir1);
+            \brackets{(xmirx) (xmir1)};
+
+            \node[mirnode] (zmirz) [below=of y*] {\varz};
+            \node[mirnode] (zmir*) [right=of zmirz] {$\times$};
+            \node[mirnode] (zmirxin) [below right=of zmir*] {\varx};
+            \node[mirnode] (zmirzin) [below left=of zmir*] {\varz};
+            \draw[|->] (zmirz) -- (zmir*);
+            \draw[-] (zmir*) -- (zmirzin);
+            \draw[-] (zmir*) -- (zmirxin);
+            \brackets{(zmirz) (zmirxin)};
+
+            \draw[|->] (x) -- (x*);
+            \draw[|->] (y) -- (y*);
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}\label{po:fig:mir_sub_fusion_1}
+    }\quad
     \subfloat[After fusion]{%
-        \includegraphics[scale=\mirfigscale]{mir_sub_fusion_2}
-        {}\label{po:fig:mir_sub_fusion_2}
+        % \includegraphics[scale=\mirfigscale]{mir_sub_fusion_2}
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[coordinate] (xmid) [right=of x] {};
+            \node[coordinate] (xout) [right=of xmid] {};
+            \node[coordinate] (mid) [right=of xout] {};
+            \node[mirnode] (y) [right=of mid] {\vary};
+            \node[coordinate] (ymid) [right=of y] {};
+            \node[coordinate] (yout) [right=of ymid] {};
+            \draw[|->] (x) -- (xmid);
+            \draw[|->] (y) -- (ymid);
+
+            \node[coordinate] (out) [below right=of xout, yshift=-2mm] {};
+            \node[mirnode] (*) [below=of out] {$\expand$};
+            \draw[-] (xout) -- (out);
+            \draw[-] (yout) to[out=-90, in=45] (out);
+            \draw[o] (*) -- (out);
+
+            \node[coordinate] (lin) [below left=of *] {};
+            \node[coordinate] (mir) [below right=of *] {};
+            \node[mirnode] (xin) [below left=of lin] {\varx};
+            \node[mirnode] (zin) [below right=of lin] {\varz};
+            \draw[-] (xin) -- (lin);
+            \draw[-] (zin) -- (lin);
+            \draw[o] (*) -- (lin);
+            \draw[-] (*) -- (mir);
+
+            \node[mirnode] (mirz) [right=of *] {\varz};
+            \node[mirnode] (mir*) [right=of mirz] {$\times$};
+            \node[mirnode] (mirx) [right=of mir*] {\varx};
+            \node[mirnode] (mir+) [right=of mirx] {$+$};
+            \node[mirnode] (mirzin) [below left=of mir*] {\varz};
+            \node[mirnode] (mirxin) [below left=of mir+] {\varx};
+            \node[mirnode] (mir1) [below right=of mir+] {$1$};
+            \draw[|->] (mirz) -- (mir*);
+            \draw[|->] (mirx) -- (mir+);
+            \draw[-] (mir*) -- (mirzin);
+            \draw[-] (mir*) -- (mirxin);
+            \draw[-] (mir+) -- (mirxin);
+            \draw[-] (mir+) -- (mir1);
+            \brackets{(mirz) (mir1)};
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}\label{po:fig:mir_sub_fusion_2}
     }
-    \caption{The sharing of substitution expressions.}
+    \caption{The sharing of composition expressions.}
 \end{figure}
+
 
 \subsubsection{Resource sharing in fixpoint expressions}
 
-For fixpoint expressions that represent \whilelit~loops, discovering
-resource sharing opportunities is a little more complex.  We fuse
-fixpoint expressions in an analogous fashion as described above for
-conditional expressions, and it is related to the conventional loop fusion
-compiler optimization.  For instance, the program $\whilelit~(x > y)$
-$\dolit~(\assignstmt{z}{z + x} \semicolon$ $\assignstmt{x}{x / 2})$ has the
-\gls{mir} in Figure~\ref{po:fig:mir_fix_fusion_1}, where $b = x > y$, $\mu_1 =
-[x \mapsto x / 2]$ and $\mu_2 = [x \mapsto x / 2, z \mapsto z + x]$.  During
-our optimizations, we may wish to evaluate both $x$ and $z$ as accurate as
-possible, therefore the two fixpoint expressions are optimized individually,
-because loop splitting could enhance the accuracy of both $x$ and $z$.  After
-optimization, in the resulting \gls{mir}, fixpoint expressions may share
-computations.  For instance, by fusing these two expressions into one fixpoint
-expression, as illustrated in Figure~\ref{po:fig:mir_fix_fusion_2}, we save
-resource in the conditional expressions and the control logic that are formerly
-duplicated.
+For fixpoint expressions that represent \whilelit~loops, discovering resource
+sharing opportunities is a little more complex.  We fuse fixpoint expressions
+in an analogous fashion as described above for conditional expressions, and
+it is related to the conventional loop fusion compiler optimization.  For
+instance, the program in Figure~\ref{po:lst:loop_example} has the \gls{mir}
+in Figure~\ref{po:fig:mir_fix_fusion_1}, where:
+\begin{equation}
+    b = \varx > \vary, \quad
+    \mu_1 = [\varx \mapsto \varx / 2], \text{~and} \quad
+    \mu_2 = [\varx \mapsto \varx / 2, \varz \mapsto \varz + \varx].
+\end{equation}
+\begin{figure}[ht]
+    \begin{lstlisting}
+        while (x > y) {
+            z = z + x;
+            x = x / 2;
+        }
+    \end{lstlisting}
+    \caption{%
+        A simple program to illustrate the sharing of fixpoint operators.
+    }\label{po:lst:loop_example}
+\end{figure}
+
+During program optimization, the two fixpoint expressions are optimized
+individually, because loop splitting could enhance the accuracy of both $x$ and
+$z$.  After this, in the resulting \gls{mir}, fixpoint expressions may or may
+not share computations.  The fixpoint expressions can often be fused together
+to save resources in the conditional expressions and the control logic that
+are formerly duplicated, if they share common computations.  For instance,
+Figure~\ref{po:fig:mir_fix_fusion_2} shows how two expressions can be fused
+into one fixpoint expression.
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion]{%
-        \includegraphics[scale=\mirfigscale]{mir_fix_fusion_1}
-        {}\label{po:fig:mir_fix_fusion_1}
-    }
-    \subfloat[After fusion]{%
-        \includegraphics[scale=\mirfigscale]{mir_fix_fusion_2}
-        {}\label{po:fig:mir_fix_fusion_2}
-    }
-    \caption{The sharing of fixpoint expressions.}
-\end{figure}
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[mirnode] (xfix) [right=of x] {$\fix$};
+            \node[mirnode] (b1) [below left=of xfix] {$b$};
+            \node[mirnode] (mu1) [below=of xfix] {$\mu_1$};
+            \node[mirnode] (xin) [below right=of xfix] {\varx};
 
-Another transformation is to allow sharing of expressions across nested
-\glspl{mir}.  As a simple example, the program ``$\assignstmt{y}{y + 1}
-\semicolon \whilestmt{x < y}{\assignstmt{x}{x + 1}}$'' has the \gls{mir} in
-Figure~\ref{po:fig:mir_fix_external_1}, where $\mu = [x \mapsto x + 1]$ and $b
-= x < y$, which also has duplicate computations (shaded region).  An additional
-structure is required to share them across expressions.  We restructure it by
-introducing a special \emph{external} operator, to allow a nested \gls{mir}
-to reference and reuse an expression from the outer \gls{mir} as demonstrated
-below in Figure~\ref{po:fig:mir_fix_external_2}.
-\begin{figure}[ht]
-    \centering
-    \subfloat[Before]{%
-        \includegraphics[scale=\mirfigscale]{mir_fix_external_1}
-        {}\label{po:fig:mir_fix_external_1}
+            \node[mirnode] (z) [right=of xfix, xshift=5mm] {\varz};
+            \node[mirnode] (zfix) [right=of z] {$\fix$};
+            \node[mirnode] (b2) [below left=of zfix] {$b$};
+            \node[mirnode] (mu2) [below=of zfix] {$\mu_2$};
+            \node[mirnode] (zin) [below right=of zfix] {\varz};
+
+            \node[mirnode] (y) [right=of zfix, xshift=5mm] {\vary};
+            \node[mirnode] (yin) [right=of y] {\vary};
+
+            \draw[|->] (x) -- (xfix);
+            \draw[|->] (z) -- (zfix);
+            \draw[|->] (y) -- (yin);
+            \draw[-] (xfix) -- (b1);
+            \draw[-] (xfix) -- (mu1);
+            \draw[-] (xfix) -- (xin);
+            \draw[-] (zfix) -- (b2);
+            \draw[-] (zfix) -- (mu2);
+            \draw[-] (zfix) -- (zin);
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}\label{po:fig:mir_fix_fusion_1}
+    } \quad
+    \subfloat[After fusion]{%
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[coordinate] (xmid) [right=of x] {};
+            \node[coordinate] (xout) [right=of xmid] {};
+
+            \node[mirnode] (z) [right=of xout, xshift=5mm] {\varz};
+            \node[coordinate] (zmid) [right=of z] {};
+            \node[coordinate] (zout) [right=of zmid] {};
+
+            \node[mirnode] (y) [right=of zout, xshift=5mm] {\vary};
+            \node[mirnode] (yin) [right=of y] {\vary};
+
+            \node[coordinate] (out) [below right=of xout, yshift=-2mm] {};
+            \node[mirnode] (fix) [below=of out] {$\fix$};
+            \draw[-] (xout) -- (out);
+            \draw[-] (zout) to[out=-90, in=45] (out);
+            \draw[o] (fix) -- (out);
+
+            \node[mirnode] (b) [below left=of fix] {$b$};
+            \node[mirnode] (mu) [below=of fix] {$\mu_2$};
+            \node[coordinate] (in) [below right=of fix, xshift=5mm] {};
+            \node[mirnode] (xin) [below left=of in] {\varx};
+            \node[mirnode] (zin) [below right=of in] {\varz};
+            \draw[-] (fix) -- (b);
+            \draw[-] (fix) -- (mu);
+            \draw[-] (in) -- (xin);
+            \draw[-] (in) -- (zin);
+            \draw[o] (fix) -- (in);
+
+            \draw[|->] (x) -- (xmid);
+            \draw[|->] (z) -- (zmid);
+            \draw[|->] (y) -- (yin);
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}\label{po:fig:mir_fix_fusion_2}
     }
-    \subfloat[After]{%
-        \includegraphics[scale=\mirfigscale]{mir_fix_external_2}
-        {}\label{po:fig:mir_fix_external_2}
+    \caption{%
+        The sharing of fixpoint expressions in the
+        Figure~\ref{po:lst:loop_example} example.
     }
-    \caption{Restructuring nested \gls{mir} to reuse expression.}
-    \centering
 \end{figure}
 
 However in some cases the above transformations could create cyclic graphs.  To
@@ -139,12 +354,113 @@ $b$, a cycle is created as in Figure~\ref{po:fig:mir_cond_fusion_4}.
 \begin{figure}[ht]
     \centering
     \subfloat[Before fusion, the \gls{mir} is acyclic]{%
-        \includegraphics[scale=\mirfigscale]{mir_cond_fusion_3}
-        {}\label{po:fig:mir_cond_fusion_3}
+        % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_3}
+        \begin{minipage}{0.35\textwidth}
+        \centering
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[mirnode] (x?) [right=of x] {$\qop$};
+            \node[mirnodealt] (x?2) [below=of x?] {$\qop$};
+            \node[mirnode] (xin) [below right=of x?] {\varx};
+            \node[mirnodealt] (1)
+                [below right=of x?2, xshift=-3mm, yshift=-1mm] {$1$};
+            \node[mirnodealt] (2) [below right=of x?2] {$2$};
+            \node[mirnodealt] (a) [below=of x?2, yshift=-8mm] {$a$};
+
+            \node[mirnode] (y) [right=of x?] {\vary};
+            \node[mirnode] (y?) [right=of y] {$\qop$};
+            \node[mirnodealt] (y?2) [below=of y?] {$\qop$};
+            \node[mirnode] (yin) [below right=of y?] {\vary};
+            \node[mirnodealt] (3)
+                [below right=of y?2, xshift=-3mm, yshift=-1mm] {$3$};
+            \node[mirnodealt] (4) [below right=of y?2] {$4$};
+            \node[mirnodealt] (b) [below=of y?2, yshift=-7mm] {$b$};
+            \node[coordinate] (x?2-b) [above left=of b, xshift=-4mm] {};
+
+            \draw[|->] (x) -- (x?);
+            \draw[-] (x?) -- (x?2);
+            \draw[-] (x?) -- (xin);
+            \draw[-] (x?2) -- (1);
+            \draw[-] (x?2) -- (2);
+
+            \draw[|->] (y) -- (y?);
+            \draw[-] (y?) -- (y?2);
+            \draw[-] (y?) -- (yin);
+            \draw[-] (y?2) -- (3);
+            \draw[-] (y?2) -- (4);
+
+            \draw[-] (x?) to[out=-135, in=135] (a);
+            \draw[-] (x?2) to[out=-135, in=-180] (x?2-b);
+            \draw[-] (x?2-b) to[out=0, in=135] (b);
+            \draw[-] (y?) to[out=-135, in=120] (b);
+            \draw[channel,-] (y?2) to[out=-120, in=45] (a);
+
+            \brackets{(current bounding box)};
+        \end{tikzpicture}
+        \end{minipage}\label{po:fig:mir_cond_fusion_3}
     }\quad
-    \subfloat[Fusion of $a$ and $b$ creates a cycle]{%
-        \includegraphics[scale=\mirfigscale]{mir_cond_fusion_4}
-        {}\label{po:fig:mir_cond_fusion_4}
+    \subfloat[Fusing the two conditional operators $a$ and $b$ creates a cycle]{%
+        % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_4}
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[coordinate] (xmid) [right=of x] {};
+            \node[coordinate] (xout) [right=of xmid] {};
+            \node[mirnode] (y) [right=of xout, xshift=15mm] {\vary};
+            \node[coordinate] (ymid) [right=of y] {};
+            \node[coordinate] (yout) [right=of ymid] {};
+            \draw[|->] (x) -- (xmid);
+            \draw[|->] (y) -- (ymid);
+
+            \node[coordinate] (o1) [below right=of xout] {};
+            \node[mirnodealt] (?1) [below left=of o1] {$\qop$};
+            \node[mirnode] (a) [below left=of ?1] {$a$};
+            \node[coordinate] (i1) [below=of ?1, yshift=-3mm, xshift=-3mm] {};
+            \node[coordinate] (i2) [below right=of ?1, xshift=2mm] {};
+            \node[mirnode] (3) [below right=of i1] {$3$};
+            \node[mirnode] (xin) [below left=of i2] {\varx};
+            \node[mirnode] (4) [below right=of i2] {$4$};
+
+            \node[coordinate] (o2) [below left=of y] {};
+            \node[mirnodealt] (?2) [below right=of o2] {$\qop$};
+            \node[mirnode] (b) [below left=of ?2] {$b$};
+            \node[coordinate] (i3) [below=of ?2, xshift=5mm] {};
+            \node[coordinate] (i4) [below right=of ?2, xshift=10mm] {};
+            \node[mirnode] (1) [below left=of i3] {$1$};
+            \node[mirnode] (2) [below left=of i4] {$2$};
+            \node[mirnode] (yin) [below right=of i4] {\vary};
+
+            \draw[-, red] (o1) -- (?1);
+            \draw[-, red] (?1) -- (i1);
+            \node[coordinate] (xl) [left=of x, yshift=-7mm] {};
+            \draw[-, red] (i1) to[out=-135, in=-90] (xl);
+            \node[coordinate] (xa) [above=of xout, yshift=1mm] {};
+            \draw[-, red] (xl) to[out=90, in=180] (xa);
+            \draw[-, red] (xa) to[out=0, in=135] (o2);
+            \draw[-, red] (?2) -- (i3);
+            \node[coordinate] (1b) [below=of 1] {};
+            \draw[-, red] (i3) to[out=-45, in=0] (1b);
+            \node[coordinate] (bb) [below=of b, yshift=1mm, xshift=-1mm] {};
+            \draw[-, red] (1b) to[out=180, in=-60] (bb);
+            \draw[-, red] (bb) to[out=120, in=45] (o1);
+
+            \draw[-] (?1) -- (a);
+            \draw[-] (?1) -- (i2);
+            \draw[o] (3) -- (i1);
+            \draw[-] (xin) -- (i2);
+            \draw[o] (4) -- (i2);
+            \draw[o] (xout) -- (o1);
+
+            \draw[-] (?2) -- (b);
+            \draw[o] (1) -- (i3);
+            \draw[-] (2) -- (i4);
+            \draw[-] (yin) -- (i4);
+            \draw[o] (?2) -- (i4);
+            \draw[-] (yout) to[out=-90, in=45] (o2);
+
+            \draw[o, red] (?2) -- (o2);
+
+            \brackets{(x) (3) (yin) (xl)};
+        \end{tikzpicture}\label{po:fig:mir_cond_fusion_4}
     }
     \caption{Example branch fusion creates a cycle.}
 \end{figure}
@@ -155,25 +471,26 @@ potential to generate cycles and there are potentially multiple ways of
 restructuring and combining fixpoint expressions, such cycles in \glspl{mir}
 cannot be directly translated back into the source syntax.  In our example,
 only one of either $a$ or $b$ can be fused without generating a dependency
-cycle in the \gls{mir}\@.  There are more than one way of restructuring an
+cycle in the \gls{mir}\@.  There is more than one way of restructuring an
 \gls{mir}, and each way could produce a different \gls{mir} that generates a
-different program.  Therefore it is necessary to be specific about the strategy
+different program.  It is therefore necessary to be specific about the strategy
 to make this procedure deterministic.  Our method explores fusion opportunities
-with a depth-first traversal of the \gls{mir}\@.  While traversing nodes, we
-attempt to explore possibilities of sharing for the current node; when a cycle
-is created, we simply revert to the previous acyclic version.  This process is
-deterministic and ensures the order of resource sharing.
+with a depth-first traversal of the \gls{mir}\@.  While traversing nodes,
+we attempt to form the maximal sharing for the current node; when a cycle
+is created, the algorithm backtracks to the previous acyclic version.  This
+process is deterministic and ensures the order of resource sharing.
+
 
 \subsubsection{Resource counting}
 
-Finally, after applying the resource sharing transformations outlined above,
-we count the number of \glspl{lut} and \glspl{dsp}, by accumulating the
-statistics for each operator instance in the \gls{mir}, in the same way we
-described in Chapter~\ref{chp:stropt}.  For this resource estimation, we
-gather statistics of individual operators by synthesizing each arithmetic
-operator (addition, subtraction, multiplication, division and comparison),
-for single and double precision floating-point, using Altera's floating-point
-megafunctions~\cite{altfp}.  Similarly, the resource usage of integer
-arithmetic, conditional and fixpoint operators are synthesized and estimated
-from multiplexers, and the substitution operator uses no resources because it
-does not perform computations.
+Finally, after applying the resource sharing transformations outlined above, we
+count the number of \glspl{lut} and \glspl{dsp}, by accumulating the statistics
+for each operator instance in the \gls{mir}, in the same way described in
+Section~\ref{so:sec:resource} of Chapter~\ref{chp:stropt}.  For this resource
+estimation, we gather statistics of individual operators by synthesizing each
+arithmetic operator (addition, subtraction, multiplication, division and
+comparison), for single- and double-precision floating-point, using Altera's
+floating-point megafunctions~\cite{altfp}.  Similarly, the resource usage of
+integer arithmetic, conditional and fixpoint operators are synthesized and
+estimated from multiplexers, and the composition operator uses no resources
+because it does not perform computations.

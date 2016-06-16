@@ -1,0 +1,105 @@
+\chapter{Formal Definitions of Equivalent MIR Discovery}
+\label{app:formal}
+
+In Section~\ref{po:sec:equivalence_analysis} of Chapter~\ref{chp:progopt}
+informally explained how equivalent semantic expressions and
+\glspl{mir} can be discovered.  In this appendix we formally define the
+equivalent discovery procedure for all newly introduced operators in
+Section~\ref{po:sec:program_to_mir}, \ie~the ternary conditional, composition,
+and fixpoint operators, and also extend this definition to \glspl{mir} in a
+similar fashion.
+
+Formally, we extend the optimization function $\optfunc{\cdot}: M \to
+\errordom \to M$, where $M = \sexprset \cup \mirset$, proposed in
+Section~\ref{so:sec:equivalent} of Chapter~\ref{chp:stropt} to these above
+structures.  For ternary conditional operators, we have:
+\begin{equation}
+    \optfunc{\ternarymir{$\qop$}{$b$}{$e_1$}{$e_2$}}\sigma^\sharp
+    = f_{\sigma^\sharp} \left( \left\{
+        \ternarymir{$\qop$}{$b^\prime$}{$e^\prime_1$}{$e^\prime_2$}
+        \left|
+        \tikz[baseline=(current bounding box.center), text height=0]{%
+            \node at (0, 0) {%
+                $b^\prime \in \optfunc{b}\sigma^\sharp,$
+            };
+            \node at (1.8mm, -5mm) {%
+                $e^\prime_1 \in \optfunc{e_1}\sigma^\sharp|_b^\prime,$
+            };
+            \node at (1.5mm, -10mm) {%
+                $e^\prime_2 \in \optfunc{e_2}\sigma^\sharp|_b^\prime$
+            };
+        }
+        \right.
+    \right\} \right).
+\end{equation}
+
+Similarly, the function can also be defined for the composition operator:
+\begin{equation}
+    \optfunc{\binarymir{$\expand$}{$e$}{$\mu$}}\sigma^\sharp
+    = \frontier\left( \left\{
+        \left.
+            \binarymir{$\expand$}{$e^\prime$}{$\mu^\prime$}
+        \right|
+        \tikz[baseline=(current bounding box.center), text height=1mm]{%
+            \node at (0, 0) {%
+                $e^\prime \in \optfunc{e} \left(
+                    \mirerrorfunc{\mu^\prime}\sigma^\sharp
+                \right),$
+
+            };
+            \node at (0mm, -6mm) {%
+                $\mu^\prime \in \optfunc{\mu}\sigma^\sharp$
+            };
+        }
+    \right\}, \sigma^\sharp \right),
+\end{equation}
+where $\frontier\left(\epsilon, \sigma^\sharp\right)$ computes the
+Pareto-optimal set of equivalent semantic expressions from the initial set
+$\epsilon$, using the program state $\sigma^\sharp$ to evaluate the quality
+metrics (\ie~round-off errors and resource utilization).
+
+In addition, a formal mathematical definition of the process of discovering
+equivalent fixpoint expressions is:
+\begin{equation}
+    \optfunc{\fixexprmir}\sigma^\sharp
+    = \frontier \left( \left\{
+        \fixpointmir{$b^\prime$}{$\mu^\prime$}{\varx}
+        \left|
+        \tikz[baseline=(current bounding box.center), text height=5mm]{%
+            \node at (0, 0) {%
+                $\loopinvar = \mathsf{E}_\mathsf{s}^\mathrm{LI} \left[
+                    \fixexprmir
+                \right]\sigma^\sharp,$
+            };
+            \node at (0, -9mm) {%
+                $b^\prime \in \optfunc{b}\loopinvar,$
+            };
+            \node at (0, -19mm) {%
+                $\displaystyle \mu^\prime \in \bigcup_{k=0}^{K}
+                \optfunc{p^k_\mu (\mu)}\loopinvar$
+            };
+        }
+        \right.
+    \right\}, \sigma^\sharp \right),
+\end{equation}
+where $K$ is the partial unroll factor limit.  We set $K = 3$ in the
+experimental results discussed in Section~\ref{po:sec:results}.
+
+Finally, \glspl{mir} can also be optimized in a similar fashion, by
+recursively discovering equivalent expressions within it:
+\begin{equation}
+    \optfunc{\mu}\sigma^\sharp = \frontier\left( \left\{
+        {\left[ \varx \mapsto e_\varx \right]}_{\varx \in \varfunc{\mu}}
+        \left|
+        \tikz[baseline=(current bounding box.center), text height=1mm]{%
+            \node at (0, 0) {%
+                $e_\vary \in \optfunc{\mu(\vary)}\sigma^\sharp,$
+
+            };
+            \node at (0mm, -6mm) {%
+                $\vary \in \varfunc{\mu}$
+            };
+        }
+        \right.
+    \right\}, \sigma^\sharp \right).
+\end{equation}

@@ -175,7 +175,7 @@ programs that can benefit from our optimizations usually do not manipulate
 pointers.  This issue can also be addressed in the future by performing
 pointer analysis. Secondly, diverged paths in array updates could occur if
 we na{\"\i}vely optimize \glspl{mir}.  For instance, if $A$ is an input
-array, consider the two expressions in an \gls{mir}, $\update{A}{\bar{x}}{e}$
+array, consider the two expressions in a \gls{mir}, $\update{A}{\bar{x}}{e}$
 and $\update{A}{\bar{x}}{e^\prime}$, where $e, e^\prime$ are equivalent.
 They respectively update the $x$-th element of $A$ with $e$ and $e^\prime$
 and return different arrays.  A C program cannot be generated from this

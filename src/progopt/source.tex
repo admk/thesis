@@ -1,0 +1,103 @@
+\chapter{Benchmark Source Code}
+\label{app:source}
+
+In Section~\ref{po:sec:results} of Chapter~\ref{chp:progopt} we explored the
+experimental results of several numerical programs as our benchmark examples.
+This appendix contains the source code of the benchmark suite used.
+
+\begin{figure}[ht]
+\begin{lstlisting}
+#pragma soap in float x=[0, 20]
+#pragma soap out x
+
+while (x > 1.0) {
+    x = 0.9 * x;
+}
+\end{lstlisting}
+\caption{\texttt{simple}}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{lstlisting}
+#pragma soap in \
+    int n=[10, 20], float x=[-0.1, 0.1], float y=[0, 1]
+#pragma soap out z
+
+float a = 1;
+int b = 1;
+float p = 1;
+float z = 0.0f;
+for (int i = 0; i < n; i++) {
+    a = -a;
+    b *= (2 * i + 1) * (2 * i);
+    p *= (x + y) * (x + y);
+    z += (a / b) * p;
+}
+\end{lstlisting}
+\caption{\texttt{taylor}}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{lstlisting}
+#pragma soap in \
+    float a0=[0, 0.2], float a1=[0, 0.2], \
+    float a2=[0.0, 0.2], float b0=[0, 0.2], \
+    float b1=[0, 0.2], float b2=[0.0, 0.2], \
+    float x=[0, 1], int n=20
+#pragma soap out y
+
+float x1 = 0.0f, x2 = 0.0f;
+float y1 = 0.0f, y2 = 0.0f;
+float y = x;
+for (int i = 0; i < n; i++) {
+    float yt = y;
+    y = b0 * x + b1 * x1 + b2 * x2 +
+        a0 * y + a1 * y1 + a2 * y2;
+    x2 = x1;
+    x1 = x;
+    y2 = y1;
+    y1 = yt;
+}
+\end{lstlisting}
+\caption{\texttt{filter}}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{lstlisting}
+#pragma soap in \
+    float u=[0.0, 1.0], float w=[0.0, 1.0], \
+    int n=[0, 20], float dt=[0.1, 0.1]
+#pragma soap out u, v
+
+float u;
+float v = 0.0f;
+for (int i = 0; i < n; i++) {
+    float u0 = u + v * dt;
+    v -= w * u * dt;
+    u = u0;
+}
+\end{lstlisting}
+\caption{\texttt{euler}}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{lstlisting}
+#define n 20
+#pragma soap in \
+    float kp=[9, 10], float ki=[0.5, 0.7], float kd=[0, 3], \
+    float dt=[0.2, 0.2], float m=8.0, float c=5.0,
+#pragma soap out m
+
+float i = 0.0f, e0 = 0.0f;
+float m, e, d, r;
+for (int j = 0; j < n; j++) {
+    e = c - m;
+    i += ki * dt * e;
+    d = kd * (e - e0) / dt;
+    r = kp * e + i + d;
+    e0 = e;
+    m += 0.01f * r;
+}
+\end{lstlisting}
+\caption{\texttt{pid}}
+\end{figure}

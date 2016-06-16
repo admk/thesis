@@ -9,172 +9,510 @@ discarded, whereas the abstraction still retains data-flow dependencies and
 keeps only computations that contribute to the final results.
 
 We work with the \gls{mir} as an abstraction of the program because the
-discovery of equivalent structures can be much simplified.  For instance, the
-program ``$x \assign 1 \semicolon y \assign 2$'' is the same as ``$y \assign 2
-\semicolon x \assign 1$'' because interleaving of non-dependent statements does
-not change program semantics.  If we were to base our transformations on the
-program syntax, we will need to enable this kind of equivalent relation even
-though it has zero impact on our optimization with respect to resource usage
-and accuracy.  A much simpler intermediate representation means that we can
-explore a much smaller search space.
+discovery of equivalent structures can be much simplified.  For instance,
+the program ``\verb|x = 1; y = 2;|'' is the same as ``\verb|y = 2; x = 1;|''
+because interleaving of non-dependent statements does not change program
+semantics.  If we were to base our transformations on the program syntax, we
+will need to enable this kind of equivalence relation even though it has zero
+impact on our optimization with respect to resource usage and accuracy.  A
+simpler \gls{ir} means that we can explore a much smaller search space.
 
 Our method analyzes a program by recursively dividing the program into smaller
-parts, where each part can be separately analyzed into an \gls{mir} and
-composed together to form a single \gls{mir}\@.  An \gls{mir} is a mathematical
+parts, where each part can be separately analyzed into a \gls{mir} and
+composed together to form a single \gls{mir}\@.  A \gls{mir} is a mathematical
 object that associates each program variable with a semantic expression.  A
 semantic expression is an arithmetic expression, but with additional syntactic
 features to support \iflit{} statements and \whilelit{} loops.  We represent
 semantic expressions with \glspl{dag} that share common structures and define
 $\sexprset$ as the set of semantic expressions, and $\mirset$ as the set of
-\glspl{mir}.  Because an \gls{mir} pairs a variable with an expression, we
-can view it as a function $\varset \to \sexprset$ that maps a variable into a
-semantic expression.  For instance, $\mu(x)$ returns the associated expression
-of the variable $x \in \varset$ for the \gls{mir} $\mu \in \mirset$.  For each
-variable, its semantic expression in itself provides a complete picture of how
-computations can lead to the resulting value of the variable.  In the rest
-of this section, we progressively explain how each type of program statement
-defined in~\eqref{po:eq:program_syntax} is analyzed into an \gls{mir}\@.
+\glspl{mir}.  Because a \gls{mir} pairs a variable with an expression, we
+can view it as a function $\varset \to \sexprset$ that maps a variable into
+a semantic expression.  For instance, $\mu(\varx)$ returns the associated
+expression of the variable $\varx \in \varset$ for the \gls{mir} $\mu \in
+\mirset$.  For each variable, its semantic expression in itself provides a
+complete picture of how computations can lead to the resulting value of the
+variable.  In the rest of this section, we progressively explain how each type
+of program statement defined in~\eqref{po:eq:program_syntax} is analyzed into a
+\gls{mir}\@.
 
-\subsection{Skip statements}
+Arithmeitc expressions can be written in a linear form (\eg~$a + b$), or in
+a tree structure (\eg~\binarymir{$+$}{$a$}{$b$}).  Similar to arithmetic
+expressions, \gls{mir} can also be expressed in both.  The former is more
+concise, whereas the latter explicitly shares common structures.
 
-Because $\skipstmt$ has no effect on program states, the \gls{mir} of
-$\skipstmt$ also does not alter the program state.  Its \gls{mir} is defined
-as $[x \mapsto x]_{x \in \varset}$, the subscript $x \in \varset$ denotes that
-the \gls{mir} is constructed by collecting for each program variable $x$, the
-mapping shown in the bracket, \ie~the paring of the variable $x$ with the
-expression $x$.  The subscript $x \in \varset$ means that for each $x$, the
-\gls{mir} pairs it with $x \in \sexprset$, which is a semantic expression
-containing just the variable $x$ itself.  We will repeatedly make use of
-the notation of constructing an \gls{mir}, $[x \mapsto e(x)]_{p(x)}$ in the
-following sections, where $x$ is a variable and $p(x)$ is a predicate on $x$,
-the \gls{mir} is constructed by collecting for all $x$ the mapping from $x$ to
-the expression $e(x)$, when $p(x)$ is true.
+% \subsection{Skip statements}
+
+% Because $\skipstmt$ has no effect on program states, the \gls{mir} of
+% $\skipstmt$ also does not alter the program state.  Its \gls{mir} is defined
+% as $[\varx \mapsto \varx]_{\varx \in \varset}$, the subscript $\varx \in
+% \varset$ denotes that the \gls{mir} is constructed by collecting for each
+% program variable $\varx$, the mapping shown in the bracket, \ie~the paring
+% of the variable $\varx$ with the expression $\varx$.  The subscript $\varx
+% \in \varset$ means that for each $\varx$, the \gls{mir} pairs it with $\varx
+% \in \sexprset$, which is a semantic expression containing just the variable
+% $\varx$ itself.  We will repeatedly make use of the notation of constructing
+% a \gls{mir}, $[\varx \mapsto e(\varx)]_{p(\varx)}$ in the following sections,
+% where $\varx$ is a variable and $p(\varx)$ is a predicate on $\varx$, the
+% \gls{mir} is constructed by collecting for all $\varx$ the mapping from
+% $\varx$ to the expression $e(\varx)$, when $p(\varx)$ is true.
 
 \subsection{Assignment statements}
 
-An assignment statement is in the form of ``$x \assign e$'', where $x \in
-Var$ is a program variable and $e \in \aexprset$ is an arithmetic expression.
-The metasemantic analysis of it produces an \gls{mir} as follows, where the
-operator $\join$ merges the two \glspl{mir} together:
+An assignment statement is in the form of ``\texttt{x = $e$;}'', where
+$\varx \in \varset$ is a program variable and $e \in \aexprset$ is an
+arithmetic expression.  The metasemantic analysis of it produces a \gls{mir}
+as follows:
 \begin{equation}
-    \left[
-        y \mapsto \left\{
+    {\left[
+        \vary \mapsto \left\{
             \begin{aligned}
-                & e && \text{if~} y = x \\
-                & y && \text{if~} y \neq x
+                & e && \text{if~} \vary = \varx \\
+                & \vary && \text{otherwise}
             \end{aligned}
         \right.
-    \right]_{y \in \varset}
+    \right]}_{\vary \in \varset}.
     \label{po:eq:mir_assign}
 \end{equation}
-The \gls{mir} in~\eqref{po:eq:mir_assign} signifies for a variable $y \in
-\varset$, if $y$ is $x$, then we assign the expression $e$ to the variable
-$x$, where $e$ is a semantic expression represented with a \gls{dag}\@.  The
-\gls{dag} shares all common subexpressions in $e$.  For instance, an expression
-written as $(x + 1) \times (x + 1)$ shares the subexpression node $x + 1$ by
-reusing the node in the \gls{dag}\@.  For each other program variable $y \in
-\varset$, where $y \neq x$, $y$ is associated with a semantic expression $y \in
-\sexprset$, representing that the \gls{mir} does not the value of all program
-variables except $x$, because only $x$ is updated in the statement.
 
-For example, for a program with two variables $x$ and $y$, analyzing the
-statement ``$y \assign x \times 2$'' produces the following \gls{mir}\@, note
-the variable $x$ is shared between two semantic expressions:
-\mirfig{mir_assign_2}
+The \gls{mir} in~\eqref{po:eq:mir_assign} signifies for a variable $\vary \in
+\varset$, if $\vary$ is $\varx$, then we assign the expression $e$ to the
+variable $\varx$.  In graph form, $e$ is a semantic expression represented with
+a \gls{dag}\@.  The \gls{dag} shares all common subexpressions in $e$.  For
+instance, an expression written as $(\varx + 1) \times (\varx + 1)$ shares the
+subexpression node $\varx + 1$ by reusing the node in the \gls{dag}\@.  For
+each other program variable $\vary \in \varset$, where $\vary \neq \varx$,
+$\vary$ is associated with a semantic expression $\vary \in \sexprset$,
+representing that the \gls{mir} does not the value of all program variables
+except $\varx$, because only $\varx$ is updated in the statement.
+
+For example, we consider a program with two variables $\varx$ and $\vary$.
+Analyzing the statement ``\verb|y = x * 2;|'' produces the following \gls{mir}
+graph, it is notable that the variable $\varx$ is shared between two semantic
+expressions:
+\begin{equation}
+    \begin{tikzpicture}[mir]
+        \node[mirnode] (x) at (0, 0) {\varx};
+        \node[mirnode] (xexpr) [right=of x] {\varx};
+        \node[coordinate] (mid) [right=of xexpr] {};
+        \node[coordinate] (amid) [above=of mid] {};
+        \node[mirnode] (y) [right=of mid] {\vary};
+        \node[mirnode] (times) [right=of y] {$\times$};
+        \node[mirnode] (two) [below right=of times] {2};
+
+        \draw[|->] (x) -- (xexpr);
+        \draw[|->] (y) -- (times);
+        \draw[-] (times) -- (two);
+        \node[coordinate] (left) [below=of y] {};
+        \draw[-] (times) to[out=-135, in=0] (left);
+        \draw[-] (left) to[out=180, in=-45] (amid);
+        \draw[-] (amid) to[out=135, in=60] (xexpr);
+
+        \brackets{(current bounding box)}
+    \end{tikzpicture}\,.
+    \label{po:eq:mir_assign_2}
+\end{equation}
 
 \subsection{Sequential statements}
 \label{po:sub:sequential_statements}
 
-A sequential statement, ``$s_1 \semicolon s_2$'' is formed by joining together
-$s_1$ and $s_2$, where $s_1, s_2 \in \stmtset$ are statements.  It signifies
-that $s_1$ and $s_2$ are executed in sequence.  Therefore, it is necessary to
-\emph{append} the effect of executing $s_1$ to that of $s_2$, to arrive at the
-full \gls{mir} of ``$s_1 \semicolon s_2$''.  This concept can be realized by
-defining a new operator $\expand$, the substitution operator, such that the
-\gls{mir} of ``$s_1 \semicolon s_2$'' is equal to $\mu_2 \expand \mu_1$, where
-$\mu_1$ and $\mu_2$ are the \glspl{mir} of $s_1$ and $s_2$ respectively.  The
-resulting \gls{mir} of $\mu_2 \expand \mu_1$ is constructed by substituting,
-for every expression $e \in \sexprset$ in $\mu_2$, each variable $x$ in
-$e$ with $\mu_1(x)$, which is the associated expression of $x$ in $\mu_1$.
+A sequential statement, ``$s_1 s_2$'' is formed by joining together $s_1$
+and $s_2$, where $s_1, s_2 \in \stmtset$ are statements.  It signifies that
+$s_1$ and $s_2$ are executed in sequence.  Therefore, it is necessary to
+\emph{append} the effect of executing $s_2$ to that of $s_1$, to arrive at the
+full \gls{mir} of ``$s_1 s_2$''.  This concept can be realized by defining
+a new operator $\expand$, the \emph{composition operator}, such that the
+\gls{mir} of ``$s_1 s_2$'' is equal to $\mu_2 \expand \mu_1$, where $\mu_1$ and
+$\mu_2$ are the \glspl{mir} of $s_1$ and $s_2$ respectively.  The resulting
+\gls{mir} of $\mu_2 \expand \mu_1$ is constructed by substituting, for every
+expression $e \in \sexprset$ in $\mu_2$, each variable $\varx$ in $e$ with
+$\mu_1(\varx)$, which is the associated expression of $\varx$ in $\mu_1$.
 Furthermore, the operator allows the format $e \expand \mu$, where $e \in
 \sexprset$ is called the target expression and $\mu \in \mirset$ is the source
 \gls{mir}, to mean the variables in $e$ is substituted with $\mu$ using the
-substitution strategy above.
+composition strategy above.
 
-We illustrate this by using a simple example program $p = {}$``$x \assign x
-+ 1 \semicolon y \assign x \times 2$''.  Using the \gls{mir} of assignments,
-the \gls{mir} of $p$ can be derived, as shown in the right-hand side
-of equation~\eqref{po:eq:mir_seq_1}.  By substituting the variables
-with corresponding expressions, we arrive at the left-hand side of
-\eqref{po:eq:mir_seq_1}:
-\mirfig{mir_seq_1}
+We illustrate this by finding the \gls{mir} of a simple example program,
+``\verb|x = x + 1; y = x * 2|''.  Using the \gls{mir} of assignments, the
+\glspl{mir} of the respective assignment statements can be derived, as shown
+in~\eqref{po:eq:mir_seq_1}.
+\begin{equation}
+    \begin{tikzpicture}[mir]
+        \node[mirnode] (x) at (0, 0) {\varx};
+        \node[mirnode] (xexpr) [right=of x] {\varx};
+        \node[coordinate] (mid) [right=of xexpr] {};
+        \node[coordinate] (amid) [above=of mid] {};
+        \node[mirnode] (y) [right=of mid] {\vary};
+        \node[mirnode] (times) [right=of y] {$\times$};
+        \node[mirnode] (two) [below right=of times] {2};
+
+        \draw[|->] (x) -- (xexpr);
+        \draw[|->] (y) -- (times);
+        \draw[-] (times) -- (two);
+        \node[coordinate] (left) [below=of y] {};
+        \draw[-] (times) to[out=-135, in=0] (left);
+        \draw[-] (left) to[out=180, in=-45] (amid);
+        \draw[-] (amid) to[out=135, in=60] (xexpr);
+
+        \node[coordinate] (seqleft) [right=of times, xshift=5mm] {};
+        \node[mirnode] (seq) [above right=of seqleft] {$\expand$};
+        \node[coordinate] (seqright) [below right=of seq] {};
+
+        \draw[-] (seq) -- (seqleft);
+        \draw[-] (seq) -- (seqright);
+
+        \node[mirnode] (x2) [right=of seqright] {\varx};
+        \node[mirnode] (plus2) [right=of x2] {+};
+        \node[mirnode] (xto2) [below left=of plus2] {\varx};
+        \node[mirnode] (one2) [below right=of plus2] {1};
+        \node[coordinate] (mid2) [right=of plus2] {};
+        \node[mirnode] (y2) [right=of mid2] {\vary};
+        \node[mirnode] (yexpr2) [right=of y2] {\vary};
+
+        \draw[|->] (x2) -- (plus2);
+        \draw[-] (plus2) -- (xto2);
+        \draw[-] (plus2) -- (one2);
+        \draw[|->] (y2) -- (yexpr2);
+
+        \brackets{(x) (two)};
+        \brackets{(x2) (yexpr2) (one2)};
+    \end{tikzpicture}\,.
+    \label{po:eq:mir_seq_1}
+\end{equation}
+By substituting the variables with corresponding expressions, we arrive at
+the \glspl{mir} as shown in~\eqref{po:eq:mir_seq_2} below.  This \gls{mir}
+simplification step is always carried out when possible.
+\begin{equation}
+    \begin{tikzpicture}[mir]
+        \node[mirnode] (x) at (0, 0) {\varx};
+        \node[mirnode] (plus) [right=of x] {$+$};
+        \node[mirnode] (xto) [below left=of plus] {\varx};
+        \node[mirnode] (one) [below right=of plus] {1};
+        \node[coordinate] (mid) [right=of plus] {};
+        \node[coordinate] (amid) [above=of mid] {};
+        \node[mirnode] (y) [right=of mid] {\vary};
+        \node[mirnode] (times) [right=of y] {$\times$};
+        \node[mirnode] (two) [below right=of times] {2};
+
+        \draw[|->] (x) -- (plus);
+        \draw[-] (plus) -- (xto);
+        \draw[-] (plus) -- (one);
+        \draw[|->] (y) -- (times);
+        \draw[-] (times) -- (two);
+
+        \node[coordinate] (left) [below=of y] {};
+        \draw[-] (times) to[out=-135, in=0] (left);
+        \draw[-] (left) to[out=180, in=-45] (amid);
+        \draw[-] (amid) to[out=135, in=60] (plus);
+
+        \brackets{(x) (two)};
+    \end{tikzpicture}\,.
+    \label{po:eq:mir_seq_2}
+\end{equation}
 
 \subsection{Conditional Branches}
 
-Conditional branches, or \iflit~statements, are represented with ``$\iflit~
-b~ \thenlit~ s_1~ \elselit~ s_2$''.  Here $b \in \bexprset$ is a Boolean
-expression, and $s_1, s_2 \in \stmtset$ are respectively the true- and
-false-branches.  Our analysis of \iflit~statements is slightly more complex,
-as we start to consider control flows.  The analysis is carried out in two
-steps.  The first step is to compute recursively, the \glspl{mir} $\mu_1,
-\mu_2 \in \mirset$ of the respective true- and false-branches, namely, $s_1$
-and $s_2$.  We introduce the conditional node ``$?$'', which is derived from C
-syntax, to signify conditional branches in expressions.  The left-most, middle
-and right-most children of this node are respectively the Boolean expression,
-the true- and false-expressions.  Then the second step is to compute a
-new \gls{mir}, where each program variable $x \in \varset$ is associated
-with a conditional node with three children, the Boolean expression $b$,
-$\mu_1(x)$ and $\mu_2(x)$, that is, $[x \mapsto \select{b}{\mu_1}{\mu_2}]_{x
-\in \varset}$.  As an example we consider the program ``$\iflit~(x < 0)$
-$\thenlit~(y \assign x \times 2)$ $\elselit~\skipstmt$'', where the set of
-program variables is $\{x, y\}$.  Its \gls{mir} is shown in the left-hand side
-of~\eqref{po:eq:mir_if_2}.  Because both true- and false-expressions of $x$
-are the same, regardless of the truth value of $x < 0$, the two expressions
-will evaluated to the same value.  In our analysis we further simplify the
-expression of $x$, and the resulting \gls{mir} is in the right-hand side
-of~\eqref{po:eq:mir_if_2}.
-\mirfig{mir_if_2}
+Conditional branches, or \iflit~statements, are represented with
+``\lstinline[basicstyle=\tt]|if ($b$) {$s_1$} else {$s_2$}|''.  Here $b
+\in \bexprset$ is a Boolean expression, and $s_1, s_2 \in \stmtset$ are
+respectively the true- and false-branches.  Our analysis of \iflit~statements
+is slightly more complex, as we start to consider control flows.  The analysis
+is carried out in two steps.  The first step is to compute recursively,
+the \glspl{mir} $\mu_1, \mu_2 \in \mirset$ of the respective true- and
+false-branches, namely, $s_1$ and $s_2$.  We introduce the conditional node
+``$\qop$'' which is derived from C syntax, to signify conditional branches in
+expressions.  The left-most, middle and right-most children of this node are
+respectively the Boolean expression, the true- and false-expressions.  Then the
+second step is to compute a new \gls{mir}, where each program variable $\varx
+\in \varset$ is associated with a conditional node with three children, the
+Boolean expression $b$, $\mu_1(\varx)$ and $\mu_2(\varx)$.  The final \gls{mir}
+is therefore:
+\begin{equation}
+    {
+        \left[
+            \varx \mapsto \select{b}{\mu_1(\varx)}{\mu_2(\varx)}
+        \right]
+    }_{\varx \in \varset}.
+\end{equation}
+
+As an example, we consider the program
+``\lstinline[basicstyle=\ttfamily]{if (x < 0) y = x * 2;}'', where the set
+of program variables is $\{\varx, \vary\}$.  Its \gls{mir} in graph form is
+therefore:
+\begin{equation}
+    \begin{tikzpicture}[mir]
+        \node[mirnode] (x) at (0, 0) {\varx};
+        \node[mirnode] (xcond) [right=of x] {$\qop$};
+        \node[mirnode] (xin) [below=of xcond, yshift=-7mm] {\varx};
+        \node[mirnode] (less) [below right=of xcond, xshift=5mm, yshift=-1mm]
+            {$<$};
+        \node[mirnode] (zero) [below right=of less, yshift=-2mm] {0};
+
+        \node[mirnode] (y) at (25mm, 0) {\vary};
+        \node[mirnode] (ycond) [right=of y] {$\qop$};
+        \node[mirnode] (times) [below=of ycond] {$\times$};
+        \node[mirnode] (yin) [below right=of ycond] {\vary};
+        \node[mirnode] (two) [below right=of times] {2};
+
+        \draw[|->] (x) -- (xcond);
+        \draw[channel, -] (xcond) to[out=-90, in=135] (xin);
+        \draw[channel, -] (xcond) to[out=-45, in=90] (xin);
+        \draw[channel, -] (xcond) to[out=-135, in=135] (less);
+        \draw[-] (less) -- (xin);
+        \draw[channel, -] (less) -- (zero);
+
+        \draw[|->] (y) -- (ycond);
+        \draw[-] (ycond) to[out=-135, in=45] (less);
+        \draw[-] (ycond) -- (times);
+        \draw[-] (ycond) -- (yin);
+        \draw[channel, -] (times) -- (xin);
+        \draw[channel, -] (times) -- (two);
+
+        \brackets{(current bounding box)};
+    \end{tikzpicture}\,.
+\end{equation}
+Because both true- and false-expressions of $\varx$ are the same, regardless of
+the truth value of $\varx < 0$, the two expressions evaluate to the same value.
+In our analysis we can immediately simplify the expression of $\varx$, and the
+resulting \gls{mir} is semantically equivalent to the original:
+\begin{equation}
+    \begin{tikzpicture}[mir]
+        \node[mirnode] (x) at (0, 0) {\varx};
+        \node[mirnode] (xin) [right=of x] {\varx};
+        \node[mirnode] (less) [below right=of xin, xshift=3mm, yshift=-1mm]
+            {$<$};
+        \node[mirnode] (zero) [below right=of less, yshift=-2mm] {0};
+
+        \node[mirnode] (y) at (25mm, 0) {\vary};
+        \node[mirnode] (ycond) [right=of y] {$\qop$};
+        \node[mirnode] (times) [below=of ycond] {$\times$};
+        \node[mirnode] (yin) [below right=of ycond] {\vary};
+        \node[mirnode] (two) [below right=of times] {2};
+
+        \draw[|->] (x) -- (xin);
+        \draw[-] (less) to[out=-135, in=45] (xin);
+        \draw[channel, -] (less) -- (zero);
+
+        \draw[|->] (y) -- (ycond);
+        \draw[-] (ycond) to[out=-135, in=45] (less);
+        \draw[-] (ycond) -- (times);
+        \draw[-] (ycond) -- (yin);
+\begin{pgfinterruptboundingbox}
+        \draw[channel, -] (times) to[out=-135, in=60] (xin);
+\end{pgfinterruptboundingbox}
+        \draw[channel, -] (times) -- (two);
+
+        \brackets{(x) (zero) (two)};
+    \end{tikzpicture}\,.
+\end{equation}
 
 The traditional approach of program abstraction uses
 \glspl{cdfg}~\cite{namballa04}, which preserves the ordering of sequential
 statements, uses a one-to-one mapping from assignment statements to assignment
 nodes, storage nodes are used to store the result of assignments, \ie~it allows
-nodes to act as a memory to store values, and finally, uses cycles in graphs to
-represent program loops.  In contrast, our \glspl{mir}, from our analysis point
-of view, use no local storage, discard unnecessary intermediate statements,
-and most importantly, we treat control structures as operators in expressions,
-in the same way as arithmetic computations.  In comparison with \glspl{cdfg},
-these above facts make \glspl{mir} a more suitable candidate for program
-transformations.
+nodes to act as a memory to store values, and finally, uses cycles in graphs
+to represent program loops.  In contrast, our \glspl{mir}, from our analysis
+point of view, use no local storage of temporary values, discard unnecessary
+intermediate statements.  Most importantly, we treat control structures as
+operators in expressions, in the same way as arithmetic computations.  In
+comparison with \glspl{cdfg}, these above facts make \glspl{mir} a more
+suitable candidate for exploring the search space of program transformations.
 
 \subsection{Loops}
 
-For \whilelit~loops, ``$\whilelit\, b\, \dolit\, s$'', where $b \in \bexprset$
-and $s \in \stmtset$, we begin by proposing a new operator for semantic
-expressions, ``$\fix$'', which we call the \emph{fixpoint} operator.  It is
-used to stand for \whilelit~loop structures in semantic expressions.  It has
-three child nodes, the Boolean expression $b$, the loop body represented by an
-\gls{mir}, and the loop exit variable.  The loop body \gls{mir} can be obtained
-with our \gls{ma} of the loop body, and the loop exit variable denotes which
-variable we use on loop exit as the evaluated value of the fixpoint expression.
-We let $\mu_s$ to be the \gls{mir} of the loop body $s$, and derive the
-\gls{mir} of ``$\whilelit\, b\, s$'', by computing the fixpoint expression for
-each variable:
+A possible way to represent a \whilelit~loop,
+``\texttt{\textbf{while}\,($b$)\,\{$s$}\}'', where $b \in \bexprset$ and $s
+\in \stmtset$, is to effectively view it as the semantic expression of a fully
+unrolled loop.  Unfortunately this expression has an infinite depth, which
+cannot be represented fully in a data structure.  We therefore introduce
+a new operator for semantic expressions, ``$\fix$'', which we call the
+\emph{fixpoint} operator.  We further use the fixpoint expression $\fix(f)$ to
+represent the \whilelit~loop, where the function $f: \sexprset \to \sexprset$,
+defined as $f(e_\varx) = \select{b}{e_\varx \expand \mu_s}{\varx}$, represents
+the computation of one iteration of the loop, and $\mu_s$ is the \gls{mir}
+of the loop body.  Finally, the fixpoint expression of a \whilelit~loop can
+be written more succinctly using $lambda$-expression~\cite{barendregt13},
+\ie~$\fix\left(\lambda e_\varx \dotop \select{b}{e_\varx \expand
+\mu_s}{\varx}\right)$.
+
+In graph form, for simplicity the fixpoint node admits three child nodes,
+namely, the Boolean expression $b$, the loop body represented by a \gls{mir},
+and the loop exit variable.  The loop body \gls{mir} can be obtained with our
+\gls{ma} of the loop body, and the loop exit variable denotes which variable we
+use on loop exit as the evaluated result of the fixpoint expression.  We let
+$\mu_s$ to be the \gls{mir} of the loop body $s$, and derive the \gls{mir} of
+the \whilelit~loop, by computing the fixpoint expression for each variable:
 \begin{equation}
-    \left[
-        x \mapsto \left\{
+    {\left[
+        \varx \mapsto \left\{
             \begin{aligned}
-                & \begin{aligned}
-                    \includegraphics[scale=\mirfigscale]{fix_expr}
-                \end{aligned} && \text{if~} x \in \varfunc{\mu_s} \\
-                & \quad ~ ~ x && \text{otherwise}
+                & \fixexprmir
+                    && \text{if~} \varx \in \varfunc{\mu_s} \\
+                & \quad ~ ~ \varx && \text{otherwise}
             \end{aligned}
         \right.
-    \right]_{x \in \varset}
+    \right]}_{\varx \in \varset}
     \label{po:eq:mir_while}
 \end{equation}
-Here, $\varfunc{\mu_s}$ computes the set of variables that is assigned in the
-loop body $\mu_s$.  If a program variable $x$ is in the set $\varfunc{\mu_s}$,
-it is paired with its fixpoint expression $\fixpoint{b, \mu_s, x}$; otherwise
-the variable $x$ is not updated in the loop, and the loop has no effect on its
-value, therefore it is paired with an expression $x$.
+Here, $\varfunc{\mu_s}$ computes the set of variables that is assigned
+in the loop body $\mu_s$.  If a program variable $\varx$ is in the set
+$\varfunc{\mu_s}$, it is paired with its fixpoint expression \fixexprmir;
+otherwise $\varx$ is not updated in the loop, and the loop has no effect
+on its value, therefore it is paired with an expression $\varx$.  Finally,
+the constructed \gls{mir} maximally shares common expressions across nested
+\glspl{mir}.
+
+As a simple example, consider the program in
+Figure~\ref{po:lst:loop_share_example}.
+\begin{figure}[ht]
+    \begin{lstlisting}
+        y = y + 1;
+        while (x < y) {
+            x = x + 1;
+        }
+    \end{lstlisting}
+    \caption{%
+        The program which exhibits common subexpression sharing across nested
+        \glspl{mir}.
+    }\label{po:lst:loop_share_example}
+\end{figure}
+
+The \gls{mir} of this example program allows a nested \gls{mir} to reference
+and reuse an expression from the outer \gls{mir} as demonstrated in
+Figure~\ref{po:fig:mir_fix_external_2}, where:
+\begin{equation}
+    \mu = [\varx \mapsto \varx + 1],
+    \text{~and} \quad
+    b = \varx < \vary.
+\end{equation}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[mir]
+        \node[mirnode] (x) at (0, 0) {\varx};
+        \node[mirnode] (*) [right=of x] {$\expand$};
+        \draw[|->] (x) -- (*);
+
+        \node[mirnode] (fix) [below left=of *] {$\fix$};
+        \node[mirnode] (b) [below left=of fix] {$b$};
+        \node[mirnode] (mu) [below=of fix] {$\mu$};
+        \node[mirnode] (xin) [below right=of fix] {\varx};
+        \draw[-] (*) -- (fix);
+        \draw[-] (fix) -- (b);
+        \draw[-] (fix) -- (mu);
+        \draw[-] (fix) -- (xin);
+
+        \node[coordinate] (mir) [below right=of *] {};
+        \node[mirnode] (mirx) [right=of mir, xshift=-1mm] {\varx};
+        \node[mirnode] (mirxin) [right=of mirx] {\varx};
+        \node[mirnode] (miry) [right=of mirxin] {\vary};
+        \node[coordinate] (mirymid) [right=of miry] {};
+        \node[coordinate] (miryout) [right=of mirymid] {};
+        \node[coordinate] (miryedge) [right=of miryout] {};
+        \draw[-] (*) -- (mir);
+        \draw[|->] (mirx) -- (mirxin);
+        \draw[|->] (miry) -- (mirymid);
+        \brackets{(mirx) (mirxin) (miryedge)};
+
+        \node[mirnode] (y) [right=of *, xshift=35mm] {\vary};
+        \node[mirnode] (+) [right=of y] {$+$};
+        \node[mirnode] (yin) [below left=of +] {\vary};
+        \node[mirnode] (1) [below right=of +] {$1$};
+        \draw[|->] (y) -- (+);
+        \draw[-] (+) -- (yin);
+        \draw[-] (+) -- (1);
+
+        \draw[-] (miryout)
+            to[out=-90, in=-180] (38mm, -7mm)
+            to[out=0, in=180] (48mm, 5mm)
+            to[out=0, in=135] (+);
+
+        \brackets{(x) (b) (mu) (1)};
+    \end{tikzpicture}
+    \caption{%
+        The \gls{mir} of Figure~\ref{po:lst:loop_share_example}, which
+        reuses common subexpressions across nested \glspl{mir}.
+    }\label{po:fig:mir_fix_external_2}
+\end{figure}
+
+
+\subsection{Example analysis}
+
+To illustrate all these above translation process in conjunction,
+we can perform the \gls{ma} on the program \verb|basel| in
+Figure~\ref{po:lst:syntax_example}.  Here, we translate it into the following
+\gls{mir}, and the semantic expression for $\varx$ is omitted for simplicity:
+\begin{equation}
+\begin{tikzpicture}[mir]
+    \node[mirnode] (x) at (0, 0) {\varx};
+    \node[mirnode] (dots) [right=of x] {\textellipsis};
+    \node[mirnode] (y) [right=of dots, xshift=5mm] {\vary};
+    \node[mirnode] (expand) [right=of y] {$\expand$};
+    \node[mirnode] (fix) [below left=of expand] {$\fix$};
+    \node[mirnode] (less) [below left=of fix, xshift=-5mm] {$<$};
+    \node[mirnode] (xin) [below left=of less] {\varx};
+    \node[mirnode] (nin) [below right=of less] {\varn};
+    \node[coordinate] (fixmir) [below=of fix, xshift=2mm, yshift=-7mm] {};
+    \node[coordinate] (initmir) [right=of expand, xshift=4mm] {};
+    \node[mirnode] (yin) [below right=of fix] {\vary};
+    \node[mirnode] (a) [right=of expand, xshift=40mm] {\vara};
+    \node[mirnode] (ain) [right=of a] {\vara};
+    \node[mirnode] (n) [right=of ain] {\varn};
+    \node[mirnode] (nin2) [right=of n] {\varn};
+    \draw[|->] (x) -- (dots);
+    \draw[|->] (y) -- (expand);
+    \draw[|->] (a) -- (ain);
+    \draw[|->] (n) -- (nin2);
+    \draw[-] (expand) -- (fix);
+    \draw[-] (fix) -- (less);
+    \draw[-] (less) -- (xin);
+    \draw[-] (less) -- (nin);
+    \draw[-] (fix) -- (fixmir);
+    \draw[-] (fix) -- (yin);
+    \draw[-] (expand) to[out=-45, in=135] (initmir);
+
+    \node[mirnode] (fixx) [below=of fixmir, xshift=1mm, yshift=2mm] {\varx};
+    \node[mirnode] (fixadd1) [right=of fixx] {$+$};
+    \node[mirnode] (fixxin) [below left=of fixadd1] {\varx};
+    \node[mirnode] (fixone) [below right=of fixadd1] {1};
+    \node[mirnode] (fixy) [right=of fixadd1, xshift=5mm] {\vary};
+    \node[mirnode] (fixadd2) [right=of fixy] {$+$};
+    \node[mirnode] (fixyin) [below left=of fixadd2] {\vary};
+    \node[mirnode] (fixdiv) [below right=of fixadd2] {$/$};
+    \node[mirnode] (fixmul) [below right=of fixdiv] {$\times$};
+    \node[coordinate] (fixmulin1) [left=of fixmul, xshift=-13mm] {};
+    \node[coordinate] (fixmulin2) [right=of fixadd2, xshift=5mm] {};
+    \node[coordinate] (fixmuledge) [right=of fixmul, xshift=-2.1mm] {};
+    \node[mirnode] (fixa) [below=of fixx, yshift=-10mm] {\vara};
+    \node[mirnode] (fixain) [right=of fixa] {\vara};
+    \draw[|->] (fixx) -- (fixadd1);
+    \draw[-] (fixadd1) -- (fixxin);
+    \draw[-] (fixadd1) -- (fixone);
+    \draw[|->] (fixy) -- (fixadd2);
+    \draw[-] (fixadd2) -- (fixyin);
+    \draw[-] (fixadd2) -- (fixdiv);
+    \draw[-] (fixdiv) -- (fixmul);
+    \draw[-] (fixmul) to[out=-135, in=-45] (fixmulin1);
+    \draw[-] (fixmulin1) to[out=135, in=45] (fixadd1);
+    \draw[-] (fixmul) to[out=-45, in=-45] (fixmulin2);
+    \draw[-] (fixmulin2) to[out=135, in=55] (fixadd1);
+    \draw[|->] (fixa) -- (fixain);
+    \draw[channel, -] (fixdiv) to[out=-135, in=45] (fixain);
+    \brackets{(fixx) (fixa) (fixmuledge)};
+
+    \node[mirnode] (initx) [below=of initmir, xshift=2mm, yshift=2mm] {\varx};
+    \node[mirnode] (initzero1) [right=of initx] {$0$};
+    \node[mirnode] (inity) [below=of initx] {\vary};
+    \node[mirnode] (initzero2) [right=of inity] {$0.0$};
+    \node[mirnode] (inita) [right=of initzero1, xshift=5mm] {\vara};
+    \node[mirnode] (initain) [right=of inita] {\vara};
+    \node[mirnode] (initn) [below=of inita] {\varn};
+    \node[mirnode] (initnin) [right=of initn] {\varn};
+    \draw[|->] (initx) -- (initzero1);
+    \draw[|->] (inity) -- (initzero2);
+    \draw[|->] (inita) -- (initain);
+    \draw[|->] (initn) -- (initnin);
+    \brackets{(initx) (initnin)};
+
+    \brackets{(current bounding box)};
+\end{tikzpicture}\,.
+\end{equation}

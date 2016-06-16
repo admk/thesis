@@ -384,7 +384,7 @@ expression with a unary subtraction:
             -e \mid e \in \epsilon
         \right\}.
     \end{aligned}
-    \label{so:eq:equivalence_semantics}
+    \label{so:eq:equivalence_semantics_unary}
 \end{equation}
 
 To reduce computation effort, we select only those expressions on the Pareto
@@ -518,6 +518,31 @@ In the rest of this chapter, we use \frontiertrace{} to indicate our equivalent
 expression finding semantics, and \greedytrace{} to represent the alternative
 method.
 
+In addition to the above approaches, another possibility is to view the
+optimization in a perspective from denotational semantics.  We can define
+a recursively-defined function $\optfunc{e}\sigma^\sharp$ which accepts an
+expression $e$, and $\sigma^\sharp$, an input condition on the variables.  This
+function produces a set of optimized expressions equivalent to $e$.  The set
+of input conditions will be formally defined in Chapter~\ref{chp:progopt}.
+Therefore for $e_1, e_2 \in \aexprset$ and a variable $\varx$:
+\begin{equation}
+    \begin{aligned}
+        \optfunc{e_1 \opsymbol e_2}\sigma^\sharp &=
+        f_{\sigma^\sharp} \left(
+            \left\{
+                e^\prime_1 \opsymbol e^\prime_2 \mid
+                e^\prime_1 \in \optfunc{e_1}\sigma^\sharp,
+                e^\prime_2 \in \optfunc{e_2}\sigma^\sharp
+            \right\}
+        \right), \\
+        \optfunc{\varx}\sigma^\sharp &= \{\varx\},
+    \end{aligned}
+\end{equation}
+where $f_\sigma^\sharp$ is a function that transforms and optimizes a set
+of equivalent expressions based on the initial condition $\sigma^\sharp$,
+\eg~$\frontier \circ \closure \eqstep_k$ or $\closure \left(\frontier \circ
+\eqstep_k\right)$ used in \frontiertrace{} or \greedytrace{}.
+
 
 \subsection{Simultaneous Optimization of Multiple Expressions}
 \label{so:sub:multiple_expressions}
@@ -543,10 +568,10 @@ two-fold~\cite{martel09}.  Firstly, perhaps only a user-defined subset of the
 expressions that compute the final results are influential.  Secondly, we may
 wish to minimize either the $L^1$-, $L^2$-, $L^\infty$-norm, or a geometric
 mean of the errors, depending on which one is more relevant.  For this reason,
-\soap provides the choice to minimize any of these above norms, and is designed
-to minimize the $L^\infty$-norm of all expressions by default, by computing the
-least upper bound of the following accuracy semantics of two expressions joined
-by the barrier operator:
+\soap{} provides the choice to minimize any of these above norms, and is
+designed to minimize the $L^\infty$-norm of all expressions by default, by
+computing the least upper bound of the following accuracy semantics of two
+expressions joined by the barrier operator:
 \begin{equation}
     (x^\sharp_1, \mu^\sharp_1) \mid (x^\sharp_2, \mu^\sharp_2)
     \defeq (x^\sharp_1, \mu^\sharp_1) \join (x^\sharp_2, \mu^\sharp_2),

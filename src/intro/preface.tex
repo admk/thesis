@@ -80,12 +80,25 @@ round-off error.  Here, run time refers to the latency in clock cycles,
 resource usage refers to the number of \glspl{lut} and \gls{dsp} elements.
 Some of these performance metrics could be in conflict.  For example, higher
 performance tends to require more circuitry, and how to resolve this trade-off
-depends on the user's requirements.  As a result, our tool produces a
+depends on the user's requirements.  As a result, the tool produces a
 \emph{set} of optimized programs, known as the \emph{Pareto frontier}: those
 programs $P$ for which the tool has found no $P'$ that improves on $P$ in all
 three metrics.  We thus go beyond existing literature by not only optimizing
 the precision requirements of an implementation, but changing the structure of
 the implementation itself.
+
+The program optimization flow is \emph{safe} and \emph{semantics-directed}.
+\emph{Safety} means that because we base our method on formal mathematics to
+optimize programs, our approach can be proved correct, in the sense that when
+executed using exact real arithmetic, the transformed version produces exactly
+the same output values as the original program. \emph{Semantics-directed}
+transformation means that not only do we use program syntax, but also the
+semantics, such as inferred numerical accuracy, to guide optimization and
+guarantee safety properties of the optimized program.  Our technique obtains
+when necessary, by analyzing the program, a bound and a round-off error bound
+on each variable in every program location.  These information are then used to
+guide program optimization, by analyzing and manipulating not only the syntax,
+but also the semantics of programs.
 
 Generating candidate optimizations na{\"\i}vely would however produce a
 combinatorial explosion, even for small input programs.  For instance, in the

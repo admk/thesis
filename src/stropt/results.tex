@@ -9,34 +9,43 @@ to generate a Pareto frontier from the discovered expressions, instead of only
 error bounds.  This allows us to compare \marteltrace{}, \ie~our implementation
 of Martel's method, against our methods \frontiertrace{} and \greedytrace{}
 discussed in Section~\ref{so:sec:equivalent}.  Figure~\ref{so:fig:martel}
-optimizes the expression ${(a + b)}^2$ using the three methods above, all
-using depth limit $3$, and the input ranges are $a \in [5, 10]$ and $b \in
-[0, 0.001]$~\cite{martel07}. The IEEE 754 single-precision floating-point
-format with rounding to nearest was used for the evaluation of accuracy and
-area estimation. The scatter points represent different implementations of the
-original expression that have been explored and analyzed, and the (overlapping)
-lines denote the Pareto frontiers. In this example, our methods produce the
-same Pareto frontier that Martel's method could discover, while having up to
-50\% shorter run time. Because we consider an accuracy/area trade-off, we
-find that we can not only have the most accurate implementation discovered by
-Martel, but also an option that is only 0.0005\% less accurate, but uses 7\%
-fewer \glspl{lut}.
+optimizes the expression ${(\vara + \varb)}^2$ using the three methods above,
+all using depth limit $3$, and the input ranges are $\vara \in [5, 10]$
+and $\varb \in [0, 0.001]$~\cite{martel07}. The IEEE 754 single-precision
+floating-point format with rounding to nearest was used for the evaluation
+of accuracy and area estimation. The scatter points represent different
+implementations of the original expression that have been explored and
+analyzed, and the (overlapping) lines denote the Pareto frontiers. In this
+example, our methods produce the same Pareto frontier that Martel's method
+could discover, while having up to 50\% shorter run time. Because we consider
+an accuracy/area trade-off, we find that we can not only have the most accurate
+implementation discovered by Martel, but also an option that is only 0.0005\%
+less accurate, but uses 7\% fewer \glspl{lut}.
 
 We go beyond the optimization of a small expression, by generating results in
 Figure~\ref{so:fig:multi_expr_32} to show that the same technique is applicable
 to simultaneous optimization of multiple large expressions. The expressions
-$e_x$ and $e_y$, with input ranges $a \in [1, 2], b \in [10, 20], c \in [10,
-200]$ are used as our example:
+$e_1$ and $e_2$, with input ranges $\vara \in [1, 2], \varb \in [10, 20], \varc
+\in [10, 200]$ are used as our example:
 \begin{equation}
     \begin{aligned}
-    e_x =& (a + a + b) \times (a + b + b) \times (b + b + c) \times {} \\
-         & (b + c + c) \times (c + c + a) \times (c + a + a) \\
-    e_y =& (1 + b + c) \times (a + 1 + c) \times (a + b + 1)
+    e_1 =&
+        (\vara + \vara + \varb) \times
+        (\vara + \varb + \varb) \times
+        (\varb + \varb + \varc) \times {} \\
+        &
+        (\varb + \varc + \varc) \times
+        (\varc + \varc + \vara) \times
+        (\varc + \vara + \vara), \\
+    e_2 =&
+        (1 + \varb + \varc) \times
+        (\vara + 1 + \varc) \times
+        (\vara + \varb + 1).
     \end{aligned}
 \end{equation}
 
-We generated and optimized \gls{rtl} implementations of $e_x$ and
-$e_y$ simultaneously using \frontiertrace{} and \greedytrace{}
+We generated and optimized \gls{rtl} implementations of $e_1$ and
+$e_2$ simultaneously using \frontiertrace{} and \greedytrace{}
 with the depth limits indicated by the numbers in the legend of
 Figure~\ref{so:fig:multi_expr_32}. Note that because the expressions evaluate
 to large values, the errors are also relatively large. We set the depth limit
@@ -58,7 +67,7 @@ expression.
 
 Furthermore, Figure~\ref{so:fig:multi_expr_vary_width} varies the mantissa
 width of the floating-point format, and presents the Pareto frontier
-of both $e_x$ and $e_y$ together under optimization. Floating-point
+of both $e_1$ and $e_2$ together under optimization. Floating-point
 formats with mantissa widths ranging from 10 to 112 bits were used to
 optimize and evaluate the expressions for both accuracy and area usage. It
 turns out that some implementations originally on the Pareto frontier of
@@ -82,37 +91,38 @@ $z\in[-0.01, 0.01]$.
 Finally, Figure~\ref{so:fig:area} demonstrates the accuracy of the area
 estimation used in our analysis. It compares the actual \glspl{lut} necessary
 with the estimated number of \glspl{lut} using our semantics, by synthesizing
-more than 6000 equivalent expressions derived from $a + b + c$, $(a + 1) \times
-(b + 1) \times (c + 1)$, $e_x$, and $e_y$ using varying mantissa widths. The
-dotted line indicates exact area estimation, a scatter points that is close
-to the line means the area estimation for that particular implementation is
-accurate. The solid black line represents the linear regression line of all
-scatter points. On average, our area estimation is a 6.1\% over-approximation
-of the actual number of \glspl{lut}, and the worst case over-approximation is
-7.7\%.
+more than 6000 equivalent expressions derived from $\vara + \varb + \varc$,
+$(\vara + 1) \times (\varb + 1) \times (\varc + 1)$, $e_1$, and $e_2$ using
+varying mantissa widths. The dotted line indicates exact area estimation, a
+scatter points that is close to the line means the area estimation for that
+particular implementation is accurate. The solid black line represents the
+linear regression line of all scatter points. On average, our area estimation
+is a 6.1\% over-approximation of the actual number of \glspl{lut}, and the
+worst case over-approximation is 7.7\%.
 \newcommand{\figsize}{0.5}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=\figsize]{martel}
-    \caption{Optimization of ${(a + b)}^2$.}\label{so:fig:martel}
+    \caption{Optimization of ${(\vara + \varb)}^2$.}\label{so:fig:martel}
 \end{figure}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=\figsize]{multi_expr_32}
-    \caption{Simultaneous optimization of both $e_x$ and $e_y$.}
-    {}\label{so:fig:multi_expr_32}
+    \caption{%
+        Simultaneous optimization of both $e_1$ and $e_2$.
+    }\label{so:fig:multi_expr_32}
 \end{figure}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=\figsize]{multi_expr_vary_width}
-    \caption{Varying the mantissa width of Figure~\ref{so:fig:multi_expr_32}.}
-    {}\label{so:fig:multi_expr_vary_width}
+    \caption{%
+        Varying the mantissa width of Figure~\ref{so:fig:multi_expr_32}.
+    }\label{so:fig:multi_expr_vary_width}
 \end{figure}
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=\figsize]{taylor_sin}
-    \caption{The Taylor expansion of $\sin(x + y)$.}
-    {}\label{so:fig:taylor_sin}
+    \caption{The Taylor expansion of $\sin(x + y)$.}\label{so:fig:taylor_sin}
 \end{figure}
 \begin{figure}[ht]
     \centering
