@@ -1,16 +1,12 @@
 \section{Motivation}
 \label{lo:sec:motivation}
 
-\todo{Revamp this section following updates in Section~\ref{bg:sub:sdc}.}
-
-% \newcommand\arr[3]{\texttt{#1}_{\texttt{#2},\texttt{#3}}}
-\newcommand\arr[3]{\texttt{#1[#2][#3]}}
 \newcommand\barr[3]{\texttt{\underline{#1[#2][#3]}}}
 
 Figure~\ref{lo:fig:seidel_prog} gives an implementation of the Seidel stencil
 computation, extracted from PolyBench~\cite{polybench}, where initially all
 values in the array \verb|A| are single-precision floating-point values between
-0 and 1.  It resembles the typical code frequently used in fluid dynamic
+$0$ and $1$.  It resembles the typical code frequently used in fluid dynamic
 simulations for solving partial differential equations and systems of linear
 equations.
 
@@ -20,8 +16,8 @@ equations.
   for (int t = 0; t < 20; t++)
     for (int i = 1; i < N-1; i++)
       for (int j = 1; j < N-1; j++)
-        $\barr{A}{i}{j}$ = 0.2 * ($\arr{A}{i-1}{j}$ + $\barr{A}{i}{j-1}$ +
-            $\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$ + $\arr{A}{i+1}{j}$);
+        $\barr{A}{i}{j}$ = 0.2 * (A[i-1][j] + $\barr{A}{i}{j-1}$ +
+            A[i][j] + A[i][j+1] + A[i+1][j]);
 \end{lstlisting}
     \caption{%
         An excerpt from the Seidel stencil~\cite{polybench}.  The
@@ -37,45 +33,48 @@ opportunity for pipelining, because each iteration \verb|j| of the innermost
 loop ends by writing to \verb|A[i][j]|, and the next iteration \verb|j+1|
 begins by reading from \verb|A[i][j]|; this inter-iteration dependence is
 highlighted in Figure~\ref{lo:fig:seidel_prog}.  Hence, it serves as our
-example to demonstrate the power of our tool.
+example to motivate a better \soap~to efficiently pipeline loops.
 
-\Gls{vhls} generates a schedule where each iteration requires $49$ cycles (the
-\emph{depth}, $D$, of the loop), and there are $46$ cycles between the starts
-of consecutive loop iterations (the \emph{initiation interval}, \gls{ii}),
-as enforced by the data dependences above.  The innermost loop runs for
-$1022$ iterations (the \emph{trip count}, $N$), so the overall latency of the
-innermost loop is $((N-1) \times \II) + D = 47,015$ cycles.
+\Gls{vhls} generates a schedule where the depth of the loop $D$ is $49$, and
+\gls{ii} as enforced by the data-dependences above is $46$.  The trip count of
+the innermost loop is $N = 1022$.  The overall latency of the innermost loop is
+therefore $((N-1) \times \II) + D = 47,015$ cycles.
 
 We then enable \gls{vhls}'s \gls{eb} optimization.  When synthesized, this
 optimization pass tries to reorder the sequence of additions in the loop body
 into a tree structure, thus reducing the $\II$ to 28 cycles, and the depth $D$
 to 42 cycles, while the trip count $N = 1022$ remains the same.  The overall
 latency is now $((N-1) \times \II) + D = 28,630$ cycles.  The overall resource
-usage remains roughly the same.  However, \gls{vhls}'s \gls{eb} is not aware of
-the inter-iteration data dependence.  Although enabling \gls{eb} did produce
-a faster implementation, there is still room for improvement.  We further
-discovered that if we partially unroll the loop, \gls{vhls}'s \gls{eb} did not
-improve the total run time, despite using a lot more resources.  Additionally,
-\gls{eb} only makes use of associativity, but not other equivalence rules.
-These limitations pose great restrictions on \gls{vhls}'s ability to produce
-a significantly faster implementation.  Most importantly, \gls{vhls} does not
-guarantee that this optimization will not result in catastrophic inaccuracies.
+usage remains roughly the same.
 
-We then use our tool to automatically discover equivalent programs from the
-program in Figure~\ref{lo:fig:seidel_prog}.  Because our tool explores a
-large number of paths that lead to a Pareto frontier of implementations,
-here we illustrate one of the many paths that could be taken by minimizing
-latency, while trying to optimize accuracy and resource usage.  By using just
-arithmetic equivalences, our tool specifically applies transformations to
-alleviate the constraints on the inter-iteration dependence, and discovers
-that the innermost loop can be rewritten to minimize latency as shown in
-Figure~\ref{lo:fig:seidel_prog_2}.
+However, as mentioned in Section~\ref{bg:sec:discovering_equivalent_programs}
+of Chapter~\ref{chp:background}, \gls{vhls}'s \gls{eb} has two shortcomings.
+Firstly, it is not aware of the inter-iteration data dependence and misses the
+opportunity to further pipeline this loop.  Secondly, and most importantly,
+\gls{vhls} does not guarantee that this optimization will not result in
+catastrophic numerical inaccuracies.
+
+We further discovered that if the loop is partially unrolled, \gls{vhls}'s
+\gls{eb} did not improve the total run time, despite using a lot more
+resources.  Additionally, \gls{eb} only makes use of associativity, but
+not other equivalence rules.  These limitations pose great restrictions on
+\gls{vhls}'s ability to produce a significantly faster implementation.
+
+We then use the enhanced \soap~of this chapter to automatically discover
+equivalent programs from the program in Figure~\ref{lo:fig:seidel_prog}.
+Because our tool explores a large number of paths that lead to a Pareto
+frontier of implementations, here we illustrate one of the many paths that
+could be taken by minimizing latency, while trying to optimize accuracy and
+resource usage.  By using just arithmetic equivalences, our tool specifically
+applies transformations to alleviate the constraints on the inter-iteration
+dependence, and discovers that the innermost loop can be rewritten to minimize
+latency as shown in Figure~\ref{lo:fig:seidel_prog_2}.
 
 \begin{figure}[ht]
 \begin{lstlisting}
   for (int j = 1; j < 1023; j++)
-    $\arr{A}{i}{j}$ = 0.2 * ($\arr{A}{i}{j-1}$ +
-      (($\arr{A}{i}{j}$ + $\arr{A}{i}{j+1}$) + ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$)));
+    A[i][j] = 0.2 * (A[i][j-1] +
+      ((A[i][j] + A[i][j+1]) + (A[i+1][j] + A[i-1][j])));
 \end{lstlisting}
     \caption{The optimized program using only arithmetic equivalences.}
     \label{lo:fig:seidel_prog_2}
@@ -102,12 +101,12 @@ Figure~\ref{lo:fig:seidel_prog_3}.
 \begin{figure}[ht]
 \begin{lstlisting}
   for (int j = 1; j < 1023; j += 2) {
-    float t0 = $\arr{A}{i}{j-1}$, t1 = $\arr{A}{i}{j+1}$;
-    float t2 = ($\arr{A}{i}{j}$ + t1) + ($\arr{A}{i+1}{j}$ + $\arr{A}{i-1}{j}$);
+    float t0 = A[i][j-1], t1 = A[i][j+1];
+    float t2 = (A[i][j] + t1) + (A[i+1][j] + A[i-1][j]);
     float t3 = 0.04f * t2 + 0.2f *
-        ((t1 + $\arr{A}{i}{j+2}$) + ($\arr{A}{i+1}{j+1}$ + $\arr{A}{i-1}{j+1}$));
-    $\arr{A}{i}{j}$ = 0.2f * (t0 + t2);
-    $\arr{A}{i}{j+1}$ = 0.04f * t0 + t3;
+        ((t1 + A[i][j+2]) + (A[i+1][j+1] + A[i-1][j+1]));
+    A[i][j] = 0.2f * (t0 + t2);
+    A[i][j+1] = 0.04f * t0 + t3;
   }
 \end{lstlisting}
     \caption{The optimized program using arithmetic equivalences in tandem with
@@ -138,41 +137,42 @@ place-and-route for exact statistics.
     \newcommand\Mid[1]{\multirow{2}*{$#1$}}
     \newcommand\Shade{\cellcolor{black!10}}
     \newcommand\name[1]{\texttt{\scriptsize #1}}
-    \vspace{8pt}
+    \caption{%
+        Comparison among the optimized implementations generated by
+        \gls{vhls}'s expression balancing and our optimizer.  The row ``Total
+        run time (s)'' indicates the wall-clock time in seconds of running the
+        synthesized circuits.
+    }\label{lo:tab:seidel_results}
     $\begin{array}{r||r|r|r}
         \hline
         \multicolumn{1}{c||}{} &
         \multicolumn{1}{c|}{\text{\gls{vhls}}} &
-        \multicolumn{1}{c|}{\text{\gls{vhls}}} &
-        \multicolumn{1}{c}{\text{\gls{vhls}}} \\
+        \multicolumn{1}{c|}{\text{\gls{vhls} with \gls{eb}}} &
+        \multicolumn{1}{c}{\text{\gls{vhls} with \soap}} \\
 
-        & &
-        \multicolumn{1}{c|}{\text{with \gls{eb}}} &
-        \multicolumn{1}{c}{\text{with our tool}} \\ \hline\hline
+        % & &
+        % \multicolumn{1}{c|}{\text{with \gls{eb}}} &
+        % \multicolumn{1}{c}{\text{with our tool}} \\
+        \hline\hline
 
-        \text{Clock Period (ns)} &
+        \text{Clock period (ns)} &
         2.60 & 2.65 & 2.66 \\ \hline
 
-        \Shade \text{Inner Latency (cycles)} &
+        \Shade \text{Inner latency (cycles)} &
         \Shade 47.0\unitk & \Shade 28.6\unitk & \Shade 6.59\unitk \\ \hline
 
-        \text{Total Run Time (s)} &
+        \text{Total run time (s)} &
         2.50\unitm & 1.56\unitm & 0.358\unitm \\ \hline
 
         \Shade \text{\glspl{lut}} &
         \Shade 620 & \Shade 623 & \Shade 1778 \\ \hline
 
-        \text{\gls{dsp} Elements} &
+        \text{\gls{dsp} elements} &
         5 & 5 & 8 \\ \hline
 
-        \Shade \text{Round-off Error} &
+        \Shade \text{Round-off error} &
         \Shade 10.68\unitmu &
         \Shade \text{unknown} &
         \Shade 4.31\unitmu \\ \hline
     \end{array}$
-    \vspace{8pt}
-    \caption{%
-        Comparison among the optimized implementations generated by
-        \gls{vhls}'s expression balancing and our optimizer.}
-    \label{lo:tab:seidel_results}
 \end{table}

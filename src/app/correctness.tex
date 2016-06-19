@@ -19,36 +19,9 @@ then propose a new algorithm to accelerate the computation of $\closure_N f
     {}\label{so:cor:union}
 \end{corollary}
 
-Figure~\ref{so:alg:closure} proposes an accelerated algorithm to efficiently
-compute $\closure_N f(\epsilon)$, where $f$ is a $\cup$-distributive
-\gls{eeg}\@.
-\begin{figure}[ht]
-    \centering
-    \begin{algorithmic}
-        \Function{Closure}{$f$, $N$, $\epsilon$}
-            \State{$s_0 \gets \epsilon$}
-            \State{$s^\prime_0 \gets \epsilon$}
-            \For{$i \gets 1, \ldots, N$}
-                \State{$s^\prime_i \gets
-                    f \left(s^\prime_{i-1}\right) - s_{i-1}$}
-                \State{$s_i \gets s_{i-1} \cup s^\prime_i$}
-                \If{$s^\prime_i = \emptyset$}
-                    \State{\Return{$s_i$}}
-                \EndIf{}
-            \EndFor{}
-            \State{\Return{$s_i$}}
-        \EndFunction{}
-    \end{algorithmic}
-    \caption{%
-        Our algorithm to compute $\closure_N f (\epsilon)$, which discovers a
-        set of equivalent expressions with a $\cup$-distributive \gls{eeg} $f$
-        from an initial set of equivalent expressions $\epsilon$.
-    }\label{so:alg:closure}
-\end{figure}
-
-We then continue to prove that this algorithm $\textsc{Closure}(f, N,
-\epsilon)$ indeed computes $\closure_N f(\epsilon)$.  Firstly, we prove the
-following lemma:
+We then continue to prove that the algorithm $\textsc{Closure}(f, N, \epsilon)$
+in Figure~\ref{so:alg:closure} indeed computes $\closure_N f(\epsilon)$.
+Firstly, we prove the following lemma:
 \begin{lemma}
     $\closure_N f(\epsilon) = \epsilon \cup f \left( \closure_{N-1} f(\epsilon)
     \right)$ for any $\cup$-distributive \gls{eeg} function $f$.

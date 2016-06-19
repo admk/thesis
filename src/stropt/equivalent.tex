@@ -288,11 +288,36 @@ in~\eqref{so:eq:transitive_closure} is at least $\bigo((2n - 3)\,!!)$ where $n$
 is the number of terms in an expression, as we discussed earlier.
 
 Finally, we use an iterative algorithm to accelerate the computation of
-$\closure_N \eqstep_k (\epsilon)$.  In each iteration, we keep track of the
-equivalent expressions that are newly discovered in the current iteration, so
-that in the next iteration we apply $f$ only to those expressions, to avoid
-redundant computation.  The details of this algorithm and its correctness is
-discussed in greater depth in Appendix~\ref{app:sound_acceleration}.
+$\closure_N \eqstep_k (\epsilon)$.  In each iteration, we keep track
+of the equivalent expressions that are newly discovered in the current
+iteration, so that in the next iteration we apply $f$ only to those
+expressions, to avoid redundant computation.  This algorithm is shown in
+Figure~\ref{so:alg:closure} to efficiently compute $\closure_N f(\epsilon)$,
+where $f$ is a $\cup$-distributive \gls{eeg}\@.  Its correctness is discussed
+in greater depth in Appendix~\ref{app:sound_acceleration}.
+\begin{figure}[ht]
+    \centering
+    \begin{algorithmic}
+        \Function{Closure}{$f$, $N$, $\epsilon$}
+            \State{$s_0 \gets \epsilon$}
+            \State{$s^\prime_0 \gets \epsilon$}
+            \For{$i \gets 1, \ldots, N$}
+                \State{$s^\prime_i \gets
+                    f \left(s^\prime_{i-1}\right) - s_{i-1}$}
+                \State{$s_i \gets s_{i-1} \cup s^\prime_i$}
+                \If{$s^\prime_i = \emptyset$}
+                    \State{\Return{$s_i$}}
+                \EndIf{}
+            \EndFor{}
+            \State{\Return{$s_i$}}
+        \EndFunction{}
+    \end{algorithmic}
+    \caption{%
+        Our algorithm to compute $\closure_N f (\epsilon)$, which discovers a
+        set of equivalent expressions with a $\cup$-distributive \gls{eeg} $f$
+        from an initial set of equivalent expressions $\epsilon$.
+    }\label{so:alg:closure}
+\end{figure}
 
 
 \subsection{Pareto Frontier}

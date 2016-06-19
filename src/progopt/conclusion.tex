@@ -12,3 +12,12 @@ by discovering a wide range of equivalent trade-off implementations of the
 original \gls{mir}\@.  An optimized \gls{mir} can then be chosen to be
 translated into a numerical program.  By using \soap, we optimize the accuracy
 of our sample applications by up to 65\% in actual program executions.
+
+In Section~\ref{po:sec:results}, our experiments show that accurate
+implementations of numerical algorithms often increase their number of
+arithmetic operations for reduced round-off errors.  In general, this could
+result in circuits that have longer wall-clock time.  However with greater
+area budget, we could have a greater freedom in rewriting programs to have
+greater throughputs.  In the next chapter, we therefore explore how to optimize
+numerical programs consisting of pipelined loops to trade off accuracy,
+resources and latency.

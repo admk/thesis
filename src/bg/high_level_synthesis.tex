@@ -54,7 +54,7 @@ significant traction in the research community.
 \subsection{HLS Design Flow}
 \label{bg:sub:hls_design}
 
-In this section, we provide an overview of the stages taken by the \gls{hls}
+This section provides an overview of the stages taken by the \gls{hls}
 tool to compile a C program into \gls{rtl} implementation, by using
 LegUp~\cite{legup, canis13} as our example.  LegUp is an \gls{hls} tool which
 compiles programs to run on a hybrid software/hardware architecture, and its
@@ -270,7 +270,7 @@ shows the complete dependence graph of \verb|dotprod|'s loop body.
 \end{figure}
 
 Intra-iteration dependence edges in the graph are each labelled with $\langle
-l, 0 \rangle$, a 2-tuple attribute of integers accordingly.  The first integer
+l, 0 \rangle$, a pair of attributes of integers accordingly.  The first integer
 $l$ signifies the number of clock cycles that must elapse between the start of
 the predecessor and the successor operations.  The latter value $0$ indicates
 that the dependence occurs in the same iteration.  To illustrate, the edge

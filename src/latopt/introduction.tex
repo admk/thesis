@@ -1,15 +1,6 @@
 \section{Introduction}
 \label{lo:sec:introduction}
 
-% There are many reasons why FPGA implementations of numerical algorithms
-% are best obtained via high-level synthesis (HLS) from C\@: less
-% development effort, the abundance of software engineers compared to
-% hardware designers, the relative ease of testing C code on an ordinary
-% microprocessor, the opportunities for rapid design space exploration, and
-% so on~\cite{meeus12}. Great advances have been made in this area recently,
-% and the output from HLS tools is nowadays competitive with hand-crafted
-% designs~\cite{bdti_xilinx}.
-
 Numerical C programs typically spend most of their time in loops.  For this
 reason, \gls{hls} tools adopt state-of-the-art \emph{polyhedral compilation}
 techniques~\cite{canis14} to synthesize loops to run as fast as possible.  This
@@ -34,57 +25,6 @@ This code can be partially unrolled and the sequence of additions can be
 rewritten using tree adders to reduce its latency, but we will see later in
 Section~\ref{lo:sec:results} that more efficient implementations are possible.
 
-% Unfortunately, in the presence of floating-point arithmetic, these program
-% transformations could have an impact on numerical accuracy.  For instance,
-% under single-precision floating-point arithmetic with rounding to the nearest,
-% the result of $(2^{-24} + 2^{-24}) + 1 = 1.00000012\textellipsis$ is exact,
-% but $(1 + 2^{-24}) + 2^{-24}$ is rounded to $1$.  The difference between
-% the actual result in real arithmetic and the rounded result is known as the
-% \emph{round-off error}.  Round-off errors, when accumulated, can have a
-% devastating effect on numerical accuracy~\cite{higham02}.  Round-off errors in
-% a numerical program are dependent on every arithmetic operation and every input
-% value, and with the impact on floating-point accuracy being so esoteric, it is
-% challenging for engineers to understand the repercussions of switching between
-% ``\verb|(a + b)| \verb|* c|'' and ``\verb|a * c +| \verb|b * c|'' in their
-% programs.
-
-% Experienced engineers apply expression rewriting intuitions in numerical
-% programs.  For instance, when summing a sequence of floating-point values, one
-% can sometimes reduce round-off error in the result by summing the inputs in
-% ascending order.  On the other hand, one can often reduce latency by applying
-% \emph{expression balancing}, \ie~rearranging operators in an expression to
-% construct a balanced tree, so that more operators can work in parallel.  These
-% heuristics cover a very limited number of possible transformations and may not
-% always improve the original code.  Therefore a trivial process does not exist
-% to apply steps of transformations using equivalence rules to \emph{optimally}
-% trade off latency, resources and numerical accuracy.
-
-% Existing HLS tools consider these rewrites to be unsafe, and thus make
-% very limited use of them when restructuring floating-point data-paths.
-% For instance, \gls{vhls}~\cite{vivado_hls} has only a very simple
-% \emph{expression balancing} feature that uses associativity to improve
-% latency, and only expressions with either additions or multiplications are
-% optimized.  Moreover, it does not produce optimal loop pipelining, because
-% it does not take into account the implications of these transformations on
-% inter-iteration dependences and does not explore partial loop unrolling.  In
-% addition, \gls{vhls} cannot reason about how this feature affects numerical
-% accuracy; there is no guarantee that this transformation will not result in a
-% catastrophically inaccurate implementation.
-
-% In response, we have developed a tool---a fully automatic source-to-source
-% optimizer---that augments \gls{vhls}, by optimizing a given program using these
-% transformations.  Our optimizer discovers not only one, but a wide spectrum of
-% program candidates.  When synthesized in \gls{vhls}, these candidates trade
-% off three performance metrics of great importance to engineers: run time,
-% resource usage and round-off error.  Here, run time refers to the latency in
-% clock cycles, resource usage refers to the number of look-up tables (LUTs)
-% and digital signal processing (DSP) elements.  Some of these performance
-% metrics could be in conflict.  For example, higher performance tends to
-% require more circuitry, and how to resolve this trade-off depends on the
-% user's requirements.  As a result, our tool produces a \emph{set} of optimized
-% programs, known as the \emph{Pareto frontier}: those programs $P$ for which the
-% tool has found no $P'$ that improves on $P$ in all three metrics.
-
 In contrast to the expression balancing optimization pass in \gls{vhls},
 our tool \emph{automatically} produces results that are significantly
 better than \emph{manually} tuning partial unrolling factors and expression
@@ -96,20 +36,25 @@ optimization process, as we treat numerical accuracy as one of the three
 simultaneous objectives.  Furthermore, \gls{vhls} only generates one result
 which does not necessarily improve over the original code.
 
-% Generating candidate optimizations na{\"\i}vely would produce a combinatorial
-% explosion, even for small input programs.  For instance, a simple summation of
-% $n$ variables could have $(2n - 1)!! = 1 \times 3 \times 5 \times \textellipsis
-% \times (2n - 1)$ equivalent expressions~\cite{mouilleron}.  Therefore, we base
-% our optimizer on the open-source \soap{} framework that we have developed in
-% Chapters~\ref{chp:stropt}~\&~\ref{chp:progopt}, which specifically tackles
-% the efficient discovery of equivalent structures in numerical programs,
-% by intelligently pruning the set of candidates as it progresses up the
-% input program's abstract syntax tree.
+The technical work presented in Chapters~\ref{chp:stropt} and~\ref{chp:progopt}
+lays the necessary foundation for the new methods proposed in this chapter.
+Firstly, we exploit the \soap~framework's ability to analyze the numerical
+accuracy of a given program.  Secondly, the framework provides the basis for
+resource analysis, as common subexpression sharing can be detected by the
+method detailed in Section~\ref{po:sec:resource} of Chapter~\ref{chp:stropt}.
+Thirdly, we can make use of \glspl{mir} to explore program rewrites.  Finally,
+the efficient algorithms for equivalent program discovery in \soap~can be
+readily used.
 
-We also exploit \soap{}'s ability to analyze the numerical accuracy of
-a given program.  To analyze the run time and resource utilization of a
-given program, we use a variant of the \emph{iterative modulo scheduling}
-algorithm~\cite{rau94} that computes fundamental lower bounds of these metrics.
+In previous chapters, we only analyze structural reuse in the form of common
+subexpressions.  HLS tools further allows certain arithmetic operations to be
+shared temporally.  In this chapter, we therefore additionally analyze resource
+utilization by considering the implications of sharing the same resources in
+different clock cycles.  For this purpose, we use a variant of the first few
+steps shared by modulo \gls{sdc} scheduling~\cite{canis14} and \acrfull{ims}
+algorithm~\cite{rau94}, which efficiently analyze the run time and resource
+utilization of a given program, by computing fundamental lower bounds of these
+metrics.
 
 We evaluated our tool on a suite of 11 programs from the Livermore
 Loops~\cite{livermore} and PolyBench~\cite{polybench} benchmark suites.  Our
@@ -120,8 +65,7 @@ on average), while using up to $4\times$ ($2.5\times$ on average) more
 \glspl{lut}.  We were unable to decrease the resource utilization in any of the
 benchmarks, as they have no redundant computations.
 
-\begin{trivlist}\item{\textbf{Our contributions}}
-
+The contributions of this chapter include:
 \begin{itemize}
 
     \item We are the first to describe how standard program equivalence
@@ -152,6 +96,35 @@ benchmarks, as they have no redundant computations.
 
 \end{itemize}
 
-\end{trivlist}
+This chapter, which is a natural extension to previous chapters, is
+organized as follows.  Section~\ref{lo:sec:motivation} details how a
+simple numerical program can be optimized to run efficiently as our
+motivating example.  Our automatic optimization process consists of
+three major steps.  It starts by the process of \acrlong{ma}, which
+takes as an input the original numerical program written in C, and
+translates it into a \gls{mir}.  Section~\ref{lo:sec:intermediate}
+explains how this process is extended to multi-dimensional arrays.  We
+then discover equivalent \glspl{mir} using our efficient equivalent
+program discovery procedure, which produces a Pareto frontier of optimized
+\glspl{mir}.  Section~\ref{lo:sec:structural_optimization} discusses the
+improvements made to this procedure to further increase its performance.
+This process in turn makes use of the two new performance analyses in
+Section~\ref{lo:sec:performance_analysis}, which respectively estimate the
+latency and resource utilization.  This section further explains how round-off
+errors can be bound in a given program written with arrays.  The optimized C
+programs can then be generated from the \glspl{mir}, using the code generation
+routines from Chapter~\ref{chp:progopt}, to be synthesized in \gls{vhls} to
+obtain \gls{rtl} implementations.  In Section~\ref{lo:sec:results} we evaluate
+the results of optimizing a suite of benchmark examples extracted from
+PolyBench~\cite{polybench} and Livermore Loops~\cite{livermore}.
 
-\todo{Chapter outline.}
+Figure~\ref{lo:fig:overview} illustrates the high-level overview of the
+internal tool flow of the final iteration of \soap.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.8]{overview}
+    \caption{%
+        An overview of our automatic program optimization process. The shaded
+        region shows our internal tool flow.
+    }\label{lo:fig:overview}
+\end{figure}

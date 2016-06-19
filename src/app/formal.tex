@@ -61,14 +61,16 @@ metrics (\ie~round-off errors and resource utilization).
 In addition, a formal mathematical definition of the process of discovering
 equivalent fixpoint expressions is:
 \begin{equation}
-    \optfunc{\fixexprmir}\sigma^\sharp
+    \optfunc{
+        \fixpointmir{$b$}{$\mu$}{\varx}
+    }\sigma^\sharp
     = \frontier \left( \left\{
         \fixpointmir{$b^\prime$}{$\mu^\prime$}{\varx}
         \left|
         \tikz[baseline=(current bounding box.center), text height=5mm]{%
             \node at (0, 0) {%
                 $\loopinvar = \mathsf{E}_\mathsf{s}^\mathrm{LI} \left[
-                    \fixexprmir
+                    \fixpointmir{$b$}{$\mu$}{\varx}
                 \right]\sigma^\sharp,$
             };
             \node at (0, -9mm) {%

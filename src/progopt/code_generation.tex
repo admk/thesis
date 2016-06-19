@@ -11,9 +11,9 @@ usage analysis to produce a unique and deterministic translation from the
 \gls{mir}\@.
 
 Our code generation is carried out in three stages.  The first stage applies
-the transformations outlined in Section~\ref{po:sec:resource_usage_analysis}
-to perform loop- and branch-fusion, and to allow sharing of expressions across
-nested \glspl{mir}.
+the transformations outlined in Section~\ref{po:sec:resource} to perform
+loop- and branch-fusion, and to allow sharing of expressions across nested
+\glspl{mir}.
 
 After the first stage, we create a topological sort of all nodes, which
 produces a linear ordering of all nodes such that the control- and
