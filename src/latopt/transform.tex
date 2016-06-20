@@ -2,8 +2,8 @@
 \label{lo:sec:structural_optimization}
 
 From a numerical program, we can generate a \gls{mir} using the translation
-in Section~\ref{lo:sec:intermediate}.  The next step is to transform the
-\gls{mir}, and discover \glspl{mir} that are equivalent to the original
+process in Section~\ref{lo:sec:intermediate}.  The next step is to transform
+the \gls{mir}, and discover \glspl{mir} that are equivalent to the original
 \gls{mir} in real arithmetic, but may execute differently in finite-precision
 arithmetic because of round-off errors.
 
@@ -16,22 +16,126 @@ arithmetic because of round-off errors.
 % optimization process, because these rules are not applied on partition
 % boundaries.
 
-As discussed in Section~\ref{lo:sec:introduction}, even a small expression
-could have a huge number of equivalent ones.  Exhaustively discovering
-all equivalent \glspl{mir} would result in combinatorial explosion of the
-number of equivalent \glspl{mir} in the search space.  For this reason, we
-base ourselves on an algorithm from \soap{} that search efficiently, by
-discovering equivalences in a bottom-up hierarchy.  In this section we discuss
-the improvements we have made to the algorithm which further increases the
-performance of this algorithm.
+As discussed in previous chapters, even a small expression could have a huge
+number of equivalent ones.  Exhaustively discovering all equivalent \glspl{mir}
+would result in combinatorial explosion of the number of equivalent \glspl{mir}
+in the search space.  For this reason, we base ourselves on an algorithm from
+Section~\ref{po:sec:equivalence_analysis} of Chapter~\ref{chp:progopt} that
+searches efficiently by discovering equivalences in a bottom-up hierarchy.  In
+this section we discuss the improvements we have made to the algorithm which
+further increases the performance of this algorithm.
 
-Our first contribution is that instead of optimizing the \gls{mir} immediately,
-we start by partitioning the \gls{mir} into multiple smaller sub-\glspl{mir}.
-In turn, each are optimized separately and generate a set of equivalent
-sub-\glspl{mir}.  We then select combinations from these sub-\glspl{mir}
-to be merged, this generates a set of \glspl{mir} that are equivalent to
-the original.  Finally, we preserve those \glspl{mir} merged on the Pareto
-frontier.
+\subsubsection{Partitioning}
+
+Our first contribution is that instead of optimizing the \gls{mir}
+immediately, we start by partitioning the \gls{mir} into multiple smaller
+sub-\glspl{mir}.  The partition boundaries are determined by $\updateop$
+operators.  For instance, we consider the partially unrolled Fibonacci example
+in Figure~\ref{lo:fig:fib}.  The \gls{mir} of the loop body is shown in
+Figure~\ref{lo:fig:fib_mir2}.  The partition boundaries are indicated by the
+region surrounded by the red dotted curve \tikz{\draw[red, dashed, rounded
+corners=1ex] (0,0) rectangle (20pt,2ex);}.
+\begin{figure}[ht]
+    \centering
+    \newsavebox{\fiblstb}
+    \begin{lrbox}{\fiblstb}
+        \begin{lstlisting}
+for (int i=3; i<1023; i+=2)
+{
+    A[i-1] = A[i-2]+A[i-3];
+    A[i] = A[i-1]+A[i-2];
+}
+        \end{lstlisting}
+    \end{lrbox}
+    \subfloat[The partially unrolled loop.]{%
+        \begin{minipage}{0.45\textwidth}
+            \usebox{\fiblstb}
+        \end{minipage}\label{po:fig:fib}
+    }
+    \subfloat[The \gls{mir} of the partially unrolled loop body.]{%
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (mA) at (0, 0) {\texttt{A}};
+            \node[mirnode] (upd) [right=of mA] {$\updateop$};
+            \node[mirnode] (updi) [below=of upd] {\texttt{i}};
+            \node[mirnode] (+) [below right=of upd] {$+$};
+            \node[mirnode] (acc1) [below left=of +] {$\accessop$};
+            \node[mirnode] (acc2) [below right=of +] {$\accessop$};
+            \node[mirnode] (-1) [below right=6mm of acc1] {$-$};
+            \node[mirnode] (1) [below right=of -1] {$1$};
+            \node[mirnode] (-1i) [below left=of -1] {\texttt{i}};
+            \draw[<-] (upd) -- (+);
+            \draw[<-] (+) -- (acc1);
+            \draw[<-] (+) -- (acc2);
+            \draw[<-] (acc1) -- (-1);
+            \draw[<-] (-1) -- (1);
+            \draw[<-] (upd) -- (updi);
+            \draw[<-] (-1) -- (-1i);
+
+            \node[mirnode] (2upd) [below left=8mm of acc1] {$\updateop$};
+            \node[mirnode] (2+) [below right=8mm of 2upd] {$+$};
+            \node[mirnode] (2acc1) [below left=of 2+] {$\accessop$};
+            \node[mirnode] (2acc2) [below right=of 2+] {$\accessop$};
+            \node[mirnode] (-3) [below right=6mm of 2acc1] {$-$};
+            \node[mirnode] (-2) [below right=6mm of 2acc2] {$-$};
+            \node[mirnode] (3) [below right=of -3] {$3$};
+            \node[mirnode] (2) [below right=of -2] {$2$};
+            \node[mirnode] (-3i) [below left=of -3] {\texttt{i}};
+            \node[mirnode] (-2i) [below left=of -2] {\texttt{i}};
+            \node[mirnode] (Ain) [below left=8mm of 2acc1] {\texttt{A}};
+            \draw[<-] (2upd) -- (2+);
+            \draw[<-] (2+) -- (2acc1);
+            \draw[<-] (2+) -- (2acc2);
+            \draw[<-] (2acc1) -- (-3);
+            \draw[<-] (2acc2) -- (-2);
+            \draw[<-] (-3) -- (3);
+            \draw[<-] (-2) -- (2);
+            \draw[<-] (2upd) -- (Ain);
+            \draw[<-] (2upd) to[out=-70, in=180] (-1);
+            \draw[<-] (2acc1) -- (Ain);
+            \draw[<-] (2acc2) -- (Ain);
+            \draw[<-] (-3) -- (-3i);
+            \draw[<-] (-2) -- (-2i);
+
+            \draw[<-] (acc2) to[bend left] (-2);
+
+            \draw[<-] (upd) -- (2upd);
+            \draw[<-] (acc1) -- (2upd);
+            \draw[<-] (acc2) -- (2upd);
+
+            \node[mirnode] (mi) [right=15mm of upd] {\texttt{i}};
+            \node[mirnode] (i+2) [right=of mi] {$+$};
+            \node[mirnode] (i+2 i) [below left=of i+2] {\texttt{i}};
+            \node[mirnode] (i+2 2) [below right=of i+2] {$2$};
+            \draw[|->] (mA) -- (upd);
+            \draw[|->] (mi) -- (i+2);
+            \draw[<-] (i+2) -- (i+2 i);
+            \draw[<-] (i+2) -- (i+2 2);
+
+            \draw[red, dashed, rounded corners]
+                (-3i.south) -- (Ain.south west) -- (Ain.north west) --
+                (2upd.north west) -- (2upd.north east) --
+                (2acc2.north east) -- (2.north east) --
+                (2.south east) -- cycle;
+            \draw[red, dashed, rounded corners]
+                (-1i.south) -- (acc1.south west) -- (acc1.north west) --
+                (upd.north west) -- (upd.north east) --
+                (acc2.north east) -- (1.south east) -- cycle;
+            \draw[red, dashed, rounded corners]
+                (i+2.north) -- (i+2 i.north west) -- (i+2 i.south west) --
+                (i+2 2.south east) -- (i+2 2.north east) -- cycle;
+            \brackets{(current bounding box)};
+        \end{tikzpicture}
+        {}\label{lo:fig:fib_mir2}
+    }
+    \caption{An example to illustrate how \glspl{mir} are partitioned.}
+\end{figure}
+
+Because transformation rules can only be applied to each sub-\gls{mir} but not
+across them, the size of the search space can be reduced further.  In turn,
+each are optimized separately and generate a set of equivalent sub-\glspl{mir}.
+We then select combinations from these sub-\glspl{mir} to be merged, this
+generates a set of \glspl{mir} that are equivalent to the original.  Finally,
+we preserve those \glspl{mir} merged on the Pareto frontier.
 
 Figure~\ref{lo:alg:optimize} shows the pseudocode of the optimization
 algorithm, it takes as an input a \gls{mir} graph, and produces a set of
@@ -76,43 +180,43 @@ We found that with our improvements, the algorithm is significantly faster than
 the original optimization algorithm in \soap, with a 5-fold increase in speed,
 at a cost of less points on the Pareto frontier.
 
-\todo{Move this algorithm to Chapter~stropt.}
-\begin{figure}[ht]
-    \centering
-    \begin{algorithmic}
-\Function{Optimize}{$op(e_1, e_2)$}
-    \State{$s_1 \gets$ \Call{Optimize}{$e_1$}}
-    \State{$s_2 \gets$ \Call{Optimize}{$e_2$}}
-    \State{$s^\prime \gets \varnothing$}
-    \State{%
-        $s \gets \left\{
-            op(e^\prime_1, e^\prime_2) \mid
-            e^\prime_1 \in s_1 \wedge e^\prime_2 \in s_2
-        \right\}$}
-    \While{$s \neq s^\prime$}
-        \State{$s^\prime \gets s$}
-        \State{$s^{\prime\prime} \gets \varnothing$}
-        \For{$r \in \mathrm{transformation\_rules}, e \in s$}
-            \For{%
-                $e^\prime \text{~where~}
-                    e \stackrel{r}{\rightsquigarrow} e^\prime$
-            }
-                \State{%
-                    $s^{\prime\prime} \gets
-                        s^{\prime\prime} \cup \left\{ e^\prime \right\}$}
-            \EndFor
-        \EndFor
-        \State{$s \gets$ \Call{Prune}{$s^{\prime\prime}$}}
-    \EndWhile
-    \State{\Return{$s$}}
-\EndFunction
-    \end{algorithmic}
-    \caption{%
-        The algorithm we used for the efficient discovery of equivalent
-        structures in \glspl{mir}.
-    }
-    \label{lo:alg:optimize}
-\end{figure}
+% \todo{Move this algorithm to Chapter~stropt.}
+% \begin{figure}[ht]
+%     \centering
+%     \begin{algorithmic}
+% \Function{Optimize}{$op(e_1, e_2)$}
+%     \State{$s_1 \gets$ \Call{Optimize}{$e_1$}}
+%     \State{$s_2 \gets$ \Call{Optimize}{$e_2$}}
+%     \State{$s^\prime \gets \varnothing$}
+%     \State{%
+%         $s \gets \left\{
+%             op(e^\prime_1, e^\prime_2) \mid
+%             e^\prime_1 \in s_1 \wedge e^\prime_2 \in s_2
+%         \right\}$}
+%     \While{$s \neq s^\prime$}
+%         \State{$s^\prime \gets s$}
+%         \State{$s^{\prime\prime} \gets \varnothing$}
+%         \For{$r \in \mathrm{transformation\_rules}, e \in s$}
+%             \For{%
+%                 $e^\prime \text{~where~}
+%                     e \stackrel{r}{\rightsquigarrow} e^\prime$
+%             }
+%                 \State{%
+%                     $s^{\prime\prime} \gets
+%                         s^{\prime\prime} \cup \left\{ e^\prime \right\}$}
+%             \EndFor
+%         \EndFor
+%         \State{$s \gets$ \Call{Prune}{$s^{\prime\prime}$}}
+%     \EndWhile
+%     \State{\Return{$s$}}
+% \EndFunction
+%     \end{algorithmic}
+%     \caption{%
+%         The algorithm we used for the efficient discovery of equivalent
+%         structures in \glspl{mir}.
+%     }
+%     \label{lo:alg:optimize}
+% \end{figure}
 
 \subsection{Transformation Rules}
 \label{lo:sub:transformation_rules}

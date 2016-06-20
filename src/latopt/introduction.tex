@@ -68,31 +68,34 @@ benchmarks, as they have no redundant computations.
 The contributions of this chapter include:
 \begin{itemize}
 
-    \item We are the first to describe how standard program equivalence
-    that do not affect program behavior, \eg~partial loop unrolling and
-    rules that removes extraneous array accesses, can give rise to the
-    freedom for non-standard transformation rules, \eg~arithmetic rules,
-    to significantly impact latency, resource usage and accuracy in a loop
-    (Section~\ref{lo:sub:transformation_rules}).
+    \item An extended suite of program equivalence rules, which introduces
+    access reduction rules that removes extraneous array accesses.  This
+    chapter provides evidence that standard program equivalence that do not
+    affect program behavior, \eg~partial loop unrolling and access reduction
+    rules, can give rise to the freedom for non-standard transformation rules,
+    \eg~arithmetic rules, to significantly impact latency, resource usage and
+    accuracy in a loop (Section~\ref{lo:sub:transformation_rules}).
 
-    \item We significantly improve the performance of the
-    efficient discovery of equivalent through improved accuracy
+    \item The performance of the efficient discovery of equivalent
+    programs is significantly improved through a faster accuracy
     analysis (Section~\ref{lo:sub:accuracy_analysis}), graph
-    partitioning and intelligent pruning of optimization candidates
+    partitioning, and intelligent pruning of optimization candidates
     (Section~\ref{lo:sub:algorithm}).
 
-    \item We designed a new scheduling analysis that estimates
-    the latency and resource usage of a given optimized candidate
-    (Section~\ref{lo:sec:performance_analysis}).
+    \item A new scheduling analysis that estimates the
+    latency and resource usage of a given optimized candidate
+    (Section~\ref{lo:sec:performance_analysis}).  The resource usage analysis
+    not only identifies common subexpressions, but also opportunities to share
+    arithmetic operations temporally.
 
-    \item Incorporating the above-mentioned techniques, we have developed the
-    first optimizer to \emph{automatically} and \emph{safely} produce optimized
+    \item Incorporating the above-mentioned techniques, \soap{} is now
+    capable of \emph{automatically} and \emph{safely} producing optimized
     programs (and subsequent \gls{rtl} implementations with \gls{vhls}) on
     the three-dimensional Pareto frontier of options that trade off run time,
-    accuracy, and area.  Our improvements on latency are notably better than
-    the only ones produced by \gls{vhls}'s \emph{unsafe} optimizations. We have
-    evaluated our tool on a suite of Livermore Loops and PolyBench benchmarks
-    (Section~\ref{lo:sec:results}).
+    accuracy, and area.  Its improvements in latency are notably better than
+    the only ones produced by \gls{vhls}'s \emph{unsafe} optimizations.
+    \soap~is further evaluated on a suite of Livermore Loops and PolyBench
+    benchmarks (Section~\ref{lo:sec:results}).
 
 \end{itemize}
 

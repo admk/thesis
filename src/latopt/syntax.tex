@@ -1,0 +1,46 @@
+\section{Syntax Definition}
+\label{lo:sec:syntax_definition}
+
+Because we incorporate multi-dimensional arrays in our program
+optimization, this section further extends the syntax definition in
+Section~\ref{po:sec:syntax_definition} of Chapter~\ref{chp:progopt} to support
+array data types.  This can be achieved by modifying the definition of $x$
+in~\eqref{po:eq:program_syntax}:
+\begin{equation}
+    x \syndef v \zeroormore{\texttt{[$a$]}}.
+\end{equation}
+Here $\zeroormore{\texttt{[$a$]}}$ indicates that the term $\texttt{[} a
+\texttt{]}$ can be repeated zero or more than zero times, and $v$ is a variable
+and $a$ is an arithmetic expression.  The number of repetition $N$ indicates
+the variable $v$ refers to an $N$-dimensional array, and the absence ($N = 0$)
+denotes a scalar.  When $x$ is used to declare an array, $a$ must be a positive
+integer to conform to the C syntax.  To reflect this restriction and all above
+changes, the new syntax definition for numerical programs is therefore:
+\begin{equation}
+    \begin{aligned}
+        a \syndef {} &
+            n \synor
+            v \zeroormore{\texttt{[$a$]}} \synor
+            \texttt{-}a_1 \synor
+            a_1 \opsymbol a_2, \qquad
+        b \syndef
+            \texttt{!}b_1 \synor
+            a_1 \oplus a_2 \synor
+            b_1 \odot b_2, \\
+        s \syndef {} &
+            \left[ t \right] v \zeroormore{\texttt{[$c$]}}
+                \left[ \texttt{=}~a \right] \semicolon \synor
+            s_1~s_2 \synor
+            \iflit~(b)~\{ s_1 \}~\left[\elselit~\{ s_2 \}\right] \synor
+            \whilelit~(b)~\{s\}, \\
+        v \syndef {} & \varx \synor \vary \synor \varz \synor \mathellipsis,
+            \qquad
+        t \syndef \inttype \synor \floattype.
+    \end{aligned}
+    \label{lo:eq:program_syntax}
+\end{equation}
+Here, $c \in \naturalset$ is the set of positive integers.  Recall that
+$a, a_1, a_2 \in \aexprset$, $b, b_1, b_2 \in \bexprset$, $s, s_1, s_2 \in
+\stmtset$, $v \in \varset$ are respectively arithmetic expressions, boolean
+expressions, program statements, and variables of type $t$ which is either
+$\inttype$ or $\floattype$.

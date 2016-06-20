@@ -96,7 +96,7 @@
         \ifnum\coordindex<#1\def\pgfmathresult{}\fi
         \ifnum\coordindex>#2\def\pgfmathresult{}\fi
     },
-    filter discard warning=false
+    filter discard warning=false,
 }}
 
 \lstset{%
@@ -133,7 +133,7 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
     final=true,
     pdftitle={\thesisTitle},    %   - title (PDF meta)
     pdfauthor={\thesisName},    %   - author (PDF meta)
-    bookmarks=true,
+    % bookmarks=true,
     plainpages=false,           %   -
     linktoc=all,
     colorlinks=false,           %   - colorize links?
@@ -152,9 +152,6 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 
 % names of stuff
 \newcommand{\soap}{SOAP}
-\newcommand{\SOAP}{SOAP}
-\newcommand{\numimp}{\textsf{NumImp}}
-
 \newcommand{\groebner}{Gr{\"o}bner}
 
 \newcommand{\defeq}{\vcentcolon=}
@@ -216,8 +213,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\varn}{\texttt{n}}
 \newcommand{\truelit}{\mathbf{tt}}
 \newcommand{\falselit}{\mathbf{ff}}
-\newcommand{\inttype}{\texttt{int}}
-\newcommand{\floattype}{\texttt{float}}
+\newcommand{\inttype}{\texttt{\textbf{int}}}
+\newcommand{\floattype}{\texttt{\textbf{float}}}
 \newcommand{\aexprset}{\ensuremath\mathbf{AExpr}}
 \newcommand{\bexprset}{\ensuremath\mathbf{BExpr}}
 \newcommand{\stmtset}{\ensuremath\mathbf{Stmt}}
@@ -226,11 +223,10 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\absexprset}{\aexprset^\sharp_\equiv}
 
 % program syntax
-\DeclareMathOperator{\notop}{\mathtt{not}}
-\newcommand{\andop}{\ensuremath\mathbin\mathtt{and}}
-\newcommand{\orop}{\ensuremath\mathbin\mathtt{or}}
+\newcommand{\zeroormore}[1]{\ensuremath{\left( #1 \right)}^\star}
+\newcommand{\syndef}{\mathbin{::=}}%
+\newcommand{\synor}{\,\bigg|\,}%
 \newcommand{\semicolon}{\ensuremath\mathbin{;}}
-\newcommand{\assign}{\ensuremath\mathbin{:=}}
 \newcommand{\iflit}{\texttt{\textbf{if}}}
 \newcommand{\elselit}{\texttt{\textbf{else}}}
 \newcommand{\whilelit}{\texttt{\textbf{while}}}

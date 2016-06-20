@@ -19,28 +19,31 @@ numerical accuracy.
 
 % floating-point arithmetic has round-off errors, exploit equivalence
 
-Similar to the approach proposed in Chapter~\ref{chp:stropt}, equivalence rules
-such as such as \emph{associativity} $(a + b) + c \equiv a + (b + c)$, and
-\emph{distributivity} $(a + b) \times c \equiv a \times c + b \times c$ are
-exploited to automatically optimize implementations for the optimal trade-off
-between resource usage, \ie~the number of \glspl{lut} and \gls{dsp} elements
-utilized, and accuracy when evaluated using floating-point computations.  This
-process generates a Pareto frontier of optimized numerical programs.  For
-example, with single-precision floating-point format, the tool finds that given
-an input $x \in [0, 100]$ and $y \in [0, 2]$, then the program:
+Similar to the approach proposed in Chapter~\ref{chp:stropt}, equivalence
+rules such as such as \emph{associativity} $(\vara + \varb) + \varc \equiv
+\vara + (\varb + \varc)$, and \emph{distributivity} $(\vara + \varb) \times
+\varc \equiv \vara \times \varc + \varb \times \varc$ are exploited to
+automatically optimize implementations for the optimal trade-off between
+resource usage, \ie~the number of \glspl{lut} and \gls{dsp} elements utilized,
+and accuracy when evaluated using floating-point computations.  This process
+generates a Pareto frontier of optimized numerical programs.  For example, with
+single-precision floating-point format, the tool finds that given an input
+$\varx \in [0, 100]$ and $\vary \in [0, 2]$, then the program:
+\begin{minipage}{\linewidth}
 \begin{lstlisting}
     if (x < 1) {
-        x = (x + y) + 0.1;
+        x = (x + y) + 0.1f;
     } else {
-        x = x + (y + 0.1);
+        x = x + (y + 0.1f);
     }
 \end{lstlisting}
-is most accurate when the subexpression \verb|(x + y) + 0.1| is rewritten
-as \verb|(x + 0.1) + y|; on the other hand, the original program uses
+\end{minipage}
+is most accurate when the subexpression ``\verb|(x+y)+0.1f|'' is rewritten
+as ``\verb|(x+0.1f)+y|''; on the other hand, the original program uses
 fewest resources when subexpressions are shared and the \iflit~statement is
 eliminated:
 \begin{lstlisting}
-    x = x + (y + 0.1);
+    x = x + (y + 0.1f);
 \end{lstlisting}
 
 The structural optimization of general numerical programs is much more complex
@@ -132,7 +135,7 @@ elimination, and also branch and loop fusions.
 The main contributions in this chapter are as follows:
 \begin{enumerate}
 
-    \item \acrfull{mir}, A new \gls{ir} of the behaviour of numerical programs.
+    \item \Acrfull{mir}, A new \gls{ir} of the behaviour of numerical programs.
     Its structure is designed to be manipulated and analyzed with ease.
 
     \item Semantics-based analyses that reason about not only the resource

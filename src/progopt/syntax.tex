@@ -11,38 +11,46 @@ stand for integer and floating-point types.
 
 We define $\aexprset, \bexprset$ as the set of arithmetic and Boolean
 expressions respectively, and $\stmtset$ denotes the set of program statements.
-We then have following syntax definition for expressions and \numimp{}
-programs, written in the Backus-Naur form~\cite{knuth64}:
+We then have following simplified syntax definition for expressions and
+numerical programs, written in the Backus-Naur form~\cite{knuth64}:
 \begin{equation}
-    \newcommand{\syndef}{\ensuremath\mathbin{::=}}%
-    \newcommand{\synor}{\ensuremath\mid}%
     \begin{aligned}
         a \syndef {} &
             n \synor
             x \synor
-            a_1 \opsymbol a_2, \\
-        b \syndef {} & x < a, \\
+            \texttt{-}a_1 \synor
+            a_1 \opsymbol a_2, \qquad
+        b \syndef
+            \texttt{!}b_1 \synor
+            a_1 \oplus a_2 \synor
+            b_1 \odot b_2, \\
         s \syndef {} &
-            \left[ t \right] x~\texttt{=}~a \semicolon \synor
+            \left[ t \right] x~\left[ \texttt{=}~a \right] \semicolon \synor
             s_1~s_2 \synor
             \iflit~(b)~\{ s_1 \}~\left[\elselit~\{ s_2 \}\right] \synor
             \whilelit~(b)~\{s\}, \\
-        t \syndef {} & \inttype | \floattype.
+        x \syndef {} & v, \qquad
+        v \syndef \varx \synor \vary \synor \varz \synor \mathellipsis, \qquad
+        t \syndef \inttype \synor \floattype.
     \end{aligned}
     \label{po:eq:program_syntax}
 \end{equation}
-We define $\opsymbol \in \left\{ +, -, \times, / \right\}$ to be the arithmetic
-operators, $n$ is a numerical constant of type either \inttype{} or \floattype;
-$x \in \varset$ is a variable; $a, a_1, a_2 \in \aexprset$ are arithmetic
-expressions; $b$ ranges over Boolean expressions, $\bexprset$; $s, s_1, s_2 \in
-\stmtset$ are program statements; and finally, $t$ is an optional keyword that
-specifies the type of a variable.  A term of the form $[v]$ indicates
-$v$ is optional.  In our formal definition, for the purpose of simplicity,
-we restrict the Boolean expressions to those of the form $x < a$, where $x$
-is a variable and $a$ is an expression; more complex Boolean expressions are
-included in our actual implementation.  Although \forlit~loop is not explicitly
+
+We define $\opsymbol \in \left\{ \texttt{+}, \texttt{-}, \texttt{*}, \texttt{/}
+\right\}$, $\oplus \in \{ \texttt{<}, \texttt{<=}, \texttt{>}, \texttt{>=},
+\texttt{==}, \texttt{!=} \}$, and $\odot \in \{ \texttt{||}, \texttt{\&\&}
+\}$ respectively to be the arithmetic, comparison and boolean operators,
+$n$ is a numerical constant of type either \inttype{} or \floattype.  The
+$v$ terms $\varx, \vary, \varz \in \varset$ are variables.  In the next
+chapter, the definition of $x$ is further extended to arrays.  Additionally,
+$a, a_1, a_2 \in \aexprset$ are arithmetic expressions, and $b, b_1, b_2$
+ranges over Boolean expressions, $\bexprset$.  Program statements $s, s_1,
+s_2 \in \stmtset$ comprises assignment statements, sequential statements,
+\iflit~branches and \whilelit~loops.  Although \forlit~loop is not explicitly
 defined in the above syntax definition, it can be trivially expressed using a
-\whilelit~loop.
+\whilelit~loop.  Finally, $t$ is an optional keyword that specifies the type of
+$x$, if $x$ is not previously declared.  A term of the form $[d]$ indicates $d$
+is optional.
 
 Furthermore, we introduce the ``\verb|#pragma| \verb|soap begin|'' and
 ``\verb|#pragma| \verb|soap end|'' directives to delimit the code fragment
