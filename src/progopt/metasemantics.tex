@@ -225,9 +225,9 @@ expressions:
 
         \draw[|->] (x) -- (xexpr);
         \draw[|->] (y) -- (times);
-        \draw[-] (times) -- (two);
+        \draw[<-] (times) -- (two);
         \node[coordinate] (left) [below=of y] {};
-        \draw[-] (times) to[out=-135, in=0] (left);
+        \draw[<-] (times) to[out=-135, in=0] (left);
         \draw[-] (left) to[out=180, in=-45] (amid);
         \draw[-] (amid) to[out=135, in=60] (xexpr);
 
@@ -271,9 +271,9 @@ in~\eqref{po:eq:mir_seq_1}.
 
         \draw[|->] (x) -- (xexpr);
         \draw[|->] (y) -- (times);
-        \draw[-] (times) -- (two);
+        \draw[<-] (times) -- (two);
         \node[coordinate] (left) [below=of y] {};
-        \draw[-] (times) to[out=-135, in=0] (left);
+        \draw[<-] (times) to[out=-135, in=0] (left);
         \draw[-] (left) to[out=180, in=-45] (amid);
         \draw[-] (amid) to[out=135, in=60] (xexpr);
 
@@ -281,8 +281,8 @@ in~\eqref{po:eq:mir_seq_1}.
         \node[mirnode] (seq) [above right=of seqleft] {$\expand$};
         \node[coordinate] (seqright) [below right=of seq] {};
 
-        \draw[-] (seq) -- (seqleft);
-        \draw[-] (seq) -- (seqright);
+        \draw[<-] (seq) -- (seqleft);
+        \draw[<-] (seq) -- (seqright);
 
         \node[mirnode] (x2) [right=of seqright] {\varx};
         \node[mirnode] (plus2) [right=of x2] {+};
@@ -293,8 +293,8 @@ in~\eqref{po:eq:mir_seq_1}.
         \node[mirnode] (yexpr2) [right=of y2] {\vary};
 
         \draw[|->] (x2) -- (plus2);
-        \draw[-] (plus2) -- (xto2);
-        \draw[-] (plus2) -- (one2);
+        \draw[<-] (plus2) -- (xto2);
+        \draw[<-] (plus2) -- (one2);
         \draw[|->] (y2) -- (yexpr2);
 
         \brackets{(x) (two)};
@@ -318,13 +318,13 @@ simplification step is always carried out when possible.
         \node[mirnode] (two) [below right=of times] {2};
 
         \draw[|->] (x) -- (plus);
-        \draw[-] (plus) -- (xto);
-        \draw[-] (plus) -- (one);
+        \draw[<-] (plus) -- (xto);
+        \draw[<-] (plus) -- (one);
         \draw[|->] (y) -- (times);
-        \draw[-] (times) -- (two);
+        \draw[<-] (times) -- (two);
 
         \node[coordinate] (left) [below=of y] {};
-        \draw[-] (times) to[out=-135, in=0] (left);
+        \draw[<-] (times) to[out=-135, in=0] (left);
         \draw[-] (left) to[out=180, in=-45] (amid);
         \draw[-] (amid) to[out=135, in=60] (plus);
 
@@ -378,18 +378,18 @@ therefore:
         \node[mirnode] (two) [below right=of times] {2};
 
         \draw[|->] (x) -- (xcond);
-        \draw[channel, -] (xcond) to[out=-90, in=135] (xin);
-        \draw[channel, -] (xcond) to[out=-45, in=90] (xin);
-        \draw[channel, -] (xcond) to[out=-135, in=135] (less);
-        \draw[-] (less) -- (xin);
-        \draw[channel, -] (less) -- (zero);
+        \draw[channel, <-] (xcond) to[out=-90, in=135] (xin);
+        \draw[channel, <-] (xcond) to[out=-45, in=90] (xin);
+        \draw[channel, <-] (xcond) to[out=-135, in=135] (less);
+        \draw[<-] (less) -- (xin);
+        \draw[channel, <-] (less) -- (zero);
 
         \draw[|->] (y) -- (ycond);
-        \draw[-] (ycond) to[out=-135, in=45] (less);
-        \draw[-] (ycond) -- (times);
-        \draw[-] (ycond) -- (yin);
-        \draw[channel, -] (times) -- (xin);
-        \draw[channel, -] (times) -- (two);
+        \draw[<-] (ycond) to[out=-135, in=45] (less);
+        \draw[<-] (ycond) -- (times);
+        \draw[<-] (ycond) -- (yin);
+        \draw[channel, <-] (times) -- (xin);
+        \draw[channel, <-] (times) -- (two);
 
         \brackets{(current bounding box)};
     \end{tikzpicture}\,.
@@ -413,17 +413,17 @@ resulting \gls{mir} is semantically equivalent to the original:
         \node[mirnode] (two) [below right=of times] {2};
 
         \draw[|->] (x) -- (xin);
-        \draw[-] (less) to[out=-135, in=45] (xin);
-        \draw[channel, -] (less) -- (zero);
+        \draw[<-] (less) to[out=-135, in=45] (xin);
+        \draw[channel, <-] (less) -- (zero);
 
         \draw[|->] (y) -- (ycond);
-        \draw[-] (ycond) to[out=-135, in=45] (less);
-        \draw[-] (ycond) -- (times);
-        \draw[-] (ycond) -- (yin);
+        \draw[<-] (ycond) to[out=-135, in=45] (less);
+        \draw[<-] (ycond) -- (times);
+        \draw[<-] (ycond) -- (yin);
 \begin{pgfinterruptboundingbox}
-        \draw[channel, -] (times) to[out=-135, in=60] (xin);
+        \draw[channel, <-] (times) to[out=-135, in=60] (xin);
 \end{pgfinterruptboundingbox}
-        \draw[channel, -] (times) -- (two);
+        \draw[channel, <-] (times) -- (two);
 
         \brackets{(x) (zero) (two)};
     \end{tikzpicture}\,.
@@ -486,23 +486,9 @@ the constructed \gls{mir} maximally shares common expressions across nested
 \glspl{mir}.
 
 As a simple example, consider the program in
-Figure~\ref{po:lst:loop_share_example}.
-\begin{figure}[ht]
-    \begin{lstlisting}
-        y = y + 1;
-        while (x < y) {
-            x = x + 1;
-        }
-    \end{lstlisting}
-    \caption{%
-        The program which exhibits common subexpression sharing across nested
-        \glspl{mir}.
-    }\label{po:lst:loop_share_example}
-\end{figure}
-
-The \gls{mir} of this example program allows a nested \gls{mir} to reference
-and reuse an expression from the outer \gls{mir} as demonstrated in
-Figure~\ref{po:fig:mir_fix_external_2}, where:
+Figure~\ref{po:lst:loop_share_example}.  The \gls{mir} of this example program
+allows a nested \gls{mir} to reference and reuse an expression from the outer
+\gls{mir} as demonstrated in Figure~\ref{po:fig:mir_fix_external_2}, where:
 \begin{equation}
     \mu = [\varx \mapsto \varx + 1],
     \text{~and} \quad
@@ -511,51 +497,67 @@ Figure~\ref{po:fig:mir_fix_external_2}, where:
 
 \begin{figure}[ht]
     \centering
-    \begin{tikzpicture}[mir]
-        \node[mirnode] (x) at (0, 0) {\varx};
-        \node[mirnode] (*) [right=of x] {$\expand$};
-        \draw[|->] (x) -- (*);
+    \newsavebox{\loopsharelst}
+    \begin{lrbox}{\loopsharelst}
+    \begin{lstlisting}
+y = y + 1;
+while (x < y) {
+    x = x + 1;
+}
+    \end{lstlisting}
+    \end{lrbox}
+    \subfloat[The program.]{%
+        \begin{minipage}{0.3\textwidth}
+            \usebox{\loopsharelst}
+        \end{minipage}\label{po:lst:loop_share_example}
+    }
+    \subfloat[The \gls{mir}.]{%
+        \begin{tikzpicture}[mir]
+            \node[mirnode] (x) at (0, 0) {\varx};
+            \node[mirnode] (*) [right=of x] {$\expand$};
+            \draw[|->] (x) -- (*);
 
-        \node[mirnode] (fix) [below left=of *] {$\fix$};
-        \node[mirnode] (b) [below left=of fix] {$b$};
-        \node[mirnode] (mu) [below=of fix] {$\mu$};
-        \node[mirnode] (xin) [below right=of fix] {\varx};
-        \draw[-] (*) -- (fix);
-        \draw[-] (fix) -- (b);
-        \draw[-] (fix) -- (mu);
-        \draw[-] (fix) -- (xin);
+            \node[mirnode] (fix) [below left=of *] {$\fix$};
+            \node[mirnode] (b) [below left=of fix] {$b$};
+            \node[mirnode] (mu) [below=of fix] {$\mu$};
+            \node[mirnode] (xin) [below right=of fix] {\varx};
+            \draw[<-] (*) -- (fix);
+            \draw[<-] (fix) -- (b);
+            \draw[<-] (fix) -- (mu);
+            \draw[<-] (fix) -- (xin);
 
-        \node[coordinate] (mir) [below right=of *] {};
-        \node[mirnode] (mirx) [right=of mir, xshift=-1mm] {\varx};
-        \node[mirnode] (mirxin) [right=of mirx] {\varx};
-        \node[mirnode] (miry) [right=of mirxin] {\vary};
-        \node[coordinate] (mirymid) [right=of miry] {};
-        \node[coordinate] (miryout) [right=of mirymid] {};
-        \node[coordinate] (miryedge) [right=of miryout] {};
-        \draw[-] (*) -- (mir);
-        \draw[|->] (mirx) -- (mirxin);
-        \draw[|->] (miry) -- (mirymid);
-        \brackets{(mirx) (mirxin) (miryedge)};
+            \node[coordinate] (mir) [below right=of *] {};
+            \node[mirnode] (mirx) [right=of mir, xshift=-1mm] {\varx};
+            \node[mirnode] (mirxin) [right=of mirx] {\varx};
+            \node[mirnode] (miry) [right=of mirxin] {\vary};
+            \node[coordinate] (mirymid) [right=of miry] {};
+            \node[coordinate] (miryout) [right=of mirymid] {};
+            \node[coordinate] (miryedge) [right=of miryout] {};
+            \draw[<-] (*) -- (mir);
+            \draw[|->] (mirx) -- (mirxin);
+            \draw[|->] (miry) -- (mirymid);
+            \brackets{(mirx) (mirxin) (miryedge)};
 
-        \node[mirnode] (y) [right=of *, xshift=35mm] {\vary};
-        \node[mirnode] (+) [right=of y] {$+$};
-        \node[mirnode] (yin) [below left=of +] {\vary};
-        \node[mirnode] (1) [below right=of +] {$1$};
-        \draw[|->] (y) -- (+);
-        \draw[-] (+) -- (yin);
-        \draw[-] (+) -- (1);
+            \node[mirnode] (y) [right=of *, xshift=35mm] {\vary};
+            \node[mirnode] (+) [right=of y] {$+$};
+            \node[mirnode] (yin) [below left=of +] {\vary};
+            \node[mirnode] (1) [below right=of +] {$1$};
+            \draw[|->] (y) -- (+);
+            \draw[<-] (+) -- (yin);
+            \draw[<-] (+) -- (1);
 
-        \draw[-] (miryout)
-            to[out=-90, in=-180] (38mm, -7mm)
-            to[out=0, in=180] (48mm, 5mm)
-            to[out=0, in=135] (+);
+            \draw[<-] (miryout)
+                to[out=-90, in=-180] (38mm, -7mm)
+                to[out=0, in=180] (48mm, 5mm)
+                to[out=0, in=135] (+);
 
-        \brackets{(x) (b) (mu) (1)};
-    \end{tikzpicture}
+            \brackets{(x) (b) (mu) (1)};
+        \end{tikzpicture}\label{po:fig:mir_fix_external_2}
+    }
     \caption{%
-        The \gls{mir} of Figure~\ref{po:lst:loop_share_example}, which
-        reuses common subexpressions across nested \glspl{mir}.
-    }\label{po:fig:mir_fix_external_2}
+        A simple program which exhibits common subexpressions reuse across
+        nested \glspl{mir}.
+    }
 \end{figure}
 
 
@@ -586,13 +588,13 @@ Figure~\ref{po:lst:syntax_example}.  Here, we translate it into the following
     \draw[|->] (y) -- (expand);
     \draw[|->] (a) -- (ain);
     \draw[|->] (n) -- (nin2);
-    \draw[-] (expand) -- (fix);
-    \draw[-] (fix) -- (less);
-    \draw[-] (less) -- (xin);
-    \draw[-] (less) -- (nin);
-    \draw[-] (fix) -- (fixmir);
-    \draw[-] (fix) -- (yin);
-    \draw[-] (expand) to[out=-45, in=135] (initmir);
+    \draw[<-] (expand) -- (fix);
+    \draw[<-] (fix) -- (less);
+    \draw[<-] (less) -- (xin);
+    \draw[<-] (less) -- (nin);
+    \draw[<-] (fix) -- (fixmir);
+    \draw[<-] (fix) -- (yin);
+    \draw[<-] (expand) to[out=-45, in=135] (initmir);
 
     \node[mirnode] (fixx) [below=of fixmir, xshift=1mm, yshift=2mm] {\varx};
     \node[mirnode] (fixadd1) [right=of fixx] {$+$};
@@ -609,18 +611,18 @@ Figure~\ref{po:lst:syntax_example}.  Here, we translate it into the following
     \node[mirnode] (fixa) [below=of fixx, yshift=-10mm] {\vara};
     \node[mirnode] (fixain) [right=of fixa] {\vara};
     \draw[|->] (fixx) -- (fixadd1);
-    \draw[-] (fixadd1) -- (fixxin);
-    \draw[-] (fixadd1) -- (fixone);
+    \draw[<-] (fixadd1) -- (fixxin);
+    \draw[<-] (fixadd1) -- (fixone);
     \draw[|->] (fixy) -- (fixadd2);
-    \draw[-] (fixadd2) -- (fixyin);
-    \draw[-] (fixadd2) -- (fixdiv);
-    \draw[-] (fixdiv) -- (fixmul);
-    \draw[-] (fixmul) to[out=-135, in=-45] (fixmulin1);
+    \draw[<-] (fixadd2) -- (fixyin);
+    \draw[<-] (fixadd2) -- (fixdiv);
+    \draw[<-] (fixdiv) -- (fixmul);
+    \draw[<-] (fixmul) to[out=-135, in=-45] (fixmulin1);
     \draw[-] (fixmulin1) to[out=135, in=45] (fixadd1);
-    \draw[-] (fixmul) to[out=-45, in=-45] (fixmulin2);
+    \draw[<-] (fixmul) to[out=-45, in=-45] (fixmulin2);
     \draw[-] (fixmulin2) to[out=135, in=55] (fixadd1);
     \draw[|->] (fixa) -- (fixain);
-    \draw[channel, -] (fixdiv) to[out=-135, in=45] (fixain);
+    \draw[channel, <-] (fixdiv) to[out=-135, in=45] (fixain);
     \brackets{(fixx) (fixa) (fixmuledge)};
 
     \node[mirnode] (initx) [below=of initmir, xshift=2mm, yshift=2mm] {\varx};

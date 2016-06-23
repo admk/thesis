@@ -255,12 +255,12 @@ shows the complete dependence graph of \verb|dotprod|'s loop body.
             {$\times$};
         \node (sum) [left=of mul, xshift=-10mm] {\texttt{d}};
         \node (add) [below right=of sum, xshift=-4mm, yshift=5mm] {$+$};
-        \draw[->] (ai)  -- node[auto]{\pair10} (mul);
-        \draw[->] (bi)  -- node[auto]{\pair10} (mul);
-        \draw[->] (mul) -- node[auto]{\pair70} (add);
-        \draw[->] (sum) -- node[auto]{\pair00} (add);
+        \draw[->] (ai)  -- node[auto]{\smallpair10} (mul);
+        \draw[->] (bi)  -- node[auto]{\smallpair10} (mul);
+        \draw[->] (mul) -- node[auto]{\smallpair70} (add);
+        \draw[->] (sum) -- node[auto]{\smallpair00} (add);
         \draw[->,dashed]
-            (add) to[out=-135, in=180] node[left=3pt]{\pair{10}{1}} (sum);
+            (add) to[out=-135, in=180] node[left=3pt]{\smallpair{10}{1}} (sum);
     \end{tikzpicture}
     \caption{%
         The dependence graph formed by the data-dependences in the loop body
@@ -369,8 +369,6 @@ cycles is exponential to the number of edges in a graph, this approach could
 become intractable for large loops.  An alternative method based on the
 Floyd-Warshall shortest path algorithm~\cite{floyd62} which runs in polynomial
 time, is thus proposed in~\cite{rau94} to efficiently find \gls{recmii}.
-This method will be further discussed in Chapter~\ref{chp:latopt},
-Section~\ref{lo:sub:latency_analysis}.
 
 \subsubsection{Scheduling Operations}
 

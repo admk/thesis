@@ -102,7 +102,7 @@ a negation on a constant value into a single constant.
         & [\mathrm{ConstProp_1}] &~&
         \inference{%
             (v_3 = v_1 \opsymbol v_2) \wedge
-            (\opsymbol \in \binopset)
+            (\opsymbol \in \binaopset)
         }{%
             v_1 \opsymbol v_2 \eqrel v_3
         }, \\
@@ -115,9 +115,9 @@ a negation on a constant value into a single constant.
     \end{aligned}
     \label{so:eq:constant_propagation}
 \end{equation}
-Here we define $\binopset = \{ +, -, \times, / \}$ to be the set of binary
-operators.  We also define another set of reduction rules looking for common
-patterns that can be simplified:
+Here we define $\binaopset = \{ +, -, \times, / \}$ to be the set of binary
+arithmetic operators.  We also define another set of reduction rules looking
+for common patterns that can be simplified:
 \begin{equation}
     \begin{aligned}{}
         & [\mathrm{Identity}_1] &~&
@@ -152,7 +152,7 @@ Finally, the following two allow structural induction on expression trees,
         \inference{%
             \left( e_1 \eqrel e_2 \right) \wedge
             \left( e_3 \eqrel e_4 \right) \wedge
-            \left( \opsymbol \in \binopset \right)
+            \left( \opsymbol \in \binaopset \right)
         }{%
             e_1 \opsymbol e_3 \eqrel e_2 \opsymbol e_4
         }, \\
@@ -293,11 +293,12 @@ of the equivalent expressions that are newly discovered in the current
 iteration, so that in the next iteration we apply $f$ only to those
 expressions, to avoid redundant computation.  This algorithm is shown in
 Figure~\ref{so:alg:closure} to efficiently compute $\closure_N f(\epsilon)$,
-where $f$ is a $\cup$-distributive \gls{eeg}\@.  Its correctness is discussed
+where $f$ can be $\eqstep_k$.  The correctness of this algorithm is discussed
 in greater depth in Appendix~\ref{app:sound_acceleration}.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
+        \singlespacing%
         \Function{Closure}{$f$, $N$, $\epsilon$}
             \State{$s_0 \gets \epsilon$}
             \State{$s^\prime_0 \gets \epsilon$}
@@ -338,6 +339,7 @@ prune suboptimal ones in one pass.
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
+        \singlespacing%
         \Function{Frontier}{$\epsilon$}
             \State{$\mathit{frontier} \gets \epsilon$}
             \For{$e \in \epsilon$}

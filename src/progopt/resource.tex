@@ -27,30 +27,31 @@ in Figure~\ref{po:fig:mir_cond_fusion_1}.
 
 \begin{figure}[ht]
     \centering
+    \newsavebox{\branchfusionlst}
+    \begin{lrbox}{\branchfusionlst}
     \begin{lstlisting}
-        if (x < 0) {
-            x = 1;
-            y = 2;
-        } else {
-            x = 3;
-            y = 4;
-        }
+if (x < 0) {
+    x = 1;
+    y = 2;
+} else {
+    x = 3;
+    y = 4;
+}
     \end{lstlisting}
-    \caption{%
-        A simple program to illustrate the sharing of conditional operators.
-    }\label{po:lst:branch_example}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \subfloat[Before fusion]{%
+    \end{lrbox}
+    \subfloat[The program.]{%
+        \begin{minipage}{0.25\textwidth}
+            \usebox{\branchfusionlst}
+        \end{minipage}\label{po:lst:branch_example}
+    }
+    \subfloat[Before fusion.]{%
         % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_1}
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
             \node[mirnode] (xq) [right=of x] {$\qop$};
             \node[mirnode] (1) [below=of xq, yshift=-2mm, inner sep=2mm] {$1$};
-                \node[mirnode] (3) [below right=of xq, yshift=-2mm, inner sep=1mm]
-                    {$3$};
+            \node[mirnode] (3)
+                [below right=of xq, yshift=-2mm, inner sep=1mm] {$3$};
 
             \node[coordinate] (mid) [right=of xq, xshift=13mm] {};
             \node[mirnode] (y) [right=of mid, xshift=5mm] {\vary};
@@ -64,19 +65,19 @@ in Figure~\ref{po:fig:mir_cond_fusion_1}.
 
             \draw[|->] (x) -- (xq);
             \draw[|->] (y) -- (yq);
-            \draw[-] (xq) to[out=-135, in=135] (<);
-            \draw[-] (yq) to[out=-135, in=45] (<);
+            \draw[<-] (xq) to[out=-135, in=135] (<);
+            \draw[<-] (yq) to[out=-135, in=45] (<);
             \draw[channel,-] (xq) -- (1);
             \draw[channel,-] (xq) -- (3);
-            \draw[-] (yq) -- (2);
-            \draw[-] (yq) -- (4);
-            \draw[-] (<) -- (xin);
-            \draw[-] (<) -- (0);
+            \draw[<-] (yq) -- (2);
+            \draw[<-] (yq) -- (4);
+            \draw[<-] (<) -- (xin);
+            \draw[<-] (<) -- (0);
 
             \brackets{(current bounding box)};
         \end{tikzpicture}\label{po:fig:mir_cond_fusion_1}
     }\quad
-    \subfloat[After fusion]{%
+    \subfloat[After fusion.]{%
         % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_2}
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
@@ -103,24 +104,24 @@ in Figure~\ref{po:fig:mir_cond_fusion_1}.
 
             \draw[|->] (x) -- (xmid);
             \draw[|->] (y) -- (ymid);
-            \draw[-] (yout) to[out=-90, in=45] (out);
-            \draw[-] (xout) to[out=-90, in=135] (out);
+            \draw[<-] (yout) to[out=-90, in=45] (out);
+            \draw[<-] (xout) to[out=-90, in=135] (out);
             \draw[o] (?) -- (out);
 
-            \draw[-] (?) -- (<);
-            \draw[-] (<) -- (xin);
-            \draw[-] (<) -- (0);
-            \draw[-] (in1) -- (1);
-            \draw[-] (in1) -- (2);
-            \draw[-] (in2) -- (3);
-            \draw[-] (in2) -- (4);
-            \draw[o] (?) -- (in1);
-            \draw[o] (?) -- (in2);
+            \draw[<-] (?) -- (<);
+            \draw[<-] (<) -- (xin);
+            \draw[<-] (<) -- (0);
+            \draw[<-] (?) -- (in1);
+            \draw[<-] (?) -- (in2);
+            \draw[-] (1) -- (in1);
+            \draw[o] (2) -- (in1);
+            \draw[-] (3) -- (in2);
+            \draw[o] (4) -- (in2);
 
             \brackets{(current bounding box)};
         \end{tikzpicture}\label{po:fig:mir_cond_fusion_2}
     }
-    \caption{The sharing of conditional expressions.}
+    \caption{The sharing of conditional expressions in a simple program.}
 \end{figure}
 
 Because we compute an abstraction of the program, the \gls{mir} does not
@@ -146,7 +147,7 @@ in Figure~\ref{po:fig:mir_sub_fusion_1} can be restructured by fusing both
 variables $x$ and $y$.
 \begin{figure}[ht]
     \centering
-    \subfloat[Before fusion]{%
+    \subfloat[Before fusion.]{%
         % \includegraphics[scale=\mirfigscale]{mir_sub_fusion_1}
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
@@ -160,18 +161,18 @@ variables $x$ and $y$.
             \node[mirnode] (zin) [below left=of y*] {\varz};
             \node[mirnode] (zmir) [below right=of y*] {};
 
-            \draw[-] (x*) -- (xin);
-            \draw[-] (x*) -- (xmir);
-            \draw[-] (y*) -- (zin);
-            \draw[-] (y*) -- (zmir);
+            \draw[<-] (x*) -- (xin);
+            \draw[<-] (x*) -- (xmir);
+            \draw[<-] (y*) -- (zin);
+            \draw[<-] (y*) -- (zmir);
 
             \node[mirnode] (xmirx) [below=of x*] {\varx};
             \node[mirnode] (xmir+) [right=of xmirx] {$+$};
             \node[mirnode] (xmirxin) [below left=of xmir+] {\varx};
             \node[mirnode] (xmir1) [below right=of xmir+] {$1$};
             \draw[|->] (xmirx) -- (xmir+);
-            \draw[-] (xmir+) -- (xmirxin);
-            \draw[-] (xmir+) -- (xmir1);
+            \draw[<-] (xmir+) -- (xmirxin);
+            \draw[<-] (xmir+) -- (xmir1);
             \brackets{(xmirx) (xmir1)};
 
             \node[mirnode] (zmirz) [below=of y*] {\varz};
@@ -179,8 +180,8 @@ variables $x$ and $y$.
             \node[mirnode] (zmirxin) [below right=of zmir*] {\varx};
             \node[mirnode] (zmirzin) [below left=of zmir*] {\varz};
             \draw[|->] (zmirz) -- (zmir*);
-            \draw[-] (zmir*) -- (zmirzin);
-            \draw[-] (zmir*) -- (zmirxin);
+            \draw[<-] (zmir*) -- (zmirzin);
+            \draw[<-] (zmir*) -- (zmirxin);
             \brackets{(zmirz) (zmirxin)};
 
             \draw[|->] (x) -- (x*);
@@ -189,7 +190,7 @@ variables $x$ and $y$.
             \brackets{(current bounding box)};
         \end{tikzpicture}\label{po:fig:mir_sub_fusion_1}
     }\quad
-    \subfloat[After fusion]{%
+    \subfloat[After fusion.]{%
         % \includegraphics[scale=\mirfigscale]{mir_sub_fusion_2}
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
@@ -204,18 +205,18 @@ variables $x$ and $y$.
 
             \node[coordinate] (out) [below right=of xout, yshift=-2mm] {};
             \node[mirnode] (*) [below=of out] {$\expand$};
-            \draw[-] (xout) -- (out);
-            \draw[-] (yout) to[out=-90, in=45] (out);
+            \draw[<-] (xout) -- (out);
+            \draw[<-] (yout) to[out=-90, in=45] (out);
             \draw[o] (*) -- (out);
 
             \node[coordinate] (lin) [below left=of *] {};
             \node[coordinate] (mir) [below right=of *] {};
             \node[mirnode] (xin) [below left=of lin] {\varx};
             \node[mirnode] (zin) [below right=of lin] {\varz};
+            \draw[<-] (*) -- (lin);
             \draw[-] (xin) -- (lin);
-            \draw[-] (zin) -- (lin);
-            \draw[o] (*) -- (lin);
-            \draw[-] (*) -- (mir);
+            \draw[o] (zin) -- (lin);
+            \draw[<-] (*) -- (mir);
 
             \node[mirnode] (mirz) [right=of *] {\varz};
             \node[mirnode] (mir*) [right=of mirz] {$\times$};
@@ -226,10 +227,10 @@ variables $x$ and $y$.
             \node[mirnode] (mir1) [below right=of mir+] {$1$};
             \draw[|->] (mirz) -- (mir*);
             \draw[|->] (mirx) -- (mir+);
-            \draw[-] (mir*) -- (mirzin);
-            \draw[-] (mir*) -- (mirxin);
-            \draw[-] (mir+) -- (mirxin);
-            \draw[-] (mir+) -- (mir1);
+            \draw[<-] (mir*) -- (mirzin);
+            \draw[<-] (mir*) -- (mirxin);
+            \draw[<-] (mir+) -- (mirxin);
+            \draw[<-] (mir+) -- (mir1);
             \brackets{(mirz) (mir1)};
 
             \brackets{(current bounding box)};
@@ -252,17 +253,6 @@ in Figure~\ref{po:fig:mir_fix_fusion_1}, where:
     \mu_1 = [\varx \mapsto \varx / 2], \text{~and} \quad
     \mu_2 = [\varx \mapsto \varx / 2, \varz \mapsto \varz + \varx].
 \end{equation}
-\begin{figure}[ht]
-    \begin{lstlisting}
-        while (x > y) {
-            z = z + x;
-            x = x / 2;
-        }
-    \end{lstlisting}
-    \caption{%
-        A simple program to illustrate the sharing of fixpoint operators.
-    }\label{po:lst:loop_example}
-\end{figure}
 
 During program optimization, the two fixpoint expressions are optimized
 individually, because loop splitting could enhance the accuracy of both $x$ and
@@ -274,7 +264,21 @@ Figure~\ref{po:fig:mir_fix_fusion_2} shows how two expressions can be fused
 into one fixpoint expression.
 \begin{figure}[ht]
     \centering
-    \subfloat[Before fusion]{%
+    \newsavebox{\loopfusionlst}
+    \begin{lrbox}{\loopfusionlst}
+    \begin{lstlisting}
+while (x > y) {
+    z = z + x;
+    x = x / 2;
+}
+    \end{lstlisting}
+    \end{lrbox}
+    \subfloat[The program.]{%
+        \begin{minipage}{0.26\textwidth}
+            \usebox{\loopfusionlst}
+        \end{minipage}\label{po:lst:loop_example}
+    }
+    \subfloat[Before fusion.]{%
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
             \node[mirnode] (xfix) [right=of x] {$\fix$};
@@ -294,17 +298,17 @@ into one fixpoint expression.
             \draw[|->] (x) -- (xfix);
             \draw[|->] (z) -- (zfix);
             \draw[|->] (y) -- (yin);
-            \draw[-] (xfix) -- (b1);
-            \draw[-] (xfix) -- (mu1);
-            \draw[-] (xfix) -- (xin);
-            \draw[-] (zfix) -- (b2);
-            \draw[-] (zfix) -- (mu2);
-            \draw[-] (zfix) -- (zin);
+            \draw[<-] (xfix) -- (b1);
+            \draw[<-] (xfix) -- (mu1);
+            \draw[<-] (xfix) -- (xin);
+            \draw[<-] (zfix) -- (b2);
+            \draw[<-] (zfix) -- (mu2);
+            \draw[<-] (zfix) -- (zin);
 
             \brackets{(current bounding box)};
         \end{tikzpicture}\label{po:fig:mir_fix_fusion_1}
     } \quad
-    \subfloat[After fusion]{%
+    \subfloat[After fusion.]{%
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
             \node[coordinate] (xmid) [right=of x] {};
@@ -319,8 +323,8 @@ into one fixpoint expression.
 
             \node[coordinate] (out) [below right=of xout, yshift=-2mm] {};
             \node[mirnode] (fix) [below=of out] {$\fix$};
-            \draw[-] (xout) -- (out);
-            \draw[-] (zout) to[out=-90, in=45] (out);
+            \draw[<-] (xout) -- (out);
+            \draw[<-] (zout) to[out=-90, in=45] (out);
             \draw[o] (fix) -- (out);
 
             \node[mirnode] (b) [below left=of fix] {$b$};
@@ -328,11 +332,11 @@ into one fixpoint expression.
             \node[coordinate] (in) [below right=of fix, xshift=5mm] {};
             \node[mirnode] (xin) [below left=of in] {\varx};
             \node[mirnode] (zin) [below right=of in] {\varz};
-            \draw[-] (fix) -- (b);
-            \draw[-] (fix) -- (mu);
-            \draw[-] (in) -- (xin);
-            \draw[-] (in) -- (zin);
-            \draw[o] (fix) -- (in);
+            \draw[<-] (fix) -- (b);
+            \draw[<-] (fix) -- (mu);
+            \draw[<-] (fix) -- (in);
+            \draw[-] (xin) -- (in);
+            \draw[o] (zin) -- (in);
 
             \draw[|->] (x) -- (xmid);
             \draw[|->] (z) -- (zmid);
@@ -342,8 +346,7 @@ into one fixpoint expression.
         \end{tikzpicture}\label{po:fig:mir_fix_fusion_2}
     }
     \caption{%
-        The sharing of fixpoint expressions in the
-        Figure~\ref{po:lst:loop_example} example.
+        The sharing of fixpoint expressions in a simple example program.
     }
 \end{figure}
 
@@ -353,7 +356,7 @@ in Figure~\ref{po:fig:mir_cond_fusion_3}.  By fusing both conditionals $a$ and
 $b$, a cycle is created as in Figure~\ref{po:fig:mir_cond_fusion_4}.
 \begin{figure}[ht]
     \centering
-    \subfloat[Before fusion, the \gls{mir} is acyclic]{%
+    \subfloat[Before fusion, the \gls{mir} is acyclic.]{%
         % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_3}
         \begin{minipage}{0.35\textwidth}
         \centering
@@ -378,28 +381,30 @@ $b$, a cycle is created as in Figure~\ref{po:fig:mir_cond_fusion_4}.
             \node[coordinate] (x?2-b) [above left=of b, xshift=-4mm] {};
 
             \draw[|->] (x) -- (x?);
-            \draw[-] (x?) -- (x?2);
-            \draw[-] (x?) -- (xin);
-            \draw[-] (x?2) -- (1);
-            \draw[-] (x?2) -- (2);
+            \draw[<-] (x?) -- (x?2);
+            \draw[<-] (x?) -- (xin);
+            \draw[<-] (x?2) -- (1);
+            \draw[<-] (x?2) -- (2);
 
             \draw[|->] (y) -- (y?);
-            \draw[-] (y?) -- (y?2);
-            \draw[-] (y?) -- (yin);
-            \draw[-] (y?2) -- (3);
-            \draw[-] (y?2) -- (4);
+            \draw[<-] (y?) -- (y?2);
+            \draw[<-] (y?) -- (yin);
+            \draw[<-] (y?2) -- (3);
+            \draw[<-] (y?2) -- (4);
 
-            \draw[-] (x?) to[out=-135, in=135] (a);
-            \draw[-] (x?2) to[out=-135, in=-180] (x?2-b);
+            \draw[<-] (x?) to[out=-135, in=135] (a);
+            \draw[<-] (x?2) to[out=-135, in=-180] (x?2-b);
             \draw[-] (x?2-b) to[out=0, in=135] (b);
-            \draw[-] (y?) to[out=-135, in=120] (b);
-            \draw[channel,-] (y?2) to[out=-120, in=45] (a);
+            \draw[<-] (y?) to[out=-135, in=120] (b);
+            \draw[channel,<-] (y?2) to[out=-120, in=45] (a);
 
             \brackets{(current bounding box)};
         \end{tikzpicture}
         \end{minipage}\label{po:fig:mir_cond_fusion_3}
     }\quad
-    \subfloat[Fusing the two conditional operators $a$ and $b$ creates a cycle]{%
+    \subfloat[%
+        Fusing the two conditional operators $a$ and $b$ creates a cycle.
+    ]{%
         % \includegraphics[scale=\mirfigscale]{mir_cond_fusion_4}
         \begin{tikzpicture}[mir]
             \node[mirnode] (x) at (0, 0) {\varx};
@@ -430,37 +435,38 @@ $b$, a cycle is created as in Figure~\ref{po:fig:mir_cond_fusion_4}.
             \node[mirnode] (yin) [below right=of i4] {\vary};
 
             \draw[-, red] (o1) -- (?1);
-            \draw[-, red] (?1) -- (i1);
+            \draw[<-, red] (?1) -- (i1);
             \node[coordinate] (xl) [left=of x, yshift=-7mm] {};
             \draw[-, red] (i1) to[out=-135, in=-90] (xl);
             \node[coordinate] (xa) [above=of xout, yshift=1mm] {};
             \draw[-, red] (xl) to[out=90, in=180] (xa);
             \draw[-, red] (xa) to[out=0, in=135] (o2);
-            \draw[-, red] (?2) -- (i3);
+            \draw[<-, red] (?2) -- (i3);
             \node[coordinate] (1b) [below=of 1] {};
             \draw[-, red] (i3) to[out=-45, in=0] (1b);
             \node[coordinate] (bb) [below=of b, yshift=1mm, xshift=-1mm] {};
             \draw[-, red] (1b) to[out=180, in=-60] (bb);
             \draw[-, red] (bb) to[out=120, in=45] (o1);
 
-            \draw[-] (?1) -- (a);
-            \draw[-] (?1) -- (i2);
+            \draw[<-] (?1) -- (a);
+            \draw[<-] (?1) -- (i2);
             \draw[o] (3) -- (i1);
             \draw[-] (xin) -- (i2);
             \draw[o] (4) -- (i2);
-            \draw[o] (xout) -- (o1);
+            \draw[<-,o] (xout) -- (o1);
 
-            \draw[-] (?2) -- (b);
+            \draw[<-] (?2) -- (b);
             \draw[o] (1) -- (i3);
             \draw[-] (2) -- (i4);
             \draw[-] (yin) -- (i4);
-            \draw[o] (?2) -- (i4);
-            \draw[-] (yout) to[out=-90, in=45] (o2);
+            \draw[<-,o] (?2) -- (i4);
+            \draw[<-] (yout) to[out=-90, in=45] (o2);
 
             \draw[o, red] (?2) -- (o2);
 
             \brackets{(x) (3) (yin) (xl)};
-        \end{tikzpicture}\label{po:fig:mir_cond_fusion_4}
+        \end{tikzpicture}
+        {}\label{po:fig:mir_cond_fusion_4}
     }
     \caption{Example branch fusion creates a cycle.}
 \end{figure}

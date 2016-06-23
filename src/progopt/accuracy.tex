@@ -230,6 +230,7 @@ formula is used to perform the accuracy analysis on a conditional expression:
 \end{equation}
 
 \subsection{Fixpoint Operator}
+\label{po:sub:fixpoint}
 
 An expression with a fixpoint operator, \fixexprmir, has three child nodes,
 the Boolean expression $b \in \bexprset$, the loop body represented with
@@ -302,6 +303,7 @@ to signify the former return value $\loopinvar$.
     \newcommand{\statett}{\ensuremath\sigma^\sharp_\truelit}
     \newcommand{\stateff}{\ensuremath\sigma^\sharp_\falselit}
     \begin{algorithmic}
+        \singlespacing%
         \Function{FixpointAccuracyAnalysis}{
                 \protect\fixexprmir, $\sigma^\sharp$}
             \State{%

@@ -127,16 +127,18 @@ Finally, for the full expression $(\vara + \varb) \times (\vara + \varb)$:
 From the above derivation, it is clear that the semantics capture the reuse
 of subexpressions. The estimation of area is performed by counting, for an
 expression, the numbers of additions, subtractions and multiplications in the
-final labeling environment, then calculating the number of \glspl{lut} used to
-synthesize the expression. If the number of operators is $n_\opsymbol$ where
-$\opsymbol \in \{+, -, \times, /\}$, then the number of \glspl{lut} in total
-for the expressions is estimated as:
+final labeling environment, then calculating the number of \glspl{lut} used
+to synthesize the expression. If the number of operators is $n_\opsymbol$
+where $\opsymbol \in \opset$, where $\aopset$ denotes the set of arithmetic
+operators, then the number of \glspl{lut} in total for the expressions is
+estimated as:
 \begin{equation}
-    \sum_{\opsymbol\in\{+,-,\times,/\}} A_\opsymbol n_\opsymbol,
+    r_\mathrm{LUT} = \sum_{\mathclap{\opsymbol\in\aopset}}
+        R^\mathrm{LUT}_\opsymbol n_\opsymbol,
 \end{equation}
-where the value $A_\opsymbol$ denotes the number of \glspl{lut} per $\opsymbol$
-operator, which is dependent on the type of the operator and the floating-point
-format used to generate the operator.
+where the value $R^\mathrm{LUT}_\opsymbol$ denotes the number of \glspl{lut}
+per $\opsymbol$ operator, which is dependent on the type of the operator and
+the floating-point format used to generate the operator.
 
 In the following sections, we use the function $\area: \aexprset\to\naturalset$
 to denote our resource usage analysis.

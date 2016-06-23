@@ -7,7 +7,7 @@ the \gls{mir}, and discover \glspl{mir} that are equivalent to the original
 \gls{mir} in real arithmetic, but may execute differently in finite-precision
 arithmetic because of round-off errors.
 
-\subsection{Algorithm}
+\subsection{Improved Algorithm}
 \label{lo:sub:algorithm}
 
 % Our optimization starts by partitioning the \gls{mir} into sub-\glspl{mir}.
@@ -22,19 +22,22 @@ would result in combinatorial explosion of the number of equivalent \glspl{mir}
 in the search space.  For this reason, we base ourselves on an algorithm from
 Section~\ref{po:sec:equivalence_analysis} of Chapter~\ref{chp:progopt} that
 searches efficiently by discovering equivalences in a bottom-up hierarchy.  In
-this section we discuss the improvements we have made to the algorithm which
-further increases the performance of this algorithm.
+this section, we discuss two major improvements to the algorithm which further
+increase its performance.
 
 \subsubsection{Partitioning}
 
-Our first contribution is that instead of optimizing the \gls{mir}
-immediately, we start by partitioning the \gls{mir} into multiple smaller
-sub-\glspl{mir}.  The partition boundaries are determined by $\updateop$
-operators.  For instance, we consider the partially unrolled Fibonacci example
-in Figure~\ref{lo:fig:fib}.  The \gls{mir} of the loop body is shown in
-Figure~\ref{lo:fig:fib_mir2}.  The partition boundaries are indicated by the
-region surrounded by the red dotted curve \tikz{\draw[red, dashed, rounded
-corners=1ex] (0,0) rectangle (20pt,2ex);}.
+Instead of optimizing the \gls{mir} immediately, we start by partitioning the
+\gls{mir} into multiple smaller sub-\glspl{mir}.  The partition boundaries are
+determined by $\updateop$ operators.  For instance, we consider the partially
+unrolled Fibonacci example in Figure~\ref{lo:fig:fib2}.  The \gls{mir} of the
+loop body is shown in Figure~\ref{lo:fig:fib_mir2}.  The partition boundaries
+are indicated by the region surrounded by the red dotted curve \tikz{\draw[red,
+dashed, rounded corners=1ex] (0,0) rectangle (20pt,2ex);}.  A multiply shared
+subexpression, such as $\texttt{i} - 1$, also determines the partition boundary
+by sharing a partition with one of its parents with the smallest partition by
+node count.  If all parents contains the same number of nodes then a choice is
+made randomly.
 \begin{figure}[ht]
     \centering
     \newsavebox{\fiblstb}
@@ -50,7 +53,7 @@ for (int i=3; i<1023; i+=2)
     \subfloat[The partially unrolled loop.]{%
         \begin{minipage}{0.45\textwidth}
             \usebox{\fiblstb}
-        \end{minipage}\label{po:fig:fib}
+        \end{minipage}\label{lo:fig:fib2}
     }
     \subfloat[The \gls{mir} of the partially unrolled loop body.]{%
         \begin{tikzpicture}[mir]
@@ -76,31 +79,31 @@ for (int i=3; i<1023; i+=2)
             \node[mirnode] (2acc1) [below left=of 2+] {$\accessop$};
             \node[mirnode] (2acc2) [below right=of 2+] {$\accessop$};
             \node[mirnode] (-3) [below right=6mm of 2acc1] {$-$};
-            \node[mirnode] (-2) [below right=6mm of 2acc2] {$-$};
             \node[mirnode] (3) [below right=of -3] {$3$};
-            \node[mirnode] (2) [below right=of -2] {$2$};
             \node[mirnode] (-3i) [below left=of -3] {\texttt{i}};
-            \node[mirnode] (-2i) [below left=of -2] {\texttt{i}};
             \node[mirnode] (Ain) [below left=8mm of 2acc1] {\texttt{A}};
             \draw[<-] (2upd) -- (2+);
             \draw[<-] (2+) -- (2acc1);
             \draw[<-] (2+) -- (2acc2);
             \draw[<-] (2acc1) -- (-3);
-            \draw[<-] (2acc2) -- (-2);
-            \draw[<-] (-3) -- (3);
-            \draw[<-] (-2) -- (2);
-            \draw[<-] (2upd) -- (Ain);
-            \draw[<-] (2upd) to[out=-70, in=180] (-1);
             \draw[<-] (2acc1) -- (Ain);
-            \draw[<-] (2acc2) -- (Ain);
+            \draw[<-] (-3) -- (3);
+            \draw[<-] (2upd) -- (Ain);
+            \draw[<-, channel] (2upd) to[out=-70, in=180] (-1);
+            \draw[<-, channel] (2acc2) -- (Ain);
             \draw[<-] (-3) -- (-3i);
-            \draw[<-] (-2) -- (-2i);
 
-            \draw[<-] (acc2) to[bend left] (-2);
+            \node[mirnode] (-2) [below right=6mm of acc2, yshift=-5mm] {$-$};
+            \node[mirnode] (2) [below right=of -2] {$2$};
+            \node[mirnode] (-2i) [below left=of -2] {\texttt{i}};
+            \draw[<-] (2acc2) to[out=0, in=180] (-2);
+            \draw[<-] (-2) -- (-2i);
+            \draw[<-] (-2) -- (2);
+            \draw[<-] (acc2) -- (-2);
 
             \draw[<-] (upd) -- (2upd);
             \draw[<-] (acc1) -- (2upd);
-            \draw[<-] (acc2) -- (2upd);
+            \draw[<-, channel] (acc2) -- (2upd);
 
             \node[mirnode] (mi) [right=15mm of upd] {\texttt{i}};
             \node[mirnode] (i+2) [right=of mi] {$+$};
@@ -112,14 +115,15 @@ for (int i=3; i<1023; i+=2)
             \draw[<-] (i+2) -- (i+2 2);
 
             \draw[red, dashed, rounded corners]
-                (-3i.south) -- (Ain.south west) -- (Ain.north west) --
+                (3.south east) -- (-3i.south) --
+                (Ain.south west) -- (Ain.north west) --
                 (2upd.north west) -- (2upd.north east) --
-                (2acc2.north east) -- (2.north east) --
-                (2.south east) -- cycle;
+                (2acc2.north east) -- cycle;
             \draw[red, dashed, rounded corners]
-                (-1i.south) -- (acc1.south west) -- (acc1.north west) --
+                (2.north east) -- (2.south east) -- (-2i.south west) --
+                (-1i.south west) -- (acc1.south west) --
                 (upd.north west) -- (upd.north east) --
-                (acc2.north east) -- (1.south east) -- cycle;
+                (acc2.north east) -- cycle;
             \draw[red, dashed, rounded corners]
                 (i+2.north) -- (i+2 i.north west) -- (i+2 i.south west) --
                 (i+2 2.south east) -- (i+2 2.north east) -- cycle;
@@ -137,48 +141,113 @@ We then select combinations from these sub-\glspl{mir} to be merged, this
 generates a set of \glspl{mir} that are equivalent to the original.  Finally,
 we preserve those \glspl{mir} merged on the Pareto frontier.
 
-Figure~\ref{lo:alg:optimize} shows the pseudocode of the optimization
-algorithm, it takes as an input a \gls{mir} graph, and produces a set of
-equivalent graphs that are estimated to be Pareto-optimal when converted into
-C programs and synthesized into circuits.  Although this algorithm deals with
-a special case, \ie~a root node $op$ with two child subtrees $e_1, e_2$, it
-can easily be generalized to an arbitrary number of child subtrees.  Here,
-$e \stackrel{r}{\rightsquigarrow} e'$ means $e^\prime$ can be obtained by
-transforming part of the graph $e$ in accordance with the transformation rule
-$r$.  The next section discusses the transformation rules we used.
+\subsubsection{Optimization}
 
-The algorithm starts by discovering equivalences in the leaves of a \gls{mir},
-and progress upwards for equivalent structures of the individual components
-that make up the graph, until the roots of the graph, where we have a set of
-equivalent \glspl{mir} to the original \gls{mir}\@.  As it traverses through
-the \gls{mir}, the algorithm calculates the performance metrics at each node,
-using the analyses presented in the next section.  Transformations that are not
-Pareto-optimal are immediately pruned from the search space, thus reducing the
-average complexity of the algorithm.
+% Figure~\ref{lo:alg:optimize} shows the pseudocode of the optimization
+% algorithm.  It takes as an input a \gls{mir} graph, and produces a set of
+% equivalent graphs that are estimated to be Pareto-optimal when converted into
+% C programs and synthesized into circuits.  Although this algorithm deals with
+% a special case, \ie~a root node $op$ with two child subtrees $e_1, e_2$, it
+% can easily be generalized to an arbitrary number of child subtrees.  Here,
+% $e \stackrel{r}{\eqgenrel} e'$ means $e^\prime$ can be obtained by
+% transforming part of the graph $e$ in accordance with the transformation rule
+% $r$.  The next section discusses the transformation rules we used.
 
-Our second contribution is the \textsc{Prune} function.  We rely on this
-function to efficiently steer the direction of our Pareto frontier as
-we discover new candidates.  It takes as an input the set of equivalent
-\glspl{mir} that we have discovered, and prune \glspl{mir} in this set to
-reduce its size, this keeps the size of discovered \glspl{mir} tractable.  The
-\soap{} framework prunes the \glspl{mir} that are Pareto-suboptimal, leaving
-only those that are on the Pareto frontier.  However, because our Pareto
-frontier is three-dimensional, there is a large increase in the number of
-Pareto-optimal \glspl{mir}.  This Pareto pruning approach is no longer feasible
-for our benchmark examples.  To tackle this, we introduce another step in
-\textsc{Prune} to further decrease the number of \glspl{mir} in the set by
-sampling.  We developed a new sampling algorithm, inspired by Poisson-disk
-sampling algorithm~\cite{bridson07}, which samples the Pareto frontier by first
-randomly selecting one point, then iteratively grows the set of points by
-adding the neighbours from the point that are separated by at lease a certain
-distance, we search by bisection for the distance that keeps 20\% of all point
-in the Pareto frontier.  This method is superior to random sampling, because
-random sampling often samples points that are close together, which usually are
-very similar implementations.
+% The algorithm starts by discovering equivalences in the leaves of a
+% \gls{mir}, and progresses upwards for equivalent structures of the individual
+% components that make up the graph, until the roots of the graph, where we
+% have a set of \glspl{mir} equivalent to the original \gls{mir}\@.  As it
+% traverses through the \gls{mir}, the algorithm calculates the performance
+% metrics at each node, using the analyses presented in the next section.
+% Transformations that are not Pareto-optimal are immediately pruned from the
+% search space, thus reducing the average complexity of the algorithm.
+
+Previously in \soap, as we optimize parts of \glspl{mir}, the Pareto frontier
+is used to filter discovered equivalent candidates (\glspl{mir} or semantic
+expressions), which keeps the size of the set relatively small and manageable.
+As we optimize larger programs, the run time of the algorithm increases
+significantly.  Currently, the \soap{} framework prunes the \glspl{mir} that
+are Pareto-suboptimal, leaving only those that are on the Pareto frontier.
+However, because our Pareto frontier is three-dimensional, there is a large
+increase in the number of Pareto-optimal \glspl{mir}.  This Pareto pruning
+approach is no longer feasible for our benchmark examples.  Therefore in this
+chapter, not only do we use the Pareto frontier to filter candidates, we also
+introduce a \textsc{Prune} function to further reduce the size of Pareto
+frontier.
+
+We rely on the \textsc{Prune} function to efficiently steer the direction
+of our Pareto frontier as we discover new candidates.  It takes as an
+input the set of Pareto-optimal equivalent candidates that we have
+discovered, and prunes elements in this set to reduce its size by sampling,
+keeping the number of discovered \glspl{mir} tractable.  The pruning
+algorithm is inspired by Poisson-disk sampling algorithm~\cite{bridson07}.
+Our algorithm in Figure~\ref{lo:alg:sample} starts by first randomly
+selecting one point from the Pareto frontier $\epsilon_0$ (denoted by
+$\textsc{RandomSample}(\epsilon_0)$).  It then grows the set of points by
+adding the neighbours from the point that are separated by at least a certain
+distance $\delta$, where the distance $\delta$ is decreased iteratively by
+a factor $\zeta = 0.8$, until $\epsilon$ contains at least $\eta = 20\%$ of
+all points in the Pareto frontier.  The distance between two options $e$ and
+$e^\prime$ is computed as follows:
+\begin{equation}
+    \mathrm{dist} \left(e, e^\prime\right)
+    = \sqrt{
+        \sum_{f \in F} {\left(
+            \frac{f(e) - f(e^\prime)}{\max(f(e), f(e^\prime))}
+        \right)}^2
+    },
+\end{equation}
+where $f \in F$ enumerates the functions that evaluates the performance of a
+candidate $e$, \ie~the function $f \in F$ computes either the accuracy, area
+and latency of $e$.
+
+\begin{figure}[ht]
+    \centering
+    \begin{algorithmic}
+        \singlespacing%
+        \Function{Sample}{$\epsilon_0$}
+            \State{$\delta = 1.0$}
+            \State{%
+                $\epsilon = \left\{
+                    \textsc{RandomSample}\left(\epsilon_0\right)
+                \right\}$}
+            \For{%
+                $i = 1, 2, \mathellipsis, \mathrm{Trials}$
+            }
+                \For{$e \in \epsilon_0$}
+                    \State{$\mathrm{in\_range} = \falselit$}
+                    \For{$e^\prime \in \epsilon$}
+                        \If{$\mathrm{dist}\left(e, e^\prime\right) < \delta$}
+                            \State{$\mathrm{in\_range} = \truelit$}
+                            \State\textbf{break}
+                        \EndIf%
+                        \If{$\neg \mathrm{in\_range}$}
+                            \State{%
+                                $\epsilon = \epsilon \cup \left\{ e \right\}$}
+                        \EndIf%
+                    \EndFor%
+                \EndFor%
+                \If{$\left|\epsilon\right| \geq \eta \left|\epsilon_0\right|$}
+                    \State\textbf{break}
+                \EndIf%
+                \State{$\delta = \zeta\delta$}
+            \EndFor%
+            \State{\Return{$\epsilon$}}
+        \EndFunction%
+    \end{algorithmic}
+    \caption{%
+        The algorithm used to sample the Pareto frontier.
+    }\label{lo:alg:sample}
+\end{figure}
+
+This method is superior to random sampling, because random sampling often
+samples points that are close together, which usually are very similar
+implementations.
 
 We found that with our improvements, the algorithm is significantly faster than
-the original optimization algorithm in \soap, with a 5-fold increase in speed,
-at a cost of less points on the Pareto frontier.
+the original optimization algorithm in Section~\ref{po:sub:discovering} of
+Chapter~\ref{chp:progopt}, with a 5-fold increase in speed, at a cost of a less
+optimal Pareto frontier and fewer points on it.
 
 % \todo{Move this algorithm to Chapter~stropt.}
 % \begin{figure}[ht]
@@ -199,7 +268,7 @@ at a cost of less points on the Pareto frontier.
 %         \For{$r \in \mathrm{transformation\_rules}, e \in s$}
 %             \For{%
 %                 $e^\prime \text{~where~}
-%                     e \stackrel{r}{\rightsquigarrow} e^\prime$
+%                     e \stackrel{r}{\eqgenrel} e^\prime$
 %             }
 %                 \State{%
 %                     $s^{\prime\prime} \gets
@@ -215,116 +284,107 @@ at a cost of less points on the Pareto frontier.
 %         The algorithm we used for the efficient discovery of equivalent
 %         structures in \glspl{mir}.
 %     }
-%     \label{lo:alg:optimize}
 % \end{figure}
+
 
 \subsection{Transformation Rules}
 \label{lo:sub:transformation_rules}
 
-This section details the transformation rules used in our structural
-optimization algorithm in Figure~\ref{lo:alg:optimize}.  These transformation
-rules, each on its own is not revolutionary, but for the first time, we bring
-them together to show a much better automatic structural optimization on the
-latency, resource usage and accuracy of numerical programs, than using only a
-subset of them.
-
+This section details the new transformation rules in the equivalence relation
+$\equiv$ and consequently in the structural optimization relation $\eqgenrel$.
+Each transformation rule on its own is not revolutionary, but for the
+first time, they are used in tandem with arithmetic rules and control-flow
+restructuring rules introduced respectively in Chapters~\ref{chp:stropt}
+and~\ref{chp:progopt}.  This enables a much better automatic structural
+optimization on the latency, resource usage and accuracy of numerical programs,
+than is possible using only a subset of them.
 \begin{table}[t]
-\newcommand\tstack[1]{\begin{tabular}[t]{@{}l@{}}#1\end{tabular}}
-    \centering
-\begin{tabular}{@{}l@{~~~}l@{}}
-\hline
-\multicolumn{2}{c}{\textbf{Arithmetic Rules}}
-\\\hline
-\emph{Associativity} & \texttt{(a + b) + c} $~\rightsquigarrow~$ {\tt a + (b +
-c)}
-\\\hline
-\emph{Commutativity} & \texttt{a + b} $~\rightsquigarrow~$ \texttt{b + a}
-\\\hline
-\emph{Distributivity} & \texttt{(a + b) * c} $~\rightsquigarrow~$ \texttt{a * c + b * c}
-\\\hline
-\emph{Negation} & \texttt{a - b} $~\rightsquigarrow~$ \texttt{a + (-b)}
-\\\hline
-\emph{Subtraction} & \texttt{(a + b) - (a + b)} $~\rightsquigarrow~$ \texttt{0}
-\\\hline
-\emph{Const.\ prop.} & \texttt{(a * b + c / d) * 0} $~\rightsquigarrow~$ \texttt{0}
-\\\hline
-\emph{Division} & \texttt{a / (5 / b)} $~\rightsquigarrow~$ \texttt{a * b * 0.2}
-\\\hline\hline
-\multicolumn{2}{c}{\textbf{Control Flow Restructuring Rules}}
-\\\hline
-\emph{Partial loop unrolling} & \tstack{\texttt{for(i=0;i<1000;i++)\string{C\textsubscript{i};\string}} $~\rightsquigarrow~$ \\ \texttt{for(i=0;i<1000;i+=2)\string{C\textsubscript{i}; C\textsubscript{i+1};\string}}}
-\\\hline\hline
-\multicolumn{2}{c}{\textbf{Access Reduction Rules}}
-\\\hline
-\emph{Multiple reads} & \texttt{x=A[i-{}-]; y=A[i+1];} $~\rightsquigarrow~$ \texttt{x=A[i-{}-]; y=x;}
-\\\hline
-\emph{Multiple writes} & \texttt{A[i++]=x; A[i-1]=y;} $~\rightsquigarrow~$ \texttt{A[i++]=y;}
-\\\hline
-\emph{Read after write} & \texttt{A[i++]=x; y=A[i-1];} $~\rightsquigarrow~$ \texttt{A[i++]=x; y=x;}
-\\\hline
-\emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) & \texttt{A[i]=x; y=A[j];} $~\rightsquigarrow~$ \texttt{y=A[j]; A[i]=x;}
-\\\hline
-\end{tabular}
-\caption{%
-    Before-and-after examples to demonstrate the transformation rules
-    we used. The arithmetic and control flow rules are inherited from
-    Chapter~\ref{chp:progopt}; the access reduction rules are introduced in
-    this work.}\label{lo:tab:rules}
+    \caption{%
+        Before-and-after examples to demonstrate the access reduction rules
+        introduced in this chapter.}\label{lo:tab:rules}
+    \newcommand\tstack[1]{\begin{tabular}[t]{@{}l@{}}#1\end{tabular}}
+        \centering
+    \begin{tabular}{@{}l@{~~~}l@{}}
+        \hline
+        \multicolumn{2}{c}{\textbf{Access Reduction Rules}}
+        \\\hline
+        \emph{Multiple reads} &
+            \texttt{x=A[i-{}-]; y=A[i+1];} $~\eqgenrel~$
+            \texttt{x=A[i-{}-]; y=x;}
+        \\\hline
+        \emph{Multiple writes} &
+            \texttt{A[i++]=x; A[i-1]=y;} $~\eqgenrel~$
+            \texttt{A[i++]=y;}
+        \\\hline
+        \emph{Read after write} &
+            \texttt{A[i++]=x; y=A[i-1];} $~\eqgenrel~$
+            \texttt{A[i++]=x; y=x;}
+        \\\hline
+        \emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) &
+            \texttt{A[i]=x; y=A[j];} $~\eqgenrel~$
+            \texttt{y=A[j]; A[i]=x;}
+        \\\hline
+    \end{tabular}
 \end{table}
 
-\soap{} provides a range of equivalence rules that are used in the
-optimization, such as associativity, distributivity, commutativity, constant
-propagation, and partial loop unrolling.  In Table~\ref{lo:tab:rules}, we list
-those rules that proved effective when minimizing loop latencies.  Although
-these rules are used to transform \glspl{mir}, we present before-and-after
-examples written in C to allow the effect of each rule to be readily
-understand.
+In Chapters~\ref{chp:stropt} and~\ref{chp:progopt}, \soap{} provides a range
+of equivalence rules that are used in the optimization, such as associativity,
+distributivity, commutativity, constant propagation, and partial loop
+unrolling.  In Table~\ref{lo:tab:rules}, we list those rules that proved
+effective when minimizing loop latencies.  Although these rules are used to
+transform \glspl{mir}, we present before-and-after examples written in C to
+allow the effect of each rule to be readily understood.
 
 Our new rules, the access reduction rules, with formal definitions below and
-examples in Table~\ref{lo:tab:rules}, remove extraneous data dependences that
+examples in Table~\ref{lo:tab:rules}, remove extraneous data-dependences that
 arise after partial unrolling.  These rules, along with partial loop unrolling,
 mostly do not really impact latency, because they are very well studied in
-polyhedral compilation, and tools such as \gls{vhls} can make use of them
-automatically.  However, they give the necessary freedom to arithmetic rules
-to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
-\bar{j}$ are subscripts, and $e, e^\prime$ are expressions:
+polyhedral loop dependence analysis, and tools such as \gls{vhls} can make use
+of them automatically.  However, they give the necessary freedom to arithmetic
+rules to affect latency.  The rules are as follows, where $A$ is an array,
+$\bar{\imath}, \bar{\jmath}$ are subscripts, and $e, e^\prime$ are expressions:
 \begin{itemize}
 
-    \item \emph{Multiple reads}, eliminates the second of two reads of the same
-    location.  It arises naturally from the \gls{mir}, as common subexpressions
-    are shared.
+    \item \emph{Multiple reads}, eliminates the second of two reads of the
+    same location.  This arises naturally from the \gls{mir}, as common
+    subexpressions are shared.
 
     \item \emph{Multiple writes}, eliminates a write that is overwritten:
+    \vspace{-11pt}
     \begin{equation}
-        \update{\update{A}{\bar{i}}{e}}{\bar{i}}{e^\prime}
-            \rightsquigarrow \update{A}{\bar{i}}{e^\prime}
+        \update{\update{A}{\bar{\imath}}{e}}{\bar{\imath}}{e^\prime}
+            \eqgenrel \update{A}{\bar{\imath}}{e^\prime}.
     \end{equation}
 
     \item \emph{Read after write}, eliminates a read from a location
     that has just been written:
+    \vspace{-11pt}
     \begin{equation}
-        \access{\update{A}{\bar{i}}{e}}{\bar{i}} \rightsquigarrow e
+        \access{\update{A}{\bar{\imath}}{e}}{\bar{\imath}} \eqgenrel e.
     \end{equation}
 
     \item \emph{Independent accesses}, allows two array operations to be
     reordered if it can be proved that they never access the same location:
+    \vspace{-11pt}
     \begin{equation}
-        \access{\update{A}{\bar{i}}{e}}{\bar{j}}
-            \rightsquigarrow \access{A}{\bar{j}},
-        \text{if~} \bar{i} \not\equiv \bar{j}
+        \access{\update{A}{\bar{\imath}}{e}}{\bar{\jmath}}
+            \eqgenrel \access{A}{\bar{\jmath}},
+        \text{if~} \bar{\imath} \not\equiv \bar{\jmath}.
     \end{equation}
-    We visualize this rule also in the following sample \gls{mir}
-    transformation:
-    \begin{equation}
-        \label{lo:eq:indep_reads_mir}
+    We also visualize this rule in Figure~\ref{lo:fig:indep_example}, which
+    shows a sample \gls{mir} transformation.
+\end{itemize}
+
+\begin{figure}[ht]
+    \begin{equation*}
         \begin{tikzpicture}[mir]
             \node[mirnode] (var_y) at (0,0) {\texttt{y}};
             \node[mirnode] (access)[right=of var_y] {$\accessop$};
-            \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {\texttt{j}};
-            \node[mirnode] (update)[below left=of access, xshift=6mm] {$\updateop$};
+            \node[mirnode] (j1)    [below right=of access] {\texttt{j}};
+            \node[mirnode] (update)[below left=of access] {$\updateop$};
             \node[mirnode] (var_A) [left=of update] {\texttt{A}};
             \node[mirnode] (a2)    [below left=of update] {\texttt{A}};
-            \node[mirnode] (i2)    [below=of update] {\texttt{i}};
+            \node[mirnodealt] (i2) [below=5mm of update] {\texttt{i}};
             \node[mirnode] (x2)    [below right=of update] {\texttt{x}};
 
             \draw[|->] (var_y) -- (access);
@@ -336,62 +396,65 @@ to affect latency.  The rules are as follows, where $A$ is an array, $\bar{i},
             \draw[<-] (update) -- (a2);
             \brackets{(current bounding box)}
         \end{tikzpicture}
-        \rightsquigarrow
+        \eqgenrel
         \begin{tikzpicture}[mir]
             \node[mirnode] (var_y) at (0,0) {\texttt{y}};
             \node[mirnode] (access)[right=of var_y] {$\accessop$};
-            \node[mirnode] (j1)    [below right=of access, xshift=-2mm] {\texttt{j}};
+            \node[mirnode] (j1)    [below right=of access] {\texttt{j}};
             \node[mirnode] (update)[below left=of access] {$\updateop$};
             \node[mirnode] (var_A) [left=of update] {\texttt{A}};
             \node[mirnode] (a2)    [below left=of update] {\texttt{A}};
-            \node[mirnode] (i2)    [below=of update] {\texttt{i}};
+            \node[mirnodealt] (i2) [below=5mm of update] {\texttt{i}};
             \node[mirnode] (x2)    [below right=of update] {\texttt{x}};
 
             \draw[|->] (var_y) -- (access);
             \draw[|->] (var_A) -- (update);
             \draw[<-] (access) -- (j1);
-            \draw[<-] (access) to[bend left=20] (a2);
             \draw[<-] (update) -- (x2);
             \draw[<-] (update) -- (i2);
             \draw[<-] (update) -- (a2);
+            \draw[<-, channel] (access) to[bend left=30] (a2);
             \brackets{(current bounding box)}
         \end{tikzpicture}
-    \end{equation}
-
-\end{itemize}
+    \end{equation*}
+    \caption{%
+        A sample \gls{mir} transformation using the \emph{independent accesses}
+        rule.
+    }\label{lo:fig:indep_example}
+\end{figure}
 
 These rules may not seem powerful on their own, but when combined with other
 structural rules, they enable our tool to detect dependences that can be
-removed in the \gls{mir}\@.  This could in turn allow more opportunities
-for the rules to further reduce loop latency.  By way of illustration, we
-optimize the following program for latency, which computes a Fibonacci series
-generalized to real numbers:
-\begin{lstlisting}
-    for (int i = 2; i < 1023; i++)
-        A[i] = A[i - 1] + A[i - 2];
-\end{lstlisting}
-If we simply partially unroll this loop, we can see that because of the
-rigid array access pattern, associativity cannot be applied easily to the
-loop kernel.
-\begin{lstlisting}
-    for (int i = 2; i < 1023; i++) {
-        A[i] = A[i - 1] + A[i - 2];
-        A[i + 1] = A[i] + A[i - 1];
-    }
-\end{lstlisting}
-By applying the above access reduction rules first, we give associativity the
-freedom to reduces latency by half and improves accuracy by 50\%:
-\begin{lstlisting}
+removed in the \gls{mir}\@.  This in turn allows more opportunities for the
+rules to further reduce loop latency.  By way of illustration, we optimize
+the Fibonacci series example program in Figure~\ref{lo:fig:fib} for latency.
+By partially unrolling the loop with a factor 2, we obtain the program in
+Figure~\ref{lo:fig:fib2}.  We can see that because of the rigid array access
+pattern, associativity cannot be applied easily to the loop kernel.  However,
+by applying the above access reduction rules first, we give associativity the
+freedom to reduces latency by half and improves accuracy by 50\%, as shown in
+Figure~\ref{lo:lst:fib_opt}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{lstlisting}
     for (int i = 2; i < 1023; i += 2) {
-        float t1 = A[i - 1], t2 = A[i - 2];
-        A[i] = t1 + t2;
-        A[i + 1] = 2 * t1 + t2;
+        float t2 = A[i - 2], t3 = A[i - 3];
+        A[i - 1] = t2 + t3;
+        A[i] = 2 * t2 + t3;
     }
-\end{lstlisting}
-Therefore, without the above access reduction rules, it is not possible to
-reach this optimized implementation.  Conversely, it is not possible to relax
-scheduling constraints due to inter-iteration dependences without arithmetic
-equivalence rules, as these reduction rules are there to assist transformation
-rules that could really make a difference in latency.  Therefore all these
-rules in Table~\ref{lo:tab:rules} are essential to the optimization of latency
-in numerical programs.
+    \end{lstlisting}
+    \caption{%
+        The optimized program that computes the Fibonacci sequence.  It reduces
+        latency of the original in Figure~\ref{lo:fig:fib} by half and improves
+        accuracy by 50\%.
+    }\label{lo:lst:fib_opt}
+\end{figure}
+
+Without the above access reduction rules, it is therefore not possible to
+reach this optimized implementation.  Conversely, it is not possible to
+relax scheduling constraints due to inter-iteration dependences without
+arithmetic equivalence rules, as these reduction rules are there to assist
+transformation rules that make a difference in latency.  Therefore the rules
+in Table~\ref{lo:tab:rules} must be used in conjunction with arithmetic and
+control-flow rules to optimize latency in numerical programs.

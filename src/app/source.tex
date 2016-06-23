@@ -11,7 +11,7 @@ contains the source code of the benchmark suite used.
 #pragma soap out x
 
 while (x > 1.0) {
-    x = 0.9 * x;
+    x = 0.9f * x;
 }
 \end{lstlisting}
 \caption{\texttt{simple}}
@@ -125,7 +125,7 @@ for (int i = 0; i < N; i = i + 1) {
     float x[100] = [0.0, 1.0], float z[100] = [0.0, 1.0]
 #pragma soap out q
 
-float q = 0.0;
+float q = 0.0f;
 for (int k = 0; k < N; k++) {
     q = q + z[k] * x[k];
 }
@@ -168,7 +168,6 @@ for ( l=1 ; l<=loop ; l++ ) {
 int i; int j; int k;
 float alpha = 32412;
 float beta = 2123;
-
 for (i = 0; i < N; i++)
     for (j = 0; j < N; j++) {
         tmp[i][j] = 0;
@@ -251,9 +250,7 @@ for (i = 0; i < N; i++) {
     float p[N] = [0.0, 1.0], float r[N] = [0.0, 1.0]
 #pragma soap out q
 
-
 int i; int j;
-
 for (i = 0; i < N; i++)
     s[i] = 0;
 for (i = 0; i < N; i++)
@@ -282,7 +279,6 @@ for (i = 0; i < N; i++)
 int i; int j; int k;
 float alpha = 32412;
 float beta = 2123;
-
 for (i = 0; i < N; i++)
     for (j = 0; j < N; j++) {
         C[i][j] *= beta;
@@ -309,14 +305,11 @@ for (i = 0; i < N; i++)
 int i; int j;
 float alpha = 43532;
 float beta = 12313;
-
 for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
         x[i] = x[i] + beta * A[j][i] * y[j];
-
 for (i = 0; i < N; i++)
     x[i] = x[i] + z[i];
-
 for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
         w[i] = w[i] +  alpha * A[i][j] * x[j];

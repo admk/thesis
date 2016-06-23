@@ -21,7 +21,7 @@ equations.
 \end{lstlisting}
     \caption{%
         An excerpt from the Seidel stencil~\cite{polybench}.  The
-        inter-iteration data dependence of the innermost loop is underlined
+        inter-iteration data-dependence of the innermost loop is underlined
         ($\barr{A}{i}{j}$ and $\barr{A}{i}{j-1}$).
     }\label{lo:fig:seidel_prog}
 \end{figure}
@@ -49,12 +49,12 @@ usage remains roughly the same.
 
 However, as mentioned in Section~\ref{bg:sec:discovering_equivalent_programs}
 of Chapter~\ref{chp:background}, \gls{vhls}'s \gls{eb} has two shortcomings.
-Firstly, it is not aware of the inter-iteration data dependence and misses the
+Firstly, it is not aware of the inter-iteration data-dependence and misses the
 opportunity to further pipeline this loop.  Secondly, and most importantly,
 \gls{vhls} does not guarantee that this optimization will not result in
 catastrophic numerical inaccuracies.
 
-We further discovered that if the loop is partially unrolled, \gls{vhls}'s
+We further discover that if the loop is partially unrolled, \gls{vhls}'s
 \gls{eb} did not improve the total run time, despite using a lot more
 resources.  Additionally, \gls{eb} only makes use of associativity, but
 not other equivalence rules.  These limitations pose great restrictions on
@@ -62,13 +62,13 @@ not other equivalence rules.  These limitations pose great restrictions on
 
 We then use the enhanced \soap~of this chapter to automatically discover
 equivalent programs from the program in Figure~\ref{lo:fig:seidel_prog}.
-Because our tool explores a large number of paths that lead to a Pareto
-frontier of implementations, here we illustrate one of the many paths that
-could be taken by minimizing latency, while trying to optimize accuracy and
-resource usage.  By using just arithmetic equivalences, our tool specifically
-applies transformations to alleviate the constraints on the inter-iteration
-dependence, and discovers that the innermost loop can be rewritten to minimize
-latency as shown in Figure~\ref{lo:fig:seidel_prog_2}.
+Because \soap~explores a large number of paths that lead to a Pareto frontier
+of implementations, here we illustrate one of the many paths that could be
+taken by minimizing latency, while trying to optimize accuracy and resource
+usage.  By using just arithmetic equivalences, \soap~specifically applies
+transformations to alleviate the constraints on the inter-iteration dependence,
+and discovers that the innermost loop can be rewritten to minimize latency as
+shown in Figure~\ref{lo:fig:seidel_prog_2}.
 
 \begin{figure}[ht]
 \begin{lstlisting}
@@ -80,7 +80,7 @@ latency as shown in Figure~\ref{lo:fig:seidel_prog_2}.
     \label{lo:fig:seidel_prog_2}
 \end{figure}
 
-Although this loop still has a data dependence between consecutive iterations,
+Although this loop still has a data-dependence between consecutive iterations,
 this transformation greatly reduces latency because most of the loop iterations
 can now be overlapped.  We find that this simple transformation can reduce
 $\II$ to 19, which speeds up the original program by 2.3$\times$, using almost
@@ -88,7 +88,7 @@ the same number of \glspl{lut} and \gls{dsp} elements as the original program.
 At the same time, the sequence of additions are now reordered to minimize
 round-off errors, improving the accuracy by 18\%.
 
-Our tool also supports more complex control-flow restructuring transformations,
+\soap~also supports more complex control-flow restructuring transformations,
 such as partial loop unrolling, in tandem with rules that optimize memory
 accesses and arithmetic calculations.  This can further reduce the loop's
 latency.  In this example, unrolling the loop by a factor of two (\ie~updating
@@ -118,13 +118,13 @@ Further increasing the optimization effort, which enables the loop to be
 deeper partially unrolled, leads to a program that is 7$\times$ faster
 than the original, but uses 2.8$\times$ \glspl{lut}.  To summarize, in
 Table~\ref{lo:tab:seidel_results}, we compare \gls{vhls} with \gls{eb}, against
-one of the many implementations that we have explored using our tool with
-the increased optimization effort.  The three columns respectively shows the
+one of the many implementations that we have explored using \soap~with the
+increased optimization effort.  The three columns respectively shows the
 original program with loop pipelining enabled, what \gls{vhls} can achieve
-alone, and the capability of our tool.  It is important to note that the
-round-off error is unknown for \gls{vhls} with \gls{eb}, because it cannot
-predict the impact of its unsafe optimizations on accuracy.  We performed
-place-and-route for exact statistics.
+alone, and the capability of \soap.  It is important to note that the round-off
+error is unknown for \gls{vhls} with \gls{eb}, because it cannot predict the
+impact of its unsafe optimizations on accuracy.  We performed place-and-route
+for exact statistics.
 
 \begin{table}[ht]
     \centering
@@ -148,12 +148,8 @@ place-and-route for exact statistics.
         \multicolumn{1}{c||}{} &
         \multicolumn{1}{c|}{\text{\gls{vhls}}} &
         \multicolumn{1}{c|}{\text{\gls{vhls} with \gls{eb}}} &
-        \multicolumn{1}{c}{\text{\gls{vhls} with \soap}} \\
-
-        % & &
-        % \multicolumn{1}{c|}{\text{with \gls{eb}}} &
-        % \multicolumn{1}{c}{\text{with our tool}} \\
-        \hline\hline
+        \multicolumn{1}{c}{\text{\gls{vhls} with \soap}}
+        \\ \hline\hline
 
         \text{Clock period (ns)} &
         2.60 & 2.65 & 2.66 \\ \hline

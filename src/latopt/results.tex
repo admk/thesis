@@ -4,8 +4,11 @@
 \newcommand\redcircle{%
 \begin{tikzpicture}\draw[red] (0,0) circle (1mm);\end{tikzpicture}}
 
+
 \subsection{Method}
-We have evaluated our tool on a suite of benchmark examples that consists of
+\label{lo:sub:method}
+
+We have evaluated our tool on a suite of benchmark examples which consists of
 several applications that have recurring inter-iteration dependences:
 \begin{itemize}
 
@@ -25,107 +28,139 @@ computation (\verb|seidel|), and symmetric rank-2k operations
 \end{itemize}
 
 All elements of input arrays and matrices are set to be single-precision
-floating-point values bounded by 0 and 1.  We optimized all of these benchmark
-examples using our tool, specifically targeting the Xilinx Virtex7 device
-running at 333~MHz, for the three objectives of accuracy, resource utilization
-and latency simultaneously.  We then used \gls{vhls} 2015.2~\cite{vivado_hls}
-to synthesize the resulting optimized programs into \gls{rtl} implementations
-for exact latency information, and performed place-and-route using Vivado
-Design Suite 2015.2~\cite{vivado_ds}, to obtain exact resource utilization
-statistics.  Our tool produces a three-dimensional Pareto frontier for each
-program.
+floating-point values between $0$ and $1$.  We optimized all of these
+benchmark examples using our tool, specifically targeting the Xilinx Virtex7
+device running at $333~\mathrm{MHz}$, for the three objectives of accuracy,
+resource utilization and latency simultaneously.  We then used \gls{vhls}
+2015.2~\cite{vivado_hls} to synthesize the resulting optimized programs
+into \gls{rtl} implementations for exact latency information, and performed
+place-and-route using Vivado Design Suite 2015.2~\cite{vivado_ds}, to
+obtain exact resource utilization statistics.  Finally, \soap~produces a
+four-dimensional Pareto frontier for each program, where the dimensions are
+accuracy, latency, the number of \glspl{lut} and \gls{dsp} element count, for
+clarity we visualize the results in three dimensions only.
 
 \subsection{Results}
-
-\begin{table}[t]
-    \centering
-\scriptsize
-    %\includegraphics[width=\linewidth]{results}
-
-\renewcommand\arraycolsep{0.45mm}
-\newcommand\unitk{\,\text{k}}
-\newcommand\unitm{\,\text{m}}
-\newcommand\unitmu{\,\text{\textmu}}
-\newcommand\unitM{\,\text{M}}
-\newcommand\unitG{\,\text{G}}
-\newcommand\Mid[1]{\multirow{2}*{$#1$}}
-\newcommand\Shade{\cellcolor{black!10}}
-\newcommand\name[1]{\texttt{\scriptsize #1}}
-$\begin{array}{l|r|r|r|r|r|r|r|r|r}
-  \multicolumn{1}{c|}{\text{Name}} & \multicolumn{1}{c|}{\text{\glspl{dsp}}} & \multicolumn{2}{c|}{\text{\glspl{lut}}} & \multicolumn{2}{c|}{\text{Error}} & \multicolumn{1}{c|}{\text{Clock}} & \multicolumn{3}{c}{\text{Latency}}
-\\
-& & & \multicolumn{1}{c|}{\text{ratio}} & &
-\multicolumn{1}{c|}{\text{ratio}} & \multicolumn{1}{c|}{\text{(ns)}} & \multicolumn{1}{c|}{\text{(cycles)}} & \multicolumn{1}{c|}{\text{(s)}} &
-\multicolumn{1}{c}{\text{ratio}}
-\\ \hline
-\Mid{\name{sum}} & 2 & 303 & \Mid{0.257} & 914\unitmu & \Mid{7.93} & 2.54 & 41.0\unitk
-& 104\unitmu & \Mid{12.8} \\
-& \Shade 4 & \Shade 1181 & & \Shade 1.15\unitmu & & \Shade 2.54 & \Shade 3.21\unitk & \Shade 8.17\unitmu &
-\\ \hline
-\Mid{\name{dotprod}} & 5 & 411 & \Mid{0.231} & 926\unitmu & \Mid{7.29} & 2.54 &
-41.0\unitk & 104\unitmu & \Mid{12.4} \\
-& \Shade 10 & \Shade 1781 & & \Shade 127\unitmu & & \Shade 2.62 & \Shade
-3.23\unitk & \Shade 8.44\unitmu &
-\\ \hline
-\Mid{\name{tridiag}} & 5 & 470 & \Mid{0.288} & 63.1\unitmu & \Mid{1.06} & 2.54 &
-17.8\unitM & 45.3\unitm & \Mid{3.41} \\
-& \Shade 8 & \Shade 1631 & & \Shade 59.4\unitmu & & \Shade 2.69 & \Shade 4.93\unitM & \Shade 13.3\unitm &
-\\ \hline
-\Mid{\name{2mm}} & 5 & 781 & \Mid{0.385} & 209 & \Mid{3.40} & 2.79 & 20.4\unitG & 57.0
-& \Mid{7.46} \\
-& \Shade 8 & \Shade 2029 & & \Shade 61.4 & & \Shade 2.92 & \Shade 2.62\unitG & \Shade 7.64 &
-\\ \hline
-\Mid{\name{3mm}} & 5 & 760 & \Mid{0.207} & 114 & \Mid{6.76} & 2.55 & 32.3\unitG & 82.3 &
-\Mid{9.13} \\
-& \Shade 10 & \Shade 3677 & & \Shade 16.9 & & \Shade 2.82 & \Shade 3.19\unitG & \Shade 9.01 &
-\\ \hline
-\Mid{\name{atax}} & 5 & 627 & \Mid{0.507} & 353\unitm & \Mid{1.54} & 2.60 & 176\unitM
-& 457\unitm & \Mid{5.42} \\
-& \Shade 5 & \Shade 1237 & & \Shade 230\unitm & & \Shade 2.61 & \Shade
-32.4\unitM & \Shade 84.3\unitm &
-\\ \hline
-\Mid{\name{bicg}} & 5 & 427 & \Mid{0.304} & 887\unitmu & \Mid{6.72} & 2.54 & 160\unitM &
-407\unitm & \Mid{8.98} \\
-& \Shade 5 & \Shade 1406 & & \Shade 132\unitmu & & \Shade 2.78 & \Shade 16.3\unitM & \Shade 45.3\unitm &
-\\ \hline
-\Mid{\name{gemm}} & 5 & 524 & \Mid{0.234} & 1.99 & \Mid{2.97} & 2.54 & 10.8\unitG &
-27.4 & \Mid{9.13} \\
-& \Shade 10 & \Shade 2240 & & \Shade 0.67 & & \Shade 2.69 & \Shade 1.12\unitG & \Shade 3.00 &
-\\ \hline
-\Mid{\name{seidel}} & 5 & 620 & \Mid{0.349} & 10.7\unitmu & \Mid{2.46} & 2.60 & {960}\unitM
-& 2.50 & \Mid{7.16} \\
-& \Shade 8 & \Shade 1778 & & \Shade 4.31\unitmu & & \Shade 2.66 & \Shade {131}\unitM & \Shade 0.349 & \\ \hline
-\Mid{\name{gemver}} & 5 & 809 & \Mid{0.382} & 7.28\unitM & \Mid{4.46} & 2.87 &
-{23.1}\unitM & 66.2\unitm & 3.15 \\
-& \Shade 5 & \Shade 2120 & & \Shade 1.63\unitM & & \Shade 2.77 & \Shade {7.60}\unitM & \Shade 2.10\unitm & (8.29)
-\\ \hline
-\Mid{\name{mvt}} & 5 & 701 & \Mid{0.251} & 91.0\unitmu & \Mid{3.32} & 2.56 & {23.1}\unitM &
-59.1\unitm & 7.49 \\
-& \Shade 10 & \Shade 2793 & & \Shade 27.4\unitmu & & \Shade 2.80 & \Shade {2.82}\unitM & \Shade 7.89\unitm & (9.30)
-\\ \hline
-\Mid{\name{syr2k}} & 5 & 709 & \Mid{0.259} & 250\unitmu & \Mid{4.07} & 2.89 & {14.0}\unitG &
-40.3 & 6.95 \\
-& \Shade 10 & \Shade 2740 & & \Shade 61.4\unitmu & & \Shade 2.71 & \Shade {2.14}\unitG & \Shade 5.80 & (7.62)
-\\ \hline
-\multicolumn{3}{r|}{\Mid{\text{Geomean}}} & \Mid{0.289} & & \Mid{3.69} & \multicolumn{3}{r|}{} & 7.19 \\
-\multicolumn{3}{r|}{} & & & & \multicolumn{3}{r|}{} & (8.01)
-\\ \hline
-\end{array}$
-    \caption{%
-        Comparisons of the original (non-shaded rows) and the optimized program
-        with lowest latency (shaded rows), for each benchmark. Values in
-        parentheses are obtained after slightly tweaking our experimental
-        set-up; see Section~\ref{lo:sec:results_discussion}.  We performed
-        place-and-route for exact statistics.
-    }\label{lo:tab:results}
-\end{table}
+\label{lo:sub:results}
 
 Table~\ref{lo:tab:results} compares, for each benchmark in our evaluation
 set, the performance metrics of the original program against those of the
 program with the smallest latency discovered by our tool. We synthesized
 each program to a circuit to obtain exact statistics, which are shown in
 Table~\ref{lo:tab:results}.
-
+\begin{table}[t]
+    \centering
+    % \renewcommand\arraycolsep{0.45mm}
+    \newcommand\unitk{\,\text{k}}
+    \newcommand\unitm{\,\text{m}}
+    \newcommand\unitmu{\,\text{\textmu}}
+    \newcommand\unitM{\,\text{M}}
+    \newcommand\unitG{\,\text{G}}
+    \newcommand\Mid[1]{\multirow{2}*{$#1$}}
+    \newcommand\Shade{\cellcolor{black!10}}
+    \newcommand\name[1]{\texttt{#1}}
+    \caption{%
+        Comparisons of the original (non-shaded rows) and the optimized
+        program with lowest latency (shaded rows), for each benchmark. Values
+        in parentheses are obtained after slightly tweaking our experimental
+        set-up; see Section~\ref{lo:sub:discussion}.  We performed
+        place-and-route for exact statistics.
+    }\label{lo:tab:results}
+    $\begin{array}{l||r|r|r|r|r|r|r|r|r}
+        \hline
+        \multicolumn{1}{c||}{\text{Name}} &
+        \multicolumn{1}{c|}{\text{\glspl{dsp}}} &
+        \multicolumn{2}{c|}{\text{\glspl{lut}}} &
+        \multicolumn{2}{c|}{\text{Error}} &
+        \multicolumn{1}{c|}{\text{Clock}} &
+        \multicolumn{3}{c}{\text{Latency}}
+        \\
+        & & &
+        \multicolumn{1}{c|}{\text{ratio}} & &
+        \multicolumn{1}{c|}{\text{ratio}} &
+        \multicolumn{1}{c|}{\text{(ns)}} &
+        \multicolumn{1}{c|}{\text{(cycles)}} &
+        \multicolumn{1}{c|}{\text{(s)}} &
+        \multicolumn{1}{c}{\text{ratio}}
+        \\ \hline\hline
+        \Mid{\name{sum}} &
+        2 & 303 & \Mid{0.257} & 914\unitmu & \Mid{7.93} &
+        2.54 & 41.0\unitk & 104\unitmu & \Mid{12.8} \\ &
+        \Shade 4 & \Shade 1181 & & \Shade 1.15\unitmu & &
+        \Shade 2.54 & \Shade 3.21\unitk & \Shade 8.17\unitmu &
+        \\ \hline
+        \Mid{\name{dotprod}} &
+        5 & 411 & \Mid{0.231} & 926\unitmu & \Mid{7.29} &
+        2.54 & 41.0\unitk & 104\unitmu & \Mid{12.4} \\ &
+        \Shade 10 & \Shade 1781 & & \Shade 127\unitmu & &
+        \Shade 2.62 & \Shade 3.23\unitk & \Shade 8.44\unitmu &
+        \\ \hline
+        \Mid{\name{tridiag}} &
+        5 & 470 & \Mid{0.288} & 63.1\unitmu & \Mid{1.06} &
+        2.54 & 17.8\unitM & 45.3\unitm & \Mid{3.41} \\ &
+        \Shade 8 & \Shade 1631 & & \Shade 59.4\unitmu & &
+        \Shade 2.69 & \Shade 4.93\unitM & \Shade 13.3\unitm &
+        \\ \hline
+        \Mid{\name{2mm}} &
+        5 & 781 & \Mid{0.385} & 209 & \Mid{3.40} &
+        2.79 & 20.4\unitG & 57.0 & \Mid{7.46} \\ &
+        \Shade 8 & \Shade 2029 & & \Shade 61.4 & &
+        \Shade 2.92 & \Shade 2.62\unitG & \Shade 7.64 &
+        \\ \hline
+        \Mid{\name{3mm}} &
+        5 & 760 & \Mid{0.207} & 114 & \Mid{6.76} &
+        2.55 & 32.3\unitG & 82.3 & \Mid{9.13} \\ &
+        \Shade 10 & \Shade 3677 & & \Shade 16.9 & &
+        \Shade 2.82 & \Shade 3.19\unitG & \Shade 9.01 &
+        \\ \hline
+        \Mid{\name{atax}} &
+        5 & 627 & \Mid{0.507} & 353\unitm & \Mid{1.54} &
+        2.60 & 176\unitM & 457\unitm & \Mid{5.42} \\ &
+        \Shade 5 & \Shade 1237 & & \Shade 230\unitm & &
+        \Shade 2.61 & \Shade 32.4\unitM & \Shade 84.3\unitm &
+        \\ \hline
+        \Mid{\name{bicg}} &
+        5 & 427 & \Mid{0.304} & 887\unitmu & \Mid{6.72} &
+        2.54 & 160\unitM & 407\unitm & \Mid{8.98} \\ &
+        \Shade 5 & \Shade 1406 & & \Shade 132\unitmu & &
+        \Shade 2.78 & \Shade 16.3\unitM & \Shade 45.3\unitm &
+        \\ \hline
+        \Mid{\name{gemm}} &
+        5 & 524 & \Mid{0.234} & 1.99 & \Mid{2.97} &
+        2.54 & 10.8\unitG & 27.4 & \Mid{9.13} \\ &
+        \Shade 10 & \Shade 2240 & & \Shade 0.67 & &
+        \Shade 2.69 & \Shade 1.12\unitG & \Shade 3.00 &
+        \\ \hline
+        \Mid{\name{seidel}} &
+        5 & 620 & \Mid{0.349} & 10.7\unitmu & \Mid{2.46} &
+        2.60 & {960}\unitM & 2.50 & \Mid{7.16} \\ &
+        \Shade 8 & \Shade 1778 & & \Shade 4.31\unitmu & &
+        \Shade 2.66 & \Shade {131}\unitM & \Shade 0.349 &
+        \\ \hline
+        \Mid{\name{gemver}} &
+        5 & 809 & \Mid{0.382} & 7.28\unitM & \Mid{4.46} &
+        2.87 & {23.1}\unitM & 66.2\unitm & 3.15 \\ &
+        \Shade 5 & \Shade 2120 & & \Shade 1.63\unitM & &
+        \Shade 2.77 & \Shade {7.60}\unitM & \Shade 2.10\unitm & (8.29)
+        \\ \hline
+        \Mid{\name{mvt}} &
+        5 & 701 & \Mid{0.251} & 91.0\unitmu & \Mid{3.32} &
+        2.56 & {23.1}\unitM & 59.1\unitm & 7.49 \\ &
+        \Shade 10 & \Shade 2793 & & \Shade 27.4\unitmu & &
+        \Shade 2.80 & \Shade {2.82}\unitM & \Shade 7.89\unitm & (9.30)
+        \\ \hline
+        \Mid{\name{syr2k}} &
+        5 & 709 & \Mid{0.259} & 250\unitmu & \Mid{4.07} &
+        2.89 & {14.0}\unitG & 40.3 & 6.95 \\ &
+        \Shade 10 & \Shade 2740 & & \Shade 61.4\unitmu & &
+        \Shade 2.71 & \Shade {2.14}\unitG & \Shade 5.80 & (7.62)
+        \\ \hline
+        \multicolumn{3}{r|}{\Mid{\text{Geomean}}} &
+        \Mid{0.289} & & \Mid{3.69} & \multicolumn{3}{r|}{} & 7.19 \\
+        \multicolumn{3}{r|}{} & & & & \multicolumn{3}{r|}{} & (8.01)
+        \\ \hline
+    \end{array}$
+\end{table}
 
 \begin{figure}[ht]
     \centering
@@ -297,7 +332,7 @@ three projections simultaneously, and view the corresponding generated C
 programs.
 
 \subsection{Discussion}
-\label{lo:sec:results_discussion}
+\label{lo:sub:discussion}
 
 As demonstrated by Figure~\ref{lo:fig:lat}, our tool generally produces
 accurate latency estimates. However, we have discovered a few notable
@@ -314,7 +349,7 @@ programs reveals that they all share a common programming idiom:
 %
 We found that \gls{vhls} occasionally fails to find the optimal schedule,
 predicted by our tool, that could pipeline this loop as tightly as possible.
-By rewriting the above code into:
+By rewriting the above code into the following:
 %
 \begin{lstlisting}
   for (int i=0; i<N; i++) {
@@ -325,11 +360,6 @@ By rewriting the above code into:
   }
 \end{lstlisting}
 %
-We fix this problem, and enable \gls{vhls} to generate a hardware
+fixes this problem, and enables \gls{vhls} to generate a hardware
 implementation with the expected \gls{ii}. The ratios in parentheses in
 Table~\ref{lo:tab:results} reflect the speedup by performing this simple fix.
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "paper"
-%%% End:

@@ -10,7 +10,7 @@ equivalences (\eg~partial loop unrolling and array access pattern changes) are
 highly ubiquitous in their compilation process.
 
 However, their ability to perform pipelining, even with any combinations of
-these equivalences, is fundamentally constrained by data dependences that
+these equivalences, is fundamentally constrained by data-dependences that
 are carried across iterations, \ie~\emph{inter-iteration dependences}.  To
 relax these constraints, we must use equivalence rules in real arithmetic
 (\eg~associativity and distributivity), in tandem with the conventional rules
@@ -25,14 +25,14 @@ This code can be partially unrolled and the sequence of additions can be
 rewritten using tree adders to reduce its latency, but we will see later in
 Section~\ref{lo:sec:results} that more efficient implementations are possible.
 
-In contrast to the expression balancing optimization pass in \gls{vhls},
-our tool \emph{automatically} produces results that are significantly
-better than \emph{manually} tuning partial unrolling factors and expression
-balancing \verb|#pragma|s in \gls{vhls}, because it is fully aware of how
-data dependences are carried across iterations, and uses this to steer the
-optimization process.  Our tool is also fully aware of the impact these
-transformations could have on round-off errors, and minimizes them in the
-optimization process, as we treat numerical accuracy as one of the three
+In contrast to the expression balancing optimization pass in \gls{vhls}, the
+new \soap~in this chapter \emph{automatically} produces results that are
+significantly better than \emph{manually} tuning partial unrolling factors
+and expression balancing \verb|#pragma|s in \gls{vhls}, because it is fully
+aware of how data-dependences are carried across iterations, and uses this
+to steer the optimization process. \soap~is also fully aware of the impact
+these transformations could have on round-off errors, and minimizes them in
+the optimization process, as we treat numerical accuracy as one of the three
 simultaneous objectives.  Furthermore, \gls{vhls} only generates one result
 which does not necessarily improve over the original code.
 
@@ -56,7 +56,7 @@ algorithm~\cite{rau94}, which efficiently analyze the run time and resource
 utilization of a given program, by computing fundamental lower bounds of these
 metrics.
 
-We evaluated our tool on a suite of 11 programs from the Livermore
+\soap~is evaluated on a suite of 11 programs from the Livermore
 Loops~\cite{livermore} and PolyBench~\cite{polybench} benchmark suites.  Our
 tool obtained a wide selection of Pareto-optimized programs.  Programs with
 the best latency obtained speedups of up to $12\times$ ($7\times$ on average
@@ -76,17 +76,17 @@ The contributions of this chapter include:
     \eg~arithmetic rules, to significantly impact latency, resource usage and
     accuracy in a loop (Section~\ref{lo:sub:transformation_rules}).
 
-    \item The performance of the efficient discovery of equivalent
-    programs is significantly improved through a faster accuracy
-    analysis (Section~\ref{lo:sub:accuracy_analysis}), graph
-    partitioning, and intelligent pruning of optimization candidates
-    (Section~\ref{lo:sub:algorithm}).
-
     \item A new scheduling analysis that estimates the
     latency and resource usage of a given optimized candidate
     (Section~\ref{lo:sec:performance_analysis}).  The resource usage analysis
     not only identifies common subexpressions, but also opportunities to share
     arithmetic operations temporally.
+
+    \item A significantly faster efficient discovery of equivalent programs
+    through a faster accuracy analysis that make use of the above scheduling
+    analysis for dependence checking (Section~\ref{lo:sub:accuracy}),
+    graph partitioning, and intelligent pruning of optimization candidates
+    (Section~\ref{lo:sub:algorithm}).
 
     \item Incorporating the above-mentioned techniques, \soap{} is now
     capable of \emph{automatically} and \emph{safely} producing optimized

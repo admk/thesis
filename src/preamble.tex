@@ -242,8 +242,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
     \node[mirnode] (op) at (0, 0) {#1};
     \node[mirnode] (a1) [below left=of op] {#2};
     \node[mirnode] (a2) [below right=of op] {#3};
-    \draw[-] (op) -- (a1);
-    \draw[-] (op) -- (a2);
+    \draw[<-] (op) -- (a1);
+    \draw[<-] (op) -- (a2);
 }}
 \newcommand{\ternarymir}[4]{%
 \tikz[mir, text height=0]{
@@ -251,11 +251,13 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
     \node[mirnode] (a1) [below left=of op] {#2};
     \node[mirnode] (a2) [below=of op] {#3};
     \node[mirnode] (a3) [below right=of op] {#4};
-    \draw[-] (op) -- (a1);
-    \draw[-] (op) -- (a2);
-    \draw[-] (op) -- (a3);
+    \draw[<-] (op) -- (a1);
+    \draw[<-] (op) -- (a2);
+    \draw[<-] (op) -- (a3);
 }}
-\newcommand{\binopset}{\ensuremath\mathbf{BinOp}}
+\newcommand{\opset}{\ensuremath\mathbf{Op}}
+\newcommand{\aopset}{\ensuremath\mathbf{AOp}}
+\newcommand{\binaopset}{\ensuremath\mathbf{BinAOp}}
 \newcommand{\dotop}{\ensuremath\mathbin{.}}
 \newcommand{\qop}{\ensuremath\mathbin{?}}
 \newcommand{\colonop}{\ensuremath\mathbin{:}}
@@ -291,7 +293,7 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 
 % equivalent relations
 \newcommand{\eqrel}{\ensuremath\equiv}
-\newcommand{\eqgenrel}{\ensuremath\mathbin{\rhd}}
+\newcommand{\eqgenrel}{\ensuremath\mathbin{\rightsquigarrow}}
 
 % optimization
 \DeclareMathOperator{\optimize}{\mathsf{O}}
@@ -304,7 +306,8 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 \newcommand{\loopexit}{\sigma^\sharp_\textrm{LE}}
 
 % latency
-\newcommand\pair[2]{\footnotesize $#1,#2$}
+\newcommand\pair[2]{\ensuremath\langle{#1},{#2}\rangle}
+\newcommand\smallpair[2]{\footnotesize$\pair{#1}{#2}$}
 \newcommand\II{\mathrm{II}}
 \newcommand\MII{\mathrm{MII}}
 \newcommand\RecMII{\mathrm{RecMII}}
@@ -342,11 +345,18 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
       line width = 1.8pt,
       double distance = 0.8pt
   },
-  channel/.style = {%
-      white,
-      double = black,
-      line width = 0.8pt,
-      double distance = 0.4pt
+  % channel/.style = {%
+      % white,
+      % double = black,
+      % line width = 0.8pt,
+      % double distance = 0.4pt
+  % },
+  channel/.style = {
+      preaction = {
+          -,
+          draw = white,
+          line width = 2pt
+      },
   },
   o/.style={
       shorten >=#1,

@@ -38,8 +38,9 @@ of all benchmark examples below.
     case study in~\cite{damouche14} as their motivation of automated accuracy
     optimization of numerical programs, we make it more challenging by changing
     constant coefficients to be bounds to model not only one, but a large
-    selection of \gls{pid} controllers, with $kp \in [9.0, 10.0]$, $ki \in
-    [0.5, 0.7]$ and $kd \in [0, 3]$, and an iteration count $n \in [0, 20]$.
+    selection of \gls{pid} controllers, with $\mathrm{kp} \in [9.0, 10.0]$,
+    $\mathrm{ki} \in [0.5, 0.7]$ and $\mathrm{kd} \in [0, 3]$, and an iteration
+    count $n \in [0, 20]$.
 
 \end{itemize}
 
@@ -104,7 +105,7 @@ we are able to consistently reduce the resource usage of a plain partial
 loop unrolling by more than 25\%, because our optimization can discover
 subexpression sharing opportunities, propagate constants values, and also
 aggressively reduce the size of expressions by powerful reduction rules such as
-$a - a = 0$ and $0 \times a = 0$.
+$e - e = 0$ and $0 \times e = 0$.
 
 Besides the choices of implementations that are either most accurate or most
 resource efficient, each optimization also offers a wide selection of optimized
