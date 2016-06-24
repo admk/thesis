@@ -249,29 +249,32 @@ to index an element in $A$, $e \in \sexprset$ is an expression, and
 $\sigma^\sharp \in \errordom$ is the input abstract program state (recall from
 Section~\ref{po:sec:accuracy_analysis} of Chapter~\ref{chp:progopt}).
 
-Alternatively, we can view each element in an array as a variable:
+Alternatively, we can view each element $A[i]$, where $i$ is a tuple with $N$
+non-negative integers, in an $N$-dimensional array $A$ as a variable.  Updating
+$A$ thus produces an abstract state which collects all elements in $A$:
 \begin{equation}
     \begin{aligned}
         \exprerrorfunc{\access{A}{\bar\imath}}\sigma^\sharp
         &= \bigsqcup_{i \in \exprerrorfunc{\bar\imath}\sigma^\sharp}
-            \sigma^\sharp \left( A_i \right), \\
+            \sigma^\sharp \left( A[i] \right), \\
         \exprerrorfunc{\update{A}{\bar\imath}{e}}\sigma^\sharp
-        &= \sigma^\sharp \sqcup {\left[
-            A_i \mapsto \exprerrorfunc{e}\sigma^\sharp
+        &= {\left[
+            A[i] \mapsto \sigma^\sharp \left( A[i] \right) \sqcup
+                \exprerrorfunc{e}\sigma^\sharp
         \right]}_{i \in \exprerrorfunc{\bar\imath}\sigma^\sharp},
     \end{aligned}
 \end{equation}
 where $i \in \exprerrorfunc{\bar\imath}\sigma^\sharp$ ranges over all possible
-indices that are integer tuples, and the number of items in the tuple is equal
-to the number of dimensions of $A$, and each $A_i$ is a variable.
+indices that are tuples with $N$ non-negative integers, where $A$ is an
+$N$-dimensional array.
 
-Additionally, because most of the loops in our benchmark programs consist of
-nested loops and have large iterations, we modified the fixpoint analysis
-routine in Section~\ref{po:sub:fixpoint} to analyze only a small fraction
-of the innermost loop execution of a loop nest.  By ensuring the innermost
-loop iterator increments by the same amount, we can guarantee the accuracy
-analysis of each equivalent implementations for fixpoint expressions with
-different unroll factors to be fair.  For the experimental outcomes in
+Additionally, because most of the loops in our benchmark programs consist
+of nested loops and have large iterations, the fixpoint analysis routine
+in Section~\ref{po:sub:fixpoint} is modified to analyze only a small
+fraction of the innermost loop execution of a loop nest.  By ensuring the
+innermost loop iterator increments by the same amount, we can guarantee the
+accuracy analysis to be fair for each equivalent implementation for fixpoint
+expressions with different unroll factors.  For the experimental outcomes in
 Section~\ref{lo:sec:results}, we analyze $10\%$ of the total executions of an
 innermost loop for the purpose of optimization.
 

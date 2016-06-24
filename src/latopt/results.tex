@@ -8,7 +8,7 @@
 \subsection{Method}
 \label{lo:sub:method}
 
-We have evaluated our tool on a suite of benchmark examples which consists of
+We have evaluated \soap~on a suite of benchmark examples which consists of
 several applications that have recurring inter-iteration dependences:
 \begin{itemize}
 
@@ -29,7 +29,7 @@ computation (\verb|seidel|), and symmetric rank-2k operations
 
 All elements of input arrays and matrices are set to be single-precision
 floating-point values between $0$ and $1$.  We optimized all of these
-benchmark examples using our tool, specifically targeting the Xilinx Virtex7
+benchmark examples using \soap, specifically targeting the Xilinx Virtex7
 device running at $333~\mathrm{MHz}$, for the three objectives of accuracy,
 resource utilization and latency simultaneously.  We then used \gls{vhls}
 2015.2~\cite{vivado_hls} to synthesize the resulting optimized programs
@@ -45,7 +45,7 @@ clarity we visualize the results in three dimensions only.
 
 Table~\ref{lo:tab:results} compares, for each benchmark in our evaluation
 set, the performance metrics of the original program against those of the
-program with the smallest latency discovered by our tool. We synthesized
+program with the smallest latency discovered by \soap.  We synthesized
 each program to a circuit to obtain exact statistics, which are shown in
 Table~\ref{lo:tab:results}.
 \begin{table}[t]
@@ -304,25 +304,24 @@ exact latency of synthesized implementations.
 
 Returning to our motivating example from Section~\ref{lo:sec:motivation},
 Figure~\ref{lo:fig:seidel} demonstrates the range of optimized programs
-discovered by our tool when applied to the Seidel stencil loop kernel. In
-the figure, $\times$-points indicate the original program. By using only the
-rules of real arithmetic, our tool finds a more efficient program that can
-improve run time by 2.5$\times$, as shown by the \redcircle-points. However,
-by enabling partial loop unrolling and our dependence elimination rules, the
-performance is further improved, resulting in a 6.7$\times$ reduction of
-total run time.  Furthermore, we have found that numerical accuracy can often
-be optimized at the same time as we optimize the initiation intervals of
-loops. Because by partially unrolling loops, the sizes of the expressions in
-loop grow, which provides our tool a greater freedom in terms of discovering
-more accurate expressions. In this example, the most efficient program is
-also the most accurate one: it minimizes round-off errors by approximately
-2.5$\times$. It is worth noting that our tool can detect that as it explores
-deep levels of partial loop unrolling, we start to see a diminishing return
-in performance as it hits a bottleneck in memory bandwidth.  This is due to
-the fact that \gls{vhls} synthesizes dual port \glspl{ram} for arrays, and in
-one clock cycle we can only read from the memory allocating array twice.  Our
-optimization flow is aware of this bottleneck and stops exploring further loop
-unrolling.
+discovered by \soap{} when applied to the Seidel stencil loop kernel. In the
+figure, $\times$-points indicate the original program. By using only the rules
+of real arithmetic, \soap{} finds a more efficient program that can improve run
+time by 2.5$\times$, as shown by the \redcircle-points. However, by enabling
+partial loop unrolling and our dependence elimination rules, the performance
+is further improved, resulting in a 6.7$\times$ reduction of total run time.
+Furthermore, we have found that numerical accuracy can often be optimized at
+the same time as we optimize the initiation intervals of loops. Because by
+partially unrolling loops, the sizes of the expressions in loop grow, which
+provides \soap{} a greater freedom in terms of discovering more accurate
+expressions. In this example, the most efficient program is also the most
+accurate one: it minimizes round-off errors by approximately 2.5$\times$. It is
+worth noting that \soap{} can detect that as it explores deep levels of partial
+loop unrolling, we start to see a diminishing return in performance as it hits
+a bottleneck in memory bandwidth.  This is due to the fact that \gls{vhls}
+synthesizes dual port \glspl{ram} for arrays, and in one clock cycle we can
+only read from the memory allocating array twice.  Our optimization flow is
+aware of this bottleneck and stops exploring further loop unrolling.
 
 Similar graphs for the other benchmarks can be viewed
 online,\footnote{\url{https://admk.github.io/soap/plot.html}} each showing
@@ -334,9 +333,9 @@ programs.
 \subsection{Discussion}
 \label{lo:sub:discussion}
 
-As demonstrated by Figure~\ref{lo:fig:lat}, our tool generally produces
-accurate latency estimates. However, we have discovered a few notable
-discrepancies. For instance, \verb|gemver|, \verb|mvt| and \verb|syr2k| all
+As demonstrated by Figure~\ref{lo:fig:lat}, \soap{} generally produces
+accurate latency estimates.  However, we have discovered a few notable
+discrepancies.  For instance, \verb|gemver|, \verb|mvt| and \verb|syr2k| all
 have significant differences between our estimated latency and the actual
 latency from synthesized \gls{rtl} implementations.  An inspection of these
 programs reveals that they all share a common programming idiom:
@@ -348,8 +347,8 @@ programs reveals that they all share a common programming idiom:
 \end{lstlisting}
 %
 We found that \gls{vhls} occasionally fails to find the optimal schedule,
-predicted by our tool, that could pipeline this loop as tightly as possible.
-By rewriting the above code into the following:
+predicted by \soap, that could pipeline this loop as tightly as possible.  By
+rewriting the above code into the following:
 %
 \begin{lstlisting}
   for (int i=0; i<N; i++) {

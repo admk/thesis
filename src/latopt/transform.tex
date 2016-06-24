@@ -424,10 +424,10 @@ $\bar{\imath}, \bar{\jmath}$ are subscripts, and $e, e^\prime$ are expressions:
 \end{figure}
 
 These rules may not seem powerful on their own, but when combined with other
-structural rules, they enable our tool to detect dependences that can be
-removed in the \gls{mir}\@.  This in turn allows more opportunities for the
-rules to further reduce loop latency.  By way of illustration, we optimize
-the Fibonacci series example program in Figure~\ref{lo:fig:fib} for latency.
+structural rules, they enable \soap{} to detect dependences that can be removed
+in the \gls{mir}\@.  This in turn allows more opportunities for the rules
+to further reduce loop latency.  By way of illustration, we optimize the
+Fibonacci series example program in Figure~\ref{lo:fig:fib} for latency.
 By partially unrolling the loop with a factor 2, we obtain the program in
 Figure~\ref{lo:fig:fib2}.  We can see that because of the rigid array access
 pattern, associativity cannot be applied easily to the loop kernel.  However,
