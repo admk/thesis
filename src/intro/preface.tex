@@ -2,8 +2,8 @@ As the computational capability of new \gls{fpga} devices grows at an
 exponential rate, numerical applications running on them become increasingly
 more complex.  Traditional design methodologies, working at the \gls{rtl},
 have become increasingly costly, forcing us to work at a higher abstraction
-level~\cite{gajski}, \ie~to implement our designs using high-level languages
-such as C\@.
+level~\cite{gajski}, \eg~to implement our designs using \glspl{hll} such as
+C\@.
 
 There are many reasons why \gls{fpga} implementations of numerical algorithms
 are now best obtained via \gls{hls} from C\@: less development effort, the
@@ -15,13 +15,14 @@ nowadays competitive with hand-crafted designs~\cite{bdti_xilinx}.
 
 Numerical C programs are typically written with floating-point arithmetic,
 following the \emph{IEEE 754 standard} for floating-point computation.
-Floating-point numbers can represent a wide range of real values, and most
-programming languages support it seamlessly.  It has become ubiquitous, and
-is used in most of our software and hardware implementations of numerical
-programs.  Recently, Altera has introduced Arria 10 and Stratix 10 devices to
-incorporate hardened floating-point \gls{dsp} blocks in the \gls{fpga} fabric.
-As a result, we expect to see floating-point arithmetic continuing to dominate
-in the \gls{fpga} implementation of numerical applications.
+Floating-point numbers can represent a wide range of real values, and
+most programming languages support the standard seamlessly.  The standard
+has become ubiquitous, and is used in most of our software and hardware
+implementations of numerical programs.  Recently, Altera has introduced Arria
+10 and Stratix 10 devices to incorporate hardened floating-point \gls{dsp}
+blocks in the \gls{fpga} fabric.  As a result, we expect to see floating-point
+arithmetic continuing to dominate in the \gls{fpga} implementation of numerical
+applications.
 
 Although we make use floating-point arithmetic to implement algorithms,
 generally specified in real arithmetic, in practice, it is often neglected that
@@ -42,9 +43,9 @@ floating-point accuracy being so esoteric, it is challenging for engineers to
 understand the repercussions of switching between ``\verb|(a + b) * c|'' and
 ``\verb|a * c + b * c|'' in their programs.
 
-This numerical implication nevertheless opens the possibility of using
-these rules to generate a program equivalent to the original program in
-real arithmetic, but which could have better quality than the original when
+These numerical properties nevertheless open the possibility of using these
+rules to generate a program equivalent to the original program in real
+arithmetic, but which could have better quality than the original when
 evaluated in floating-point computation.  Experienced engineers often apply
 such expression rewriting intuitions in numerical programs.  For instance,
 when summing a sequence of floating-point values, one can sometimes reduce
@@ -52,8 +53,8 @@ round-off error in the result by summing the inputs in ascending order.  On
 the other hand, one can often reduce latency by applying \emph{expression
 balancing}, \ie~rearranging operators in an expression to construct a balanced
 tree, so that more operators can work in parallel.  These heuristics cover a
-very limited number of possible transformations and may not always improve the
-original code.  A trivial process therefore does not exist to apply steps of
+very limited number of possible transformations and may not always improve
+the original code.  There does not exist a trivial process to apply steps of
 transformations using equivalence rules to \emph{optimally} trade off latency,
 resources and numerical accuracy.
 
@@ -69,8 +70,8 @@ dependences and does not explore partial loop unrolling.  In addition,
 there is no guarantee that this transformation will not result in a
 catastrophically inaccurate implementation.
 
-In response, this thesis proposes new methodologies and the accompanied
-tool---a fully automatic source-to-source optimizer that augments
+In response, this thesis proposes new methodologies and an associated
+tool---\soap, a fully automatic source-to-source optimizer that augments
 \gls{vhls}---to optimize a given numerical C program using these
 transformations in tandem with conventional program transformations.  Our
 optimizer discovers not only one, but a wide spectrum of program candidates.
@@ -104,7 +105,7 @@ Generating candidate optimizations na{\"\i}vely would however produce a
 combinatorial explosion, even for small input programs.  For instance, in the
 worst case, the parsing of a simple summation of $n$ variables could result
 in $(2n - 3)!! = 1 \times 3 \times 5 \times \cdots \times (2n - 3)$ distinct
-expressions modulo commutativity, \ie~we make use all associativity but ignore
+expressions modulo commutativity, \ie~we make use of associativity but ignore
 any distinction caused by commutativity~\cite{ioualalen, mouilleron}.  This is
 further complicated by distributivity as the expression ${(a + b)}^k$ could
 expand into an expression with a summation of $2^k$ terms each with $k - 1$
@@ -113,7 +114,7 @@ a complete set of equivalent expressions using the rules of equivalence, since
 an expression with a moderate number of terms will have a very large number of
 equivalent expressions, and this number grows faster than exponential rate with
 the increase of the number of terms.  New approaches were therefore developed
-to specifically tackle the efficient discovery of equivalent structures in
+specifically to tackle the efficient discovery of equivalent structures in
 numerical programs.  First, we invent a new intermediate representation,
 called \gls{mir} to reduce the size of our search space without affecting its
 optimality.  Second, we further reduce the effort of exploring the new search
@@ -127,7 +128,7 @@ to calculate the results of each, such as accuracy, area and latency, and
 subsequently equivalent candidates; the final results are then constructed from
 those of the subcomponents.  When compared with a global approach, there are
 two major advantages.  First, because components are considered independent
-by each other, once analyzed the results can be reused in the analysis in the
+of each other, once analyzed the results can be reused in the analysis in the
 larger enclosing components.  Another advantage of this is that although we
 will not formally prove the correctness of our methodologies in this thesis,
 they are designed to be easily expressible in a formal language, and by proving
