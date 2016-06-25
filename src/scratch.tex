@@ -1,0 +1,72 @@
+\section{Fixpoint Theorems}
+
+\begin{theorem}
+    \textup{[Tarski's fixpoint theorem]}
+    If $\mathsf{L}$ is a complete lattice\footnotemark[2], and a function
+    $g: \mathsf{L} \to \mathsf{L}$ is a monotone function, then $\lfp(g)$,
+    the \gls{lfp} of $g$, is the greatest lower bound of all fixpoints
+    $\mathrm{Fix}(g)$.\label{bg:thr:tarski}
+\end{theorem}
+\footnotetext[2]{%
+    Exact definitions of \emph{complete lattice} and \emph{complete partial
+    order} are not required in this section.  Both of them can be found
+    in~\cite{nielson99}.
+}
+
+In our case, $f$ is a \emph{monotone} function, because by definition a
+\emph{monotone} function satisfies the condition that if $X \subseteq Y$,
+then $g(X) \subseteq g(Y)$.  In the \gls{dfa} of \verb|simple|, $\mathsf{L}
+= \powersetof\realset$, which is a complete lattice, since all power sets
+are complete lattices~\cite{nielson99}.  The \gls{lfp} of $f$, that is the
+intersection of all elements in $\mathrm{Fix}(f)$, is given by this equation:
+\begin{equation}
+    \lfp (f) = \bigcap \mathrm{Fix}(f),
+\end{equation}
+which implies that $\lfp (f) \subseteq Z$ for all fixpoints $Z \in
+\mathrm{Fix}(f)$, thus $\lfp (f)$ is the unique and most precise solution we
+are looking for.
+
+Secondly, another theorem~\cite{kleene52}, which is closely
+related to Theorem~\ref{bg:thr:tarski}, states:
+\begin{theorem}
+    \textup{[Kleene's fixpoint theorem]}
+    If $\mathsf{L}$ is a \gls{cpo}\footnotemark[2], and $g: \mathsf{L} \to
+    \mathsf{L}$ is a Scott-continuous function, then the $\lfp (g)$ can be
+    computed as the least upper bound of all values in the sequence $\bot$,
+    $g(\bot)$, $g^2(\bot)$, $g^3(\bot)$, \textellipsis{}\label{bg:thr:kleene}
+\end{theorem}
+Here, $\bot$ denotes the least element in $\mathsf{L}$.  
+
+Our function $f$ is \emph{Scott-continuous}: it is monotone; and for any chain
+of $X_0 \subseteq X_1 \subseteq X_2 \subseteq X_3 \subseteq \mathellipsis$,
+where $X_i \in \powersetof\realset$:
+\begin{equation}
+    \bigcup_{i \in \naturalset} f(X_i) = f \left(
+        \bigcup_{i \in \naturalset} X_i
+    \right).
+\end{equation}
+As a \gls{cpo} is more general that a complete lattice, and the least
+element in $\powersetof\realset$ is the empty set $\varnothing$, using
+Theorem~\ref{bg:thr:kleene} in our example analysis, the most precise solution
+of $A(1)$ can therefore be computed using:
+
+
+\section{Round-off Error}
+
+one of the \emph{rounding modes} $\circ \in \{ -\infty, \infty, 0, \neg0, \sim
+\}$ which are round towards negative infinity, towards infinity, towards zero,
+away from zero and towards nearest floating-point value respectively.  It is
+defined as:
+\begin{equation}
+    \begin{aligned}
+        & \downarrow^\sharp_\circ(\interval{a}{b}) \defeq \left\{
+            \begin{aligned}
+                & \left[ -\frac{z}{2}, \frac{z}{2}\right]
+                    & \quad \circ & \text{~is~}\sim, \\
+                & \left[ -z, z\right]
+                    & \quad \circ & \in \{ -\infty, \infty, 0, \neg0 \},
+            \end{aligned}
+        \right. \\
+        & \qquad\qquad\qquad\qquad \text{where~} z = \max(\ulp(a), \ulp(b)).
+    \end{aligned}
+\end{equation}

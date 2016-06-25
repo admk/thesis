@@ -92,9 +92,9 @@ the control-flow to \verb|BB1|.
     \centering
     \begin{tikzpicture}
         \node [] (entry) {\textbf{entry}};
-        \node [block, below of=entry, node distance=4em] (bb0) {\texttt{BB0}};
-        \node [block, below of=bb0, node distance=4em] (bb1) {\texttt{BB1}};
-        \node [block, below of=bb1, node distance=4em] (bb2) {\texttt{BB2}};
+        \node [rect, below of=entry, node distance=4em] (bb0) {\texttt{BB0}};
+        \node [rect, below of=bb0, node distance=4em] (bb1) {\texttt{BB1}};
+        \node [rect, below of=bb1, node distance=4em] (bb2) {\texttt{BB2}};
         \node [coordinate, right of=bb1, node distance=5em] (bb1tr) {};
         \node [coordinate, left of=bb2, node distance=8em] (bb2tl) {};
         \node [coordinate, right of=bb2, node distance=8em] (bb2tr) {};

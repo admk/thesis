@@ -1,35 +1,35 @@
 \section{Program Analysis and Abstract Interpretation}
 \label{bg:sec:abstract_interpretation}
 
-As our way of living is becoming increasingly dependent on programs, errors
-in safety-critical system can incur huge expenses, and even costs of lives.
-For example, the maiden flight of Ariane 5 resulted in a failure, because of
-a software instruction failed to convert a 64-bit floating-point number into
-16-bit signed integer, as the result is too large to be represented by a 16-bit
-signed integer~\cite{dowson97}.  The Patriot defense system failed to intercept
-an incoming missile because of an accumulated round-off error in the system's
-internal clock, resulted in the deaths of 28 people in 1991~\cite{patriot}.
-\emph{Static analysis}, a process of analyzing a piece of program written in
-an \gls{hll} without executing it, is therefore a research topic of great
-importance to prevent similar catastrophic errors and mitigate costs of failure
-in the future.
+As our way of living is becoming increasingly dependent on programs,
+errors in safety-critical system can incur huge expenses, and even cost
+lives.  For example, the maiden flight of Ariane 5 resulted in a failure,
+because of a software instruction failed to convert a 64-bit floating-point
+number into 16-bit signed integer, as the result was too large to be
+represented~\cite{dowson97}.  The Patriot defense system failed to intercept
+an incoming missile because of an accumulated round-off error in the
+system's internal clock, which resulted in the deaths of 28 people in
+1991~\cite{patriot}. \emph{Static analysis}, a process of analyzing a piece of
+program written in an \gls{hll} without executing it, is therefore a research
+topic of great importance to prevent similar catastrophic errors and mitigate
+the cost of failure in the future.
 
-It is unfortunate that because of the halting problem~\cite{turing37} and
-a direct consequence of it, Rice's theorem~\cite{rice53}, any nontrivial
-property on the outcome of a program is in general undecidable.  It means that
-an interesting property, a \emph{yes} or \emph{no} question which is never
-always true or always false for all programs, is \emph{undecidable}; or in
-other words, it cannot be answered.  Even a question as seemingly innocuous
-as \emph{``does this program return zero''} is difficult to answer.  A static
-analyzer, when faced with such a question, therefore do not attempt to
-produce a definite \emph{yes} or \emph{no}, instead it answers with either
-a definite \emph{yes} or \emph{I don't know}~\cite{mine04}; and producing a
-meaningful \emph{yes} in an efficient manner poses a challenging task to static
-analyzers.  Additionally, they often rely heavily on formal techniques to
-perform well.  Typical techniques employed include symbolic execution, model
-checking~\cite{kroening03}, satisfiability modulo theories~\cite{demoura08},
-data-flow analysis based on lattices~\cite{nielson99}, and abstract
-interpretation~\cite{cousot77}.
+It is unfortunate that because of the halting problem~\cite{turing37} and a
+direct consequence of it, Rice's theorem~\cite{rice53}, any nontrivial property
+on the outcome of a program is in general undecidable.  This means that an
+interesting property, a \emph{yes} or \emph{no} question which is never always
+true or always false for all programs, is in general \emph{undecidable};
+or in other words, it cannot be answered algorithmically.  Even a question
+as seemingly innocuous as \emph{``does this program return zero''} falls
+into this category.  A static analyzer, when faced with such a question,
+therefore do not attempt to produce a definite \emph{yes} or \emph{no},
+instead it answers with either a definite \emph{yes} or \emph{I don't
+know}~\cite{mine04}; and producing a meaningful \emph{yes} in an efficient
+manner poses a challenging task to static analyzers.  Additionally, they
+often rely heavily on formal techniques to perform well.  Typical techniques
+employed include symbolic execution, model checking~\cite{kroening03},
+satisfiability modulo theories~\cite{demoura08}, data-flow analysis based on
+lattices~\cite{nielson99}, abstract interpretation~\cite{cousot77}, \etc{}
 
 There are static analyzers specifically tailored to prove the absence of
 run-time errors in computing systems.  Astr\'ee~\cite{astree}, based on
@@ -55,21 +55,20 @@ the properties of the resulting analysis are further discussed.
 
 In this section, we use the \gls{dfa} framework~\cite{nielson99} to deduce
 the semantics of a program named \verb|simple| in Figure~\ref{bg:lst:simple},
-which consists of only one variable \verb|x|.  We assume an initial
-set $\iota \subseteq \realset$ of values of \verb|x|, and the property
-pertaining to us is whether a particular value $x_\mathrm{invalid}$ is
-unreachable.  By computing the set of all reachable final values of \verb|x|,
-$X$, checking $x_\mathrm{invalid} \notin X$ is sufficient.  A sensible
-definition for the set of values can be reached by \verb|x| is a subset of
-all real numbers $\realset$, \ie~an element of $\powersetof\realset$, where
-$\powersetof\realset$ denotes the \emph{power set} of $\realset$, also known as
-the set of all subsets of $\realset$.
+which consists of only one variable $\varx$.  We assume an initial set $\iota
+\subseteq \realset$ of values of $\varx$, and the property pertaining to us
+is whether a particular value $\varx_\mathrm{invalid}$ is unreachable.  By
+computing an $X$, the set of all reachable final values of $\varx$, it suffices
+to check $\varx_\mathrm{invalid} \notin X$.  A sensible definition for the set
+of values can be reached by $\varx$ is a subset of all real numbers $\realset$,
+\ie~an element of $\powersetof\realset$, where $\powersetof\realset$ denotes
+the \emph{power set} of $\realset$, also known as the set of all subsets of
+$\realset$.
 \begin{figure}[ht]
     \centering
     \begin{minipage}{0.5\textwidth}
     \begin{lstlisting}
-    float simple(float x)
-    {
+    float simple(float x) {
         while (x > 1.0)
             x *= 0.9;
         return x;
@@ -84,8 +83,8 @@ the set of all subsets of $\realset$.
 The first step of \gls{dfa} is to translate the body of \verb|simple| into a
 \gls{cdfg}, as shown in Figure~\ref{bg:fig:cdfg} where each block consists of
 a single statement or conditional, and the edges in the graph model the data-
-and control-flows.  The \textbf{tt} and \textbf{ff} respectively highlight
-the control-flow branch taken when the conditional \mbox{``\texttt{x < 1}''}
+and control-flows.  The \textbf{tt} and \textbf{ff} respectively highlight the
+control-flow branches taken when the conditional \mbox{``\texttt{x < 1}''}
 evaluates to either true or false.
 \begin{figure}[ht]
     \centering
@@ -117,19 +116,19 @@ evaluates to either true or false.
 \end{figure}
 
 The individual blocks in the \gls{cdfg} can therefore be defined as functions
-$f: \powersetof\realset \to \powersetof\realset$ that admits an $S$ and
-produces $T$, where both $S$ and $T$ are elements of $\powersetof\realset$.
-For instance, for the statement ``\texttt{x *= 0.9;}'' a function $f_1$ can be
-defined as follows:
+$f: \powersetof\realset \to \powersetof\realset$, where both its input and
+output are elements of $\powersetof\realset$.  For instance, for the statement
+``\lstinline[basicstyle=\tt]{x *= 0.9;}'' a function $f_1$ can be defined as
+follows:
 \begin{equation}
     f_1(S) = \{ 0.9 v \mid v \in S \}.
 \end{equation}
-Here, the definition of $f_1$ indicates that for all possible input values
-$v$ of \verb|x| in the set $S$, we multiply it by $0.9$ and collect the
-multiplied results into a new set as the output of $f_1$.  Similarly, because
-\mbox{``\texttt{x > 1}''} has two conditional branches, two functions,
-$f_{2,\truelit}$ and $f_{2, \falselit}$, respectively for both true- and
-false-branches of it can be defined:
+Here, the definition of $f_1$ indicates that for all possible input values $v$
+of $\varx$ in the set $S$, we multiply it by $0.9$ and collect the multiplied
+results into a new set as the output of $f_1$.  Similarly, because ``\texttt{x
+> 1}'' has two conditional branches, two functions, $f_{2,\truelit}$ and $f_{2,
+\falselit}$, respectively for both true- and false-branches of it can be
+defined:
 \begin{equation}
     \begin{aligned}
         f_{2, \truelit}(S) &= S \cap \{ v \in \realset \mid v > 1 \}, \\
@@ -141,7 +140,7 @@ where $X \cap Y$ computes the intersection of the two sets $X$ and $Y$.
 In the next step, the edges of the \gls{cdfg} are labelled with numbers 0, 1,
 2 and 3 to signify different locations of the program.  For each edge labelled
 $i$, it is now possible to compute an $A(i)$, a set of values that could be
-reached by \verb|x| in a program execution at each location $i$, by wiring up
+reached by $\varx$ in a program execution at each location $i$, by wiring up
 the functions $f_1$, $f_{2, \truelit}$ and $f_{2, \falselit}$ that correspond
 to program statements.  This gives rise to the following system of data-flow
 equations:
@@ -159,8 +158,8 @@ where $A(0) \cup A(1)$ is the union of $A(0)$ and $A(1)$.
 
 Unfortunately, computationally solving this system of equations is not an
 easy task.  In the rest of this section, the two significant impediments
-are explained, and subsequently, theories are introduced to unravel them.
-Section~\ref{bg:sub:lfp} discusses how the system of \gls{dfa} equations can
+are explained, and subsequently, theories are introduced to address them.
+Section~\ref{bg:sub:lfp} discusses how the system of data-flow equations can
 be solved analytically for the most desired solution, using a minimal set of
 reachable values for $A(1)$ as an example.  However, this analytical solution
 cannot be computed by a machine.  By building on top of this foundation,
@@ -209,12 +208,17 @@ to simplify the derivation:
     \end{aligned}
 \end{equation}
 
-Intuitively, a manual inspection of \verb|simple| finds that \verb|x| can
+Intuitively, a manual inspection of \verb|simple| finds that $\varx$ can
 reach values $v$, $0.9 v$, $0.9^2 v$, and so on, such that all values in this
 sequence are greater than $1$, for each $v \in \iota$; or more succinctly, an
 alternative solution to $A(1)$ should be:
 \begin{equation}
-    A(1) = \{ v \in \iota \mid 0.9^k v > 1 \wedge k \in \naturalset \},
+    A(1) = \{ v^\prime \mid
+        v^\prime > 1 \wedge
+        v^\prime = 0.9^k v \wedge
+        v \in \iota \wedge
+        k \in \naturalset
+    \},
     \label{bg:eq:a12}
 \end{equation}
 where $k \in \naturalset$ denotes $k$ is one of $0, 1, 2, \mathellipsis$, \ie~a
@@ -223,12 +227,12 @@ natural number.
 It is evident to us the latter solution~\eqref{bg:eq:a12} is more precise,
 hence more desirable, than the former~\eqref{bg:eq:a11}.  Not only does it
 contain information the former has, \ie~all values reachable by $A(1)$ is
-greater than 1, it also expresses the fact that it only consists of values of
-the form $0.9^k v$, where $v \in \realset$ and $k \in \naturalset$.  A useful
-definition of preciseness is therefore the subset relation ``$\subseteq$''.
-If it is known that $X \subseteq X^\prime$, and $X$ and $X^\prime$ are both
-solution to a system of data-flow equations, then $X$ is clearly more appealing
-than $X^\prime$.
+greater than 1, it also expresses the fact that it only consists of values
+of the form $0.9^k v$ that are greater than $1$, where $v \in \iota$ and $k
+\in \naturalset$.  A useful definition of preciseness is therefore the subset
+relation ``$\subseteq$''.  If it is known that $X \subseteq X^\prime$, and $X$
+and $X^\prime$ are both solution to a system of data-flow equations, then $X$
+is clearly more appealing than $X^\prime$.
 
 The set $\powersetof\realset$, with a preciseness ordering ``$\subseteq$'',
 is a \emph{partially ordered set}.  It has three following properties for any
@@ -270,11 +274,12 @@ arise:
 
     \item Is the most precise solution unique?  A unique most precise solution
     is defined as the only one which is the most precise among all possible
-    solutions to the systems of data-flow equations.  In other words, if
-    it exists, then it is defined as the \emph{least fixpoint} (\gls{lfp}) of
-    $f$ which is a subset of all other fixpoints, \ie~$\lfp (f) \subseteq
-    \mathrm{Fix}(f)$.  As we have discussed earlier, multiple fixpoints exist,
-    and it is possible that these fixpoint solutions are not comparable.
+    solutions to the systems of data-flow equations.  In other words, if it
+    exists, then it is defined as the \emph{least fixpoint} (\gls{lfp}) of
+    $f$ which is a subset of all other fixpoints, \ie~$\lfp (f) \subseteq Y$
+    for any $Y \in \mathrm{Fix}(f)$.  As we have discussed earlier, multiple
+    fixpoints exist, and it is possible that these fixpoint solutions are not
+    comparable.
 
     \item If a unique solution exists and it is unique, how do we find it?
     This is equivalent to finding a way to compute the \gls{lfp} $\lfp(f)$
@@ -282,47 +287,17 @@ arise:
 
 \end{enumerate}
 
-As it turns out, the first question can be answered by
-Theorem~\ref{bg:thr:tarski}~\cite{tarski55, nielson99}, which proves that $\lfp
-(f)$ is indeed unique.
-\begin{theorem}
-    \textup{[Tarski's fixpoint theorem]}
-    If $\mathsf{L}$ is a complete lattice\footnotemark[2], and a function
-    $g: \mathsf{L} \to \mathsf{L}$ is a monotone function, then $\lfp(g)$,
-    the \gls{lfp} of $g$, is the greatest lower bound of all fixpoints
-    $\mathrm{Fix}(g)$.\label{bg:thr:tarski}
-\end{theorem}
-\footnotetext[2]{%
-    Exact definitions of \emph{complete lattice} and \emph{complete partial
-    order} are not required in this section.  Both of them can be found
-    in~\cite{nielson99}.
-}
+As it turns out, to answer the first question, Tarski's fixpoint
+theorem~\cite{tarski55, nielson99} can be used to prove that $\lfp (f)$ is
+indeed unique.
 
-In our case, $f$ is a \emph{monotone} function, because by definition a
-\emph{monotone} function satisfies the condition that if $X \subseteq Y$,
-then $g(X) \subseteq g(Y)$.  In the \gls{dfa} of \verb|simple|, $\mathsf{L}
-= \powersetof\realset$, which is a complete lattice, since all power sets
-are complete lattices~\cite{nielson99}.  The \gls{lfp} of $f$, that is the
-intersection of all elements in $\mathrm{Fix}(f)$, is given by this equation:
+For the second question, Kleene's fixpoint theorem shows that in our example
+analysis, the most precise solution of $A(1)$ can be computed using:
 \begin{equation}
-    \lfp (f) = \bigcap \mathrm{Fix}(f),
+    \lfp (f) = \bigcup_{k \in \naturalset} f^k (\varnothing),
 \end{equation}
-which implies that $\lfp (f) \subseteq Z$ for all fixpoints $Z \in
-\mathrm{Fix}(f)$, thus $\lfp (f)$ is the unique and most precise solution we
-are looking for.
-
-Secondly, another theorem~\cite{kleene52}, which is closely
-related to Theorem~\ref{bg:thr:tarski}, states:
-\begin{theorem}
-    \textup{[Kleene's fixpoint theorem]}
-    If $\mathsf{L}$ is a \gls{cpo}\footnotemark[2], and $g: \mathsf{L} \to
-    \mathsf{L}$ is a Scott-continuous function, then the $\lfp (g)$ can be
-    computed as the least upper bound of all values in the sequence $\bot$,
-    $g(\bot)$, $g^2(\bot)$, $g^3(\bot)$, \textellipsis{}\label{bg:thr:kleene}
-\end{theorem}
-Here, $\bot$ denotes the least element in $\mathsf{L}$.  A function of the form
-$h^n(x)$, where $h: \mathsf{M} \to \mathsf{M}$ for any domain $\mathsf{M}$ and
-$n \in \naturalset$, is recursively defined as:
+where a function of the form $h^n(x)$, where $h: \mathsf{M} \to \mathsf{M}$ for
+any domain $\mathsf{M}$ and $n \in \naturalset$, is recursively defined as:
 \begin{equation}
     h^n(x) = \left\{
         \begin{aligned}
@@ -330,22 +305,6 @@ $n \in \naturalset$, is recursively defined as:
             & x && \text{if~} n = 0.
         \end{aligned}
     \right.
-\end{equation}
-
-Our function $f$ is \emph{Scott-continuous}: it is monotone; and for any chain
-of $X_0 \subseteq X_1 \subseteq X_2 \subseteq X_3 \subseteq \mathellipsis$,
-where $X_i \in \powersetof\realset$:
-\begin{equation}
-    \bigcup_{i \in \naturalset} f(X_i) = f \left(
-        \bigcup_{i \in \naturalset} X_i
-    \right).
-\end{equation}
-As a \gls{cpo} is more general that a complete lattice, and the least
-element in $\powersetof\realset$ is the empty set $\varnothing$, using
-Theorem~\ref{bg:thr:kleene} in our example analysis, the most precise solution
-of $A(1)$ can therefore be computed using:
-\begin{equation}
-    \lfp (f) = \bigcup_{k \in \naturalset} f^k (\varnothing).
 \end{equation}
 The functions $f^k(\varnothing)$ for the first $k+1$ iterations can be
 evaluated as follows:
@@ -380,25 +339,28 @@ alternative solution that was manually computed in~\eqref{bg:eq:a12}:
             &= \bigcup_{k \in \naturalset} f^k (\varnothing)
              = \{ v \mid v > 1 \} \cap
                \bigcup_{k \in \naturalset} \{ 0.9^k v \mid v \in \iota \} \\
-            &= \{ v \in \iota \mid 0.9^k v > 1 \wedge k \in \naturalset \}.
+            &= \{
+               v^\prime \mid
+               v^\prime > 1 \wedge v^\prime = 0.9^k v \wedge
+               v \in \iota \wedge k \in \naturalset
+            \}.
     \end{aligned}
 \end{equation}
 
-Even though we have derive a method to statically analyze a program,
+Even though we have derived a method to statically analyze a program,
 significant obstacles stymie the efficient usage of it.  Firstly, in the case
 study of \verb|simple|, because the \gls{lfp} is evaluated as the union of
 $f^k(\varnothing)$ in a sequence, this sequence is likely to be infinite, and
 thus cannot be computed fully.  Secondly, the set of input values, $\iota$,
 not only determines the number of iterations necessary in order to calculate
 the \gls{lfp}, but also impacts the amount of computation required in each
-iteration.  For instance if $\iota = {4}$ then it is only necessary to track
-the computation for a single input value $4$, whereas when $\iota = \{ v \mid
-0 \leq v \leq 1000 \}$, there are infinitely many values in the set.  As
-a result, in general, the \gls{lfp} of an arbitrary self-map function $f:
-\mathsf{L} \to \mathsf{L}$, where $\mathsf{L}$ is a complete lattice, is thus
-not computable in finite amount of time.  In Section~\ref{bg:sub:intervals},
-a method known as abstract interpretation is introduced to overcome the
-computability problem.
+iteration.  For instance if $\iota = \{4\}$ then it is only necessary to
+track the computation for a single input value $4$, whereas when $\iota = \{
+v \mid 0 \leq v \leq 1000 \}$, there are infinitely many values in the set.
+As a result, in general, the \gls{lfp} of an arbitrary self-map function $f:
+\mathsf{L} \to \mathsf{L}$ is thus not computable in finite amount of time.  In
+Section~\ref{bg:sub:intervals}, a method known as abstract interpretation is
+introduced to overcome the computability problem.
 
 
 \subsection{Abstract Interpretation with Intervals}
@@ -409,24 +371,24 @@ A framework of methods, known as \gls{ai}, is proposed by Cousot
 in program analysis.  Instead of finding the \gls{lfp}, which may not be
 computable, it is much more efficient to work out an \emph{approximation} of
 the \gls{lfp}\@.  Despite the outcome of an \gls{ai}-based static analysis not
-as precise as the \gls{lfp}, the significant benefits of \gls{ai} is two-fold.
-Firstly, the program analysis framework can now produce a ``yes'' or ``I don't
-know'' answer to a query of program property in a finite amount of time.
-Secondly, it provides the means to prove the correctness of an answer produced
-by the static analyzer using \gls{ai} in formal mathematics.
+being as precise as the \gls{lfp}, the significant benefits of \gls{ai} is
+two-fold.  Firstly, the program analysis framework can now produce a ``yes'' or
+``I don't know'' answer to a query of program property in a finite amount of
+time.  Secondly, it provides the means to prove the correctness of an answer
+produced by the static analyzer using \gls{ai} in formal mathematics.
 
-Here a simple formulation of interval arithmetic is first introduced, which
-is then exercised in the \gls{ai} framework, again by using the \verb|simple|
-example in Figure~\ref{bg:lst:simple}.
+Here a simple formulation of \acrlong{ia} is first introduced, which is then
+exercised in the \gls{ai} framework, again by using the \verb|simple| example
+in Figure~\ref{bg:lst:simple}.
 
 \subsubsection{Interval Arithmetic}
 \label{bg:ssub:interval}
 
 \Gls{ia}, is a method to enclose a set of solutions that may arise in
-computation problems~\cite{moore}.  The standard method, is to use a pair of
-the form $\interval{a}{b}$, to represent $\{ v \mid a \leq v \leq b \}$, or a
-set of real numbers between $a$ and $b$.  As it is closely related to sets of
-reals and real arithmetic, \gls{ia} gets the benefits of both worlds.
+computation problems~\cite{moore}.  The standard method is to use a pair of the
+form $\interval{a}{b}$, to represent $\{ v \mid a \leq v \leq b \}$, a set of
+real numbers between $a$ and $b$.  As it is closely related to sets of reals
+and real arithmetic, \gls{ia} gets the benefits of both worlds.
 
 Firstly, operations, similar to the set operations such as the subset relation
 ``$\subseteq$'', union ``$\cup$'' and intersection ``$\cap$'' from $\realset$,
@@ -460,12 +422,12 @@ further extended for $\top$ and $\bot$, where $X^\sharp \in \intervalset$ is an
 interval:
 \begin{equation}
     \begin{aligned}
-        X^\sharp \join \top &\defeq \top, \\
+        X^\sharp \join \top &\defeq \top, \quad \text{and} \quad
         X^\sharp \meet \bot &\defeq \bot.
     \end{aligned}
 \end{equation}
 As a consequence, $\bot$ and $\top$ are respectively the least and greatest
-elements of $\intervalset$.  It means that $\bot \sqsubseteq X^\sharp$ and
+elements of $\intervalset$.  This means that $\bot \sqsubseteq X^\sharp$ and
 $X^\sharp \sqsubseteq \top$ for any interval $X^\sharp$.
 
 Secondly, in a similar fashion to real arithmetic, arithmetic operations can
@@ -483,7 +445,7 @@ also be defined for real intervals:
     \label{bg:eq:interval_operations}
 \end{equation}
 A scalar value $x$, which can be abbreviated by $x$ itself, represents an
-interval $\interval{x}{x}$ in interval arithmetic.
+interval $\interval{x}{x}$ in \gls{ia}.
 
 \subsubsection{An Informal Approach to Approximation}
 \label{bg:ssub:informal}
@@ -492,12 +454,12 @@ interval $\interval{x}{x}$ in interval arithmetic.
 that are not directly computable.  We start by explaining what it means to
 \emph{approximate}, then show how an approximation can be proved to be safe.
 
-In the \gls{dfa} example, we arrived at a function $f: \powersetof\realset
-\to \powersetof\realset$ defined by~\eqref{bg:eq:a1_transfer}, which
-is not directly computable.  Interval arithmetic introduced in
-Section~\ref{bg:ssub:interval} could serve as an inspiration to produce yet
-another function $\tilde{f}: \intervalset \to \intervalset$, which is very
-similar to the original $f$:
+In the \gls{dfa} of \verb|simple| in Section~\ref{bg:sub:data_flow}, we
+arrived at a function $f: \powersetof\realset \to \powersetof\realset$ defined
+in~\eqref{bg:eq:a1_transfer}, which is not directly computable.  The \gls{ia}
+introduced earlier could serve as an inspiration to produce a different
+function $\tilde{f}: \intervalset \to \intervalset$, which is very similar to
+the original $f$:
 \begin{equation}
     \tilde{f}(X^\sharp) = \left(
         \iota^\sharp \join \left( 0.9 X^\sharp \right)
@@ -515,12 +477,13 @@ When given an input $X$, $f$ must enumerate on all $X$ to compute the result
 $f(X)$ precisely.  As we have discussed earlier this is infeasible as $X$
 could contain infinite number of values.  Conversely, $\tilde{f}$ does not
 suffer from this problem, since~\eqref{bg:eq:interval_operations} dictates any
-interval arithmetic operations can be performed by \emph{finite} number of
-arithmetic computations in real.
+\gls{ia} operations can be performed by \emph{finite} number of real arithmetic
+computations.
 
-As both Theorems~\ref{bg:thr:tarski} and~\ref{bg:thr:kleene} hold for
-$\intervalset$ and $tilde{f}$, its \gls{lfp}, an approximation to the \gls{lfp}
-to $f$, can therefore be computed as follows:
+As it is possible to prove that both fixpoint theorems in
+Section~\ref{bg:sub:lfp} hold for $\intervalset$ and $\tilde{f}$, its
+\gls{lfp}, an approximation to the \gls{lfp} to $f$, can therefore be computed
+as follows:
 \begin{equation}
     \lfp (\tilde{f}) = \bigsqcup_{k \in \naturalset} \tilde{f}^k (\bot).
 \end{equation}
@@ -533,12 +496,12 @@ For example, consider the case when $\iota = [0, 10]$,
             \right) \meet [1, \infty] = [1, 10], \\
         \tilde{f}^2 (\bot) &= \left(
                 [0, 10] \join \left( 0.9 \times [1, 10] \right)
-            \right) \meet [1, \infty] = [1, 10].
+            \right) \meet [1, \infty] = [1, 10], \mathellipsis
     \end{aligned}
 \end{equation}
 As all other values in the sequence evaluates to $[1, 10]$, $\lfp(\tilde{f})$
 is hence $[1, 10]$, which was computed in 3 iterations.  It is easy to see
-in Figure~\ref{bg:lst:simple} that the reachable values of \verb|x| before
+in Figure~\ref{bg:lst:simple} that the reachable values of $\varx$ before
 executing the statement ``\verb|x *= 0.9;|'' is indeed $[1, 10]$.
 
 In many cases, an algorithm to compute $\tilde{f}^k(\bot)$ can terminate.
@@ -552,26 +515,25 @@ precision of the computed fixpoint, \ie~the result is no longer the \gls{lfp},
 but is a fixpoint $X \sqsupseteq \lfp(\tilde{f})$ that can be computed more
 easily.
 
-\subsubsection{Gal\"ois Connection}
+\subsubsection{Galois Connection}
 \label{bg:ssub:galois}
 
-Although our informal derivation gives us an empirical evidence of the
-usefulness and correctness of intervals in place of real sets, a series of
-questions pertaining the theory behind it remain.  The questions are of the
-format ``\emph{is $X$ a correct abstraction of $Y$}'', where $X$ and $Y$
-refer to each of the following pairs: $(\intervalset, \powersetof\realset)$,
-$(\tilde{f}, f)$, and $(\lfp (\tilde{f}), \lfp (f))$.
+Although our informal derivation gives us empirical evidence of the usefulness
+and correctness of intervals in place of real sets, a series of questions
+pertaining the theory behind it remain.  The questions are of the format
+``\emph{is $X$ a correct abstraction of $Y$}'', where $X$ and $Y$ refer to each
+of the following pairs: $(\intervalset, \powersetof\realset)$, $(\tilde{f},
+f)$, and $(\lfp (\tilde{f}), \lfp (f))$.
 
-Fortunately, Cousot~\etal~\cite{cousot77} show that if a \emph{Gal\"ois
+Fortunately, Cousot~\etal~\cite{cousot77} show that if a \emph{Galois
 connection} can be formed between $\powersetof\realset$ and $\intervalset$,
 then all of the above questions can be now answered with a resounding
-``\emph{yes}''.  If $f \circ g (x)$ denotes $f(g(x))$, we can
-define~\cite{nielson99}:
+``\emph{yes}''.  We can define~\cite{nielson99}:
 \begin{definition}
-    \textup{[Gal\"ois connection]}
-    A Gal\"ois connection is a relation between two complete lattices
+    \textup{[Galois connection]}
+    A Galois connection is a relation between two complete lattices
     $\lattice{\mathsf{L}}{\subseteq}$ and $\lattice{\mathsf{M}}{\sqsubseteq}$,
-    given by a duo of functions $\alpha: \mathsf{L} \to \mathsf{M}$ and
+    given by a pair of functions $\alpha: \mathsf{L} \to \mathsf{M}$ and
     $\gamma: \mathsf{M} \to \mathsf{L}$, such that for all $l \in \mathsf{L}$
     and $m \in \mathsf{M}$:
     \begin{equation}
@@ -592,7 +554,7 @@ define~\cite{nielson99}:
         \label{bg:eq:galois_alt}
     \end{equation}
 \end{definition}\vspace{-16.5pt}
-The Gal\"ois connection above can often be concisely written as:
+The Galois connection above can often be concisely written as:
 \begin{equation}
     \lattice{\mathsf{L}}{\subseteq}
         \galois{\alpha}{\gamma}
@@ -601,8 +563,8 @@ The Gal\"ois connection above can often be concisely written as:
 Here, the functions $\alpha$ and $\gamma$ are often called the
 \emph{abstraction} function and \emph{concretization} function respectively.
 
-Bearing on the informal approach in Section~\ref{bg:ssub:informal}, the
-following Gal\"ois connection can be established to formalize it:
+Bearing on the informal approach earlier, the following Galois connection can
+be established to formalize it:
 \begin{equation}
     \lattice{\powersetof\realset}{\subseteq}
     \galois{\alpha}{\gamma}
@@ -625,7 +587,7 @@ where $\inf(X)$ and $\sup(X)$ are respectively the infimum and supremum of $X$.
 
 Furthermore, from a function $g: \mathsf{L} \to \mathsf{L}$, the
 \gls{ai} framework allows an approximated function $g^\sharp:
-\mathsf{M} \to \mathsf{M}$ to be inductively abstracted by the Gal\"ois
+\mathsf{M} \to \mathsf{M}$ to be inductively abstracted by the Galois
 connection~\cite{nielson99}.  For example, consider~\eqref{bg:eq:a1_transfer}
 which is not computable, an approximated candidate $f^\sharp$ can be
 computed by $\alpha \circ f \circ \gamma$.  Since we are computing in
@@ -657,7 +619,7 @@ $\intervalset$, we assume that $\iota = \gamma(\iota^\sharp)$ and $X^\sharp =
         \right).
     \end{aligned}
 \end{equation}
-We introduce $\epsilon$ to denote an arbitrarily small positive value.  Because
+We introduce $\epsilon$ to denote an infinitesimal positive value.  Because
 $\alpha(A \cup B) = \alpha(A) \sqcup \alpha(B)$:
 \begin{equation}
     \begin{aligned}
@@ -694,7 +656,7 @@ The term $\epsilon$ vanishes when the abstraction function $\alpha$ is applied:
 \end{equation}
 which is identical to $\tilde{f}$ defined
 in~\eqref{bg:eq:a1_transfer_interval}, therefore the correctness of $\tilde{f}$
-is analytically prove.  Although we derived a special case using the
+is analytically proven.  Although we derived a special case using the
 approximate function induction technique, in a more general fashion, this
 method can be applied to the functions and operators in the \gls{dfa} of
 reachable sets of reals.  Consequently, the \gls{dfa} of a general program
@@ -708,23 +670,23 @@ A \gls{dfa} for a program should therefore compute a reachable set of values
 for each variable.  A typical way do so is to use a mapping which associates
 each program variable with a value, which is defined as an element $\sigma \in
 \Sigma$, where $\Sigma = \left[\varset \to \mathsf{L}\right]$ and $\mathsf{L}$
-is a set of values.  For example, a single program state of \verb|simple| could
-be $\sigma_0 \in \left[\varset \to \realset\right]$, and $\sigma_0 = [x \mapsto
-0]$, which denotes that the state $\sigma_0$ has only a variable $x$, and $x$
-is assigned a value $0$.  We could also have a state that captures multiple
-program states, $\sigma^\sharp \in \left[\varset \to \intervalset\right]$,
-where $\sigma^\sharp(x)$ could be an interval.
+is a set of values.  For example, a single program state of \verb|simple|
+could be $\sigma_0 \in \left[\varset \to \realset\right]$, and $\sigma_0 =
+[\varx \mapsto 0]$, which denotes that the state $\sigma_0$ has only a variable
+$\varx$, and $\varx$ is assigned a value $0$.  We could also have a state that
+captures multiple program states, \eg~$\sigma^\sharp \in \left[\varset \to
+\intervalset\right]$, where $\sigma^\sharp(\varx)$ could be an interval.
 
-Gal\"ois connections can be compositionally constructed~\cite{nielson99}.  If
+Galois connections can be compositionally constructed~\cite{nielson99}.  If
 we know that $\powersetof\realset \galois{\alpha}{\gamma} \intervalset$, then
-the following Gal\"ois connection between mappings can also be constructed:
+the following Galois connection between mappings can also be constructed:
 \begin{equation}
     [\varset \to \powersetof\realset]
         \galois{\alpha^\prime}{\gamma^\prime}
     [\varset \to \intervalset],
 \end{equation}
-where $\alpha^\prime(f) = \alpha \circ f$, and $\gamma^\prime(g) = \gamma \circ
-g$.
+where $\alpha^\prime(f) = \alpha \circ f$, $\gamma^\prime(g) = \gamma \circ g$,
+and a term of the form $s \circ t (x)$ denotes $s(t(x))$.
 
 
 \subsection{Abstract Domains}
@@ -732,16 +694,16 @@ g$.
 
 The interval domain offers us an efficient way to enclose reachable values
 of variables.  However, it is unable to capture the correlation among these
-variables.  For instance, if we know that $x$ and $y$ are reals between $0$
-and $1$, and $x \leq y$, intervals cannot express the relation $x \leq y$ and
-using bounds $x \in [0, 1]$ and $y \in [0, 1]$, we evaluate the expression $(1
-- y)x$ is bounded by $0$ and $1$.  In contrast, if we were able to make use of
-the inequality $x \leq y$, then it is possible to deduce $(1 - y) x \leq (1 -
-x) x \leq \frac{1}{4}$, which yields a much tighter bound than using intervals
-alone.
+variables.  For instance, if we know that $\varx$ and $\vary$ are reals between
+$0$ and $1$, and $\varx \leq \vary$, intervals cannot express the relation
+$\varx \leq \vary$ and using bounds $\varx \in [0, 1]$ and $\vary \in [0, 1]$,
+we evaluate the expression $(1 - \vary)\varx$ is bounded by $0$ and $1$.  In
+contrast, if we were able to make use of the inequality $\varx \leq \vary$,
+then it is possible to deduce $(1 - \vary) \varx \leq (1 - \varx) \varx \leq
+\frac{1}{4}$, which yields a much tighter bound than using intervals alone.
 
 In general, the design of abstract domains is a trade-off between how good
-a approximation it can obtain, and how efficient it can be computed.  For
+a approximation it can obtain, and how efficiently it can be computed.  For
 example, we could imagine another abstract domain, $\signset$, which only
 captures the signedness of variables, to also enclose a set of reachable
 values.  Although it is even faster than intervals to compute, it sacrifices
@@ -751,29 +713,35 @@ computations are proposed by various authors as discussed below.
 
 A new abstract domain, $\mathbf{Octagon}$, is proposed by Min\'e~\cite{mine07},
 to enclose values in a system of difference-bound inequalities, which are of
-the form $x - y \leq c$ and $\pm x \leq c$, where $x$ and $y$ are variables
-and $c$ is a constant.  This domain is very efficient as a Floyd-Warshall
-algorithm~\cite{floyd62}, which runs in $\bigo(n^3)$, where $n$ is the number
-of variables, can be used to compute it~\cite{mine04}.  Although not as
-efficient as intervals, it is much more expressive than intervals.  This is
-because intervals can only imply inequalities of the latter form, $\pm x \leq
-c$, but not the former, $x - y \leq c$.
+the form:
+\begin{equation}
+    \varx - \vary \leq c, \quad \text{or} \quad
+    \pm \varx \leq c,
+\end{equation}
+where $\varx$ and $\vary$ are variables and $c$ is a constant.  This domain
+is very efficient as a Floyd-Warshall algorithm~\cite{floyd62}, which runs in
+$\bigo(n^3)$, where $n$ is the number of variables, can be used to compute
+it~\cite{mine04}.  Although not as efficient as intervals, it is much
+more expressive than intervals.  This is because intervals can only imply
+inequalities of the latter form, $\pm \varx \leq c$, but not the former, $\varx
+- \vary \leq c$.
 
 Based on affine arithmetic, Ghorbal~\etal~\cite{ghorbal09} propose an abstract
 domain, Taylor1+\@.  This domain uses an equation of the form to capture the
-bound on a variable $x$:
+bound on a variable $\varx$:
 \begin{equation}
-    \tilde{x} = \alpha^x_0 + \sum_{i = 1}^{n} \alpha^x_i \varepsilon_i,
+    \tilde{\varx} =
+        \alpha^\varx_0 + \sum_{i = 1}^{n} \alpha^\varx_i \varepsilon_i,
 \end{equation}
-where $\alpha^x_i \in \realset$ for each $i$, and each $\varepsilon_i$, known
-as the noise symbol, which has an unknown quantity that lies in $[-1, 1]$,
-introduces a perturbation on the constant $\alpha^x_0$.  If two variables
-$x$ and $y$ has correlation, $\tilde{x}$ and $\tilde{y}$ can consist of
-the same $\varepsilon_i$ to encode the correlation.  They found that for a
-$2^\mathrm{nd}$ order \gls{iir} filter, Taylor1+ can give an exact bound on the
-filter output, whereas both $\intervalset$ and $\mathbf{Octagon}$ failed as the
-bound size increase exponentially in each iteration, albeit slower than both
-methods.
+where $\alpha^\varx_i \in \realset$ for each $i$, and each $\varepsilon_i$
+known as the noise symbol, which has an unknown quantity that lies in
+$[-1, 1]$, introduces a perturbation on the constant $\alpha^\varx_0$.
+If two variables $\varx$ and $\vary$ has correlation, $\tilde{\varx}$
+and $\tilde{\vary}$ can consist of the same $\varepsilon_i$ to encode
+the correlation.  They found that for a $2^\mathrm{nd}$ order \gls{iir}
+filter, Taylor1+ can give an exact bound on the filter output, whereas both
+$\intervalset$ and $\mathbf{Octagon}$ failed as the bound size increase
+exponentially in each iteration, albeit slower than both methods.
 
 Cousot~\etal~\cite{cousot78} introduce the polyhedra approach to abstract
 domains.  This method makes use of arbitrary polyhedra, which could be
@@ -781,8 +749,8 @@ expressed by a set of linear inequalities such as the following:
 \begin{equation}
     \left\{
     \begin{aligned}
-        & 2x + 7y \leq 32, \\
-        & 8x - 3y + z \geq 0.
+        & 2\varx + 7\vary \leq 32, \\
+        & 8\varx - 3\vary + \varz \geq 0.
     \end{aligned}
     \right.
 \end{equation}
@@ -793,22 +761,22 @@ libraries to be much slower than their affine arithmetic based approach.
 
 In addition to abstract domains on reals and floating-point values,
 integer-based domains are further presented by several authors.
-Granger~\cite{granger89} introduce the simple congruences on integers, which
-consists of equations of the form $x = a \mod b$, where $x$ is a variable
-and $a$ and $b$ are integers.  They further propose a linear congruences
-formulation which is more expressive, for instance, an equation $3 x + 4 y = 5
-\mod 6$ can be used to capture the relation between integer variables $x$ and
-$y$.
+Granger~\cite{granger89} introduce the simple congruences on integers,
+which consists of equations of the form $\varx = a \mod b$, where $\varx$
+is a variable and $a$ and $b$ are integers.  They further propose a linear
+congruences formulation which is more expressive, for instance, an equation $3
+\varx + 4 \vary = 5 \mod 6$ can be used to capture the relation between integer
+variables $\varx$ and $\vary$.
 
 \subsubsection{Round-off Error Analysis}
 \label{bg:ssub:accuracy}
 
-The above abstract domains are all based on the standard semantics of programs,
-\ie~they all assume that the program accepts as inputs and computes as
-outputs numerical values.  Here we extend this notion to non-standard program
-semantics.  Alongside the analysis of reachable values, this technique further
-enables the analysis of numerical round-off errors in the execution of
-numerical algorithms.
+% The above abstract domains are all based on the standard semantics of programs,
+% \ie~they all assume that the program accepts as inputs and computes as
+% outputs numerical values.  Here we extend this notion to non-standard program
+% semantics.  Alongside the analysis of reachable values, this technique further
+% enables the analysis of numerical round-off errors in the execution of
+% numerical algorithms.
 
 In Section~\ref{bg:sec:discovering_equivalent_programs}, we will discuss
 techniques which optimize numerical accuracies in a program by restructuring
@@ -818,18 +786,18 @@ numerical accuracy analysis approach is thus explained in detail.
 
 Because of the finite characteristic of IEEE 754 floating-point
 format~\cite{ieee754}, it is not always possible to represent exact values
-with it.  Computations in floating-point arithmetic often induces round-off
+with it.  Computations in floating-point arithmetic often induce round-off
 errors.  Therefore, Martel~\cite{martel07} bound the ranges of the values
 in floating-point calculations, as well as the round-off errors introduced
 in these computations.  This accuracy analysis determines the bounds of
 all possible outputs and their associated range of round-off errors for
 expressions.
 
-Martel~\cite{martel07} introduces the abstract error semantics for the
+Martel~\cite{martel07} introduces an abstract error semantics for the
 calculation of round-off errors in the evaluation of floating-point
 expressions.  It consists of three components: an abstract domain to enclose
-computed floating-point values and round-off errors, and a suite of operations
-on the partial order, and finally, a set of arithmetic operations to evaluate
+computed floating-point values and round-off errors, a suite of operations on
+the partial order, and finally, a set of arithmetic operations to evaluate
 arithmetic expressions in the error semantics.
 
 First we define the domain $\errorset = \floatintervalset\times\intervalset$,
@@ -866,7 +834,7 @@ definitions of the operators in $\floatintervalset$ and $\intervalset$:
 for $\left( x^\sharp_1, \mu^\sharp_1 \right) \in \errorset$ and
 $\left( x^\sharp_2, \mu^\sharp_2 \right) \in \errorset$.
 
-Furthermore, the error domain forms the following Gal\"ois connection:
+Furthermore, the error domain forms the following Galois connection:
 \begin{equation}
     \powersetof{\floatset\times\realset}
     \galois{}{}
@@ -913,38 +881,23 @@ x^\sharp_2$ and error terms:
     \label{bg:eq:error_arithmetic_mult}
 \end{equation}
 
-The addition, subtraction and multiplication of intervals follow
-the standard rules of interval arithmetic defined earlier
-in~\eqref{bg:eq:interval_operations}.  In~\eqref{bg:eq:error_arithmetic}
-and~\eqref{bg:eq:error_arithmetic_mult}, the function $\rounddownop:
-\intervalset \to \intervalset$ determines the range of round-off error due to
-the floating-point computation under one of the \emph{rounding modes} $\circ
-\in \{ -\infty, \infty, 0, \neg0, \sim \}$ which are round towards negative
-infinity, towards infinity, towards zero, away from zero and towards nearest
-floating-point value respectively.  It is defined as:
+The addition, subtraction and multiplication of intervals follow the standard
+rules of \gls{ia} defined earlier in~\eqref{bg:eq:interval_operations}.
+In~\eqref{bg:eq:error_arithmetic} and~\eqref{bg:eq:error_arithmetic_mult}, the
+function $\rounddownop: \intervalset \to \intervalset$ determines the range of
+round-off error due to the floating-point computation under the rounding mode.
+For instance, for rounding towards the nearest floating-point value, we have:
 \begin{equation}
-    \begin{aligned}
-        & \downarrow^\sharp_\circ(\interval{a}{b}) \defeq \left\{
-            \begin{aligned}
-                & \left[ -\frac{z}{2}, \frac{z}{2}\right]
-                    & \quad \circ & \text{~is~}\sim, \\
-                & \left[ -z, z\right]
-                    & \quad \circ & \in \{ -\infty, \infty, 0, \neg0 \},
-            \end{aligned}
-        \right. \\
-        & \qquad\qquad\qquad\qquad \text{where~} z = \max(\ulp(a), \ulp(b)).
-    \end{aligned}
+    \downarrow^\sharp_\circ(\interval{a}{b}) \defeq
+        \left[ -\frac{z}{2}, \frac{z}{2}\right], \quad \text{where~}
+        z = \max(\ulp(a), \ulp(b)).
 \end{equation}
 Here $z$ denotes the maximum rounding error that can occur for values
 within the range $\interval{a}{b}$, and the unit of the last place ($\ulp$)
 function $\ulp(x)$ characterizes the gap between two floating-point numbers
 closest to $x$.  However there are multiple different variations of the
 definition of $\ulp$, which one is the most fitting is still subject to
-debate~\cite{muller}\footnotemark[3].
-\footnotetext[3]{%
-    Martel~\cite{martel07}~did not mention which one was used in their
-    formulation.
-}
+debate~\cite{muller}.
 
 The function $\roundupop: \intervalset \to \floatintervalset$ computes the
 floating-point bound from a real bound, by rounding the infimum $a$ and
@@ -957,37 +910,34 @@ supremum $b$ of the input interval $\interval{a}{b}$:
     \right]}_\floatset.
 \end{equation}
 where the subscript $\floatset$ indicates the interval is a floating-point
-interval, and we define $\uparrow_\circ: \realset \to \floatset$ to be the
-function that rounds a real number to a floating-point value, under the
-rounding mode $\circ$.
+interval.
 
 Expressions can be evaluated for their accuracy by the method as follows.
 Initially, for real-valued variables, the following function can be used to
-convert an interval of real values into a value in the error domain.
-\eqref{bg:eq:cast}:
+convert an interval of real values into a value in the error domain:
 \begin{equation}
     \mathrm{cast}\left(x^\sharp\right) \defeq \left(
         \roundup{x^\sharp}, \rounddown{x^\sharp}
-    \right)
+    \right).
     \label{bg:eq:cast}
 \end{equation}
-For example, for the real variable $a \in [0.2, 0.3]$ under single precision
-with rounding to nearest,
+For example, for the real variable $\vara \in [0.2, 0.3]$ under single
+precision with rounding to nearest:
 \begin{equation}
     \mathrm{cast}\left([0.2, 0.3]\right) = \left(
         {\left[0.200000003, 0.300000012\right]}_\floatset,
         \left[-1/67108864, 1/67108864\right]
-    \right)
+    \right).
 \end{equation}
 
 After this, similar to the way we use intervals to analyze a program in
 Section~\ref{bg:sub:intervals}, floating-point arithmetic expressions can be
-analyzed.  For instance, the expression ${(a + b)}^2$ can be evaluated just
-as we would expect in real arithmetic, instead, the arithmetic operators are
-\emph{overridden} to operate on values in the error domain $\errorset$.
+analyzed.  For instance, the expression ${(\vara + \varb)}^2$ can be evaluated
+just as we would expect in real arithmetic, instead, the arithmetic operators
+are \emph{overridden} to operate on values in the error domain $\errorset$.
 
-For example, assume that real variables $a \in [0.2, 0.3]$, $b \in [2.3, 2.4]$,
-it is possible to derive that in single-precision floating-point computation
-with rounding to the nearest, ${(a + b)}^2 \in [6.24999857, 7.29000187]$ and
-the error caused by this computation is bounded by $[-1.60634534\times10^{-6},
-1.60634534\times10^{-6}]$.
+For example, assume that real variables $\vara \in [0.2, 0.3]$, $\varb \in
+[2.3, 2.4]$, it is possible to derive that in single-precision floating-point
+computation with rounding to the nearest, ${(\vara + \varb)}^2 \in [6.24999857,
+7.29000187]$ and the error caused by this computation is bounded by
+$[-1.60634534\times10^{-6}, 1.60634534\times10^{-6}]$.
