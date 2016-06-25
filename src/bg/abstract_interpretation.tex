@@ -89,17 +89,13 @@ the control-flow branch taken when the conditional \mbox{``\texttt{x < 1}''}
 evaluates to either true or false.
 \begin{figure}[ht]
     \centering
-    \tikzstyle{block} = [
-        draw,
-        fill=white,
-        rectangle,
-        minimum height=2em,
-        minimum width=4em
+    \tikzstyle{sblock} = [
+        draw, rectangle, minimum height=2em, minimum width=4em
     ]
     \begin{tikzpicture}[node distance=4em]
         \node(entr) {\textbf{entry}};
-        \node(cond) [block, below of=entr] {\texttt{x > 1}};
-        \node(stmt) [block, below of=cond] {\texttt{x = 0.9 * x;}};
+        \node(cond) [sblock, below of=entr] {\texttt{x > 1}};
+        \node(stmt) [sblock, below of=cond] {\texttt{x = 0.9 * x;}};
         \node(midl) [coordinate, left of=stmt, xshift=-1.5em] {};
         \node(midr) [coordinate, right of=stmt, xshift=1.5em] {};
         \node(rtrn) [coordinate, below of=stmt, yshift=1em]

@@ -90,18 +90,14 @@ commence, otherwise (\textbf{tt}) the exit condition is satisfied and will lead
 the control-flow to \verb|BB1|.
 \begin{figure}[ht]
     \centering
-    \tikzstyle{block} = [
-        draw, fill=white, rectangle, minimum height=2em, minimum width=3em
-    ]
-    \tikzstyle{tmp} = [coordinate]
     \begin{tikzpicture}
         \node [] (entry) {\textbf{entry}};
         \node [block, below of=entry, node distance=4em] (bb0) {\texttt{BB0}};
         \node [block, below of=bb0, node distance=4em] (bb1) {\texttt{BB1}};
         \node [block, below of=bb1, node distance=4em] (bb2) {\texttt{BB2}};
-        \node [tmp, right of=bb1, node distance=5em] (bb1tr) {};
-        \node [tmp, left of=bb2, node distance=8em] (bb2tl) {};
-        \node [tmp, right of=bb2, node distance=8em] (bb2tr) {};
+        \node [coordinate, right of=bb1, node distance=5em] (bb1tr) {};
+        \node [coordinate, left of=bb2, node distance=8em] (bb2tl) {};
+        \node [coordinate, right of=bb2, node distance=8em] (bb2tr) {};
         \node [below of=bb2, node distance=4em] (exit) {\textbf{exit}};
         \draw [->] (entry) -- (bb0);
         \draw [- ] (bb0)    to[out=0, in=90]    (bb1tr);
@@ -327,14 +323,14 @@ iteration count so that a new value for \verb|x| can be computed as we update
 a sequence of the factorials of $[1, 2, 3, \mathellipsis]$, \ie~$[1, 2, 6, 24,
 \mathellipsis]$.
 
-Computation nodes, such as arithmetic $+$ and boolean operators $\leq$ and
+Computation nodes, such as arithmetic $+$ and Boolean operators $\leq$ and
 $\neg$ in Figure~\ref{bg:fig:factorial_peg}, operates on a list of values, by
 performing the computation on each value in the list.
 
 For instance, the $\leq$ node accepts two inputs, the sequence $[1, 2, 3,
 \mathellipsis]$ derived earlier, and a scalar $10$, computes the result of $x
 \leq 10$ for each element $x$ in the sequence, and finally produces the list,
-where $\truelit$ and $\falselit$ respectively denote true and false boolean
+where $\truelit$ and $\falselit$ respectively denote true and false Boolean
 values:
 \begin{equation}
     [
@@ -361,7 +357,7 @@ control-flow information in \gls{peg}, it becomes possible to refer to a
 single value in this sequence, as the output of the program.  To do so,
 Tate~\etal~\cite{tate09} further introduce $\mathrm{pass}$ and $\mathrm{eval}$
 nodes.  The $\mathrm{pass}$ node finds the first true ($\truelit$) value
-in a sequence of boolean values, and returns the index of this value, and
+in a sequence of Boolean values, and returns the index of this value, and
 $\mathrm{eval}$ takes two child nodes, where the first node evaluates to a list
 $v$ of values, and the second is an scalar $n$ used to select a scalar value
 from $l$, as the output of this node.

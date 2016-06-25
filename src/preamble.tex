@@ -58,6 +58,8 @@
 \usepackage{verbatim}
 \usepackage{xpatch}
 
+\raggedbottom
+
 \newacronymstyle{em-long-short}
 {%
   \GlsUseAcrEntryDispStyle{long-short}%
@@ -87,7 +89,10 @@
 
 \addbibresource{intro/publications.bib}
 
-\usetikzlibrary{positioning,fit,decorations.pathmorphing,decorations.markings,shapes}
+\usetikzlibrary{
+    matrix, positioning, fit, decorations.pathmorphing, decorations.markings,
+    shapes
+}
 \graphicspath{{stropt/fig/}{progopt/fig/}{latopt/fig/}}
 \DeclareGraphicsExtensions{.pdf}
 
@@ -326,51 +331,35 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 }
 
 \tikzset{%
+  rect/.style = {
+    draw, rectangle, minimum height=2em, minimum width=3em, align=center
+  },
+  block/.style = {
+    draw, rectangle, minimum height=3em, minimum width=6em, align=center
+  },
+  mux/.style = {
+    draw, trapezium, text width=2mm, minimum height=3.5mm
+  },
   mir/.style={%
-    node distance=3mm,
-    baseline=(current bounding box.center)
+    node distance=3mm, baseline=(current bounding box.center)
   },
   mirnode/.style={%
-    inner sep=0.7mm,
-    text height=1ex,
-    text depth=0ex
+    inner sep=0.7mm, text height=1ex, text depth=0ex
   },
   mirnodealt/.style={%
-    inner sep=0.7mm,
-    text depth=0ex
+    inner sep=0.7mm, text depth=0ex
   },
-  link/.style = {%
-      white,
-      double = black,
-      line width = 1.8pt,
-      double distance = 0.8pt
-  },
-  % channel/.style = {%
-      % white,
-      % double = black,
-      % line width = 0.8pt,
-      % double distance = 0.4pt
-  % },
   channel/.style = {
-      preaction = {
-          -,
-          draw = white,
-          line width = 2pt
-      },
+      preaction = { -, draw = white, line width = 2pt },
   },
   o/.style={
-      shorten >=#1,
-      decoration={
-          markings,
-          mark={
-              at position 1
-              with {
-                  \draw node [circle, draw=black, fill=white, radius=#1, inner sep=#1] {};
-              }
-          }
-      },
-      postaction=decorate
+    shorten >=#1,
+    decoration={
+      markings, mark={ at position 1 with { \draw node
+          [circle, draw=black, fill=white, radius=#1, inner sep=#1] {}; } }
+    },
+    postaction=decorate
   },
-  o/.default=1.2pt
+  o/.default=1.2pt,
 }
 % vim: nospell

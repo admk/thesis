@@ -1,11 +1,11 @@
 The main focus of this thesis is to devise optimization methods to efficiently
 rewrite numerical programs by automatically varying the structure of their
-control- and data-paths for an improved trade-off relationship among numerical
-accuracy, throughput and resource utilization for \gls{hls}\@.  This chapter
-therefore provides a review of recent developments in related work and various
-concepts that closely relate to the foundation of this central problem.  This
-section serves to highlight the main research topic to be discussed in depth in
-each section.
+control- and data-paths for an improved trade-off between numerical accuracy,
+throughput and resource utilization for \gls{hls}\@.  This chapter therefore
+provides a review of recent developments in related work and various concepts
+that closely relate to the foundation of this central problem.  This section
+serves to highlight the main research topic to be discussed in depth in each
+section.
 
 We introduce various computing architectures, and explain the pros and
 cons of each one in Section~\ref{bg:sec:fpga}.  We then explain in detail
@@ -18,15 +18,15 @@ circuits by taking Altera Quartus II~\cite{quartus} as an example.
 
 Because of the ever-increasing complexity of applications designed into
 circuits, low-level approaches such as \gls{rtl} design become humanly
-intractable~\cite{gajski}, a gradual adoption of \gls{hls} tools has been
+intractable~\cite{gajski}, and a gradual adoption of \gls{hls} tools has been
 observed in the \gls{fpga} community in recent years.  For this reason, in
 Section~\ref{bg:sec:high_level_synthesis}, we review the current state and
 advantages of \gls{hls}, and describe the stages employed by these tools to
 compile a program in a high-level language into digital circuits.  Because
-run time is one of our optimization objective, we use modulo \gls{sdc}
+run time is one of our optimization objectives, we use modulo \gls{sdc}
 scheduling to further examine in greater detail how it can make loops to run as
-efficiently as possible by pipelining them.  The module \gls{sdc} scheduling
-algorithm is used by \gls{hls} tools such as LegUp~\cite{legup}.
+efficiently as possible by pipelining them.  This scheduling algorithm is used
+by \gls{hls} tools such as LegUp~\cite{legup}.
 
 The methods discussed in this thesis rely heavily on the static analysis of
 numerical programs based on abstract interpretation~\cite{cousot77}.  In
@@ -41,7 +41,7 @@ analysis example.
 analysis.  Section~\ref{bg:sec:intermediate} we therefore study in detail
 the existing \glspl{ir} designed for program optimization.  We take a closer
 at how the \gls{ssa} and \gls{cfg} approach of \gls{llvm}~\cite{llvm_ir}
-encodes a simple program example.  As this technique limits itself on
+encodes a simple program example.  As this technique limits itself to
 optimizing a single \gls{ir} of a program, a novel approach known as equality
 saturation~\cite{tate09} which uses a data structure to simultaneously
 represent multiple optimization candidates, is further examined.
@@ -53,12 +53,12 @@ tools.  Since \gls{hls} tools are \gls{llvm}-based and compile C or C++
 programs, they borrow the concept from software compiler frameworks, such as
 \gls{llvm}, of including optimization passes that may improve performance
 of floating-point computations, while potentially sacrificing numerical
-accuracies.  On the other hand, we look at methods that could improve accuracy
-by simultaneously exploring multiple rewrites to expression candidates.
-Due to the full set of equivalent programs of an initial program is often
-computationally intractable, these methodologies either make extensive
-use of heuristics, or abstract interpretation techniques introduced in
-Section~\ref{bg:sec:abstract_interpretation}, in order to compute an
+accuracies.  On the other hand, we look at methods that could improve
+accuracy by simultaneously exploring multiple rewrites of expression
+candidates.  Due to the calculation of the full set of equivalent programs
+often being computationally intractable, these methodologies either make
+extensive use of heuristics, or abstract interpretation techniques introduced
+in Section~\ref{bg:sec:abstract_interpretation}, in order to compute an
 under-approximation (a potentially smaller set) of the set of all equivalent
 programs.
 
