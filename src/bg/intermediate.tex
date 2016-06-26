@@ -11,18 +11,18 @@ deeper into the advantages and disadvantages of each.
 \subsection{Static Single Assignment Form and Control-Flow Graph}
 \label{bg:sub:ssa_cfg}
 
-Traditionally, \gls{ssa} form~\cite{alpern88, rau92} together with \gls{cfg}
-are used to represent data- and control-flow of a program~\cite{cytron91},
-because they are more favorable program representations on which optimization
-passes can be implemented, when compared to the original \gls{hll} or the
-output language.  \Gls{ssa} can be advantageous in implementing conventional
-optimization techniques, \eg~code motion~\cite{cytron86}, removing redundant
-computations~\cite{rosen88}, and constant propagation~\cite{cytron91}.
-Because the \gls{llvmir}~\cite{llvm_ir} is based on \gls{ssa} and \gls{cfg},
-and is commonly used in many \gls{hls} tools such as LegUp~\cite{legup},
-we introduce \gls{ssa} and \gls{cfg} by compiling the dot-product
-example in Figure~\ref{bg:lst:dotprod} into \gls{llvmir} as shown in
-Figure~\ref{bg:lst:dotprod_ll}.
+Traditionally, \gls{ssa} form~\cite{alpern88, rau92} together with
+the \gls{cfg} are used to represent data- and control-flow of a
+program~\cite{cytron91}, because they are more favorable program
+representations on which optimization passes can be implemented, when
+compared to the original \gls{hll} or the output language.  \Gls{ssa} can be
+advantageous in implementing conventional optimization techniques, \eg~code
+motion~\cite{cytron86}, removing redundant computations~\cite{rosen88}, and
+constant propagation~\cite{cytron91}.  Because the \gls{llvmir}~\cite{llvm_ir}
+is based on \gls{ssa} and \glspl{cfg}, and is commonly used in many \gls{hls}
+tools such as LegUp~\cite{legup}, we introduce \gls{ssa} and \glspl{cfg}
+by compiling the dot-product example in Figure~\ref{bg:lst:dotprod} into
+\gls{llvmir} as shown in Figure~\ref{bg:lst:dotprod_ll}.
 \begin{figure}[ht]
     \centering
     \begin{lstlisting}[language=LLVM]
@@ -57,19 +57,20 @@ define float @dotprod(
 \end{figure}
 
 The \gls{llvmir} of our example function consists of parts that are known
-as \glspl{bb}, each \gls{bb} in turn often contains a label that uniquely
+as \glspl{bb}.  Each \gls{bb} in turn often contains a label that uniquely
 identifies the \gls{bb}, a list of \gls{llvmir} statements in \gls{ssa} form
 without any branches, \ie~the statements are executed sequentially, and a
 terminator instruction, which is typically a branch instruction that leads the
-control-flow to a different \gls{bb}, by referencing a \gls{bb} label, or a
+control-flow to a different \gls{bb}, by referencing a \gls{bb} label or a
 function return.
 
-The \gls{llvm} framework implicitly constructs a \gls{cfg} from the \gls{ir}
-code, which is a directed graph representing the control-flow of a program.
-The vertices in the \gls{cfg} constitute \glspl{bb}, while the edges indicate
-the control-flow directions (\ie~branches to other \glspl{bb}), often with
-predicate attributes to determine whether the branch is taken.  For instance,
-we consider the first line of third \gls{bb} in Figure~\ref{bg:lst:dotprod_ll}:
+The \gls{llvm} framework implicitly constructs a \gls{cfg} from the
+\gls{ir} code, which is a directed graph representing the control-flow of
+a program.  The vertices in the \gls{cfg} constitute \glspl{bb}, while
+the edges indicate the control-flow directions (\ie~branches to other
+\glspl{bb}), often with predicate attributes to determine whether the branch
+is taken.  For instance, we consider the first line of the third \gls{bb} in
+Figure~\ref{bg:lst:dotprod_ll}:
 \begin{lstlisting}[language=LLVM]
     ; <label>:2     ; preds = %2 %0
 \end{lstlisting}\vspace{-15pt}
@@ -121,18 +122,18 @@ original program, such that each variable in it is assigned exactly one value.
 The sequence of instructions that assigns to \verb|%3|-\verb|%9| in
 Figure~\ref{bg:lst:dotprod_ll} carries out most of the computations in the
 program.  It starts by reading \verb|A[i]| and \verb|B[i]|, multiplying them
-together, then add the result with \verb|d| to form a new variable, and
-finally, the iteration value is accumulated by $1$.  It may seem unusual that
-both the accumulated sum of products and the iteration value are not assigned
+together, then adding the result with \verb|d| to form a new variable, and
+finally, the iteration value is incremented by $1$.  It may seem unusual that
+the accumulated sum of products and the iteration value are not assigned
 to \verb|d| and \verb|i| respectively.  We can imagine two \glspl{bb}, one
 initializes \verb|d| and \verb|i| to zeros, the other accumulates these two
 variables in a loop.  As all variables must be assigned once only, one of
 the \glspl{bb} should use different names for these two variables.  When the
-control-flow of these two \glspl{bb} join, we must introduce a way to read
+control-flows of these two \glspl{bb} join, we must introduce a way to read
 from the variables that are assigned in the two \glspl{bb} in the succeeding
 \gls{bb}\@.  A new instruction, called the $\phi$-function is therefore defined
 for our purpose.  The $\phi$-function accepts two variable names as its inputs,
-and produce the value of either variable as its output, determined by which
+and produces the value of either variable as its output, determined by which
 preceding \gls{bb} the control-flow came from.  For example, in \gls{llvmir},
 the instruction:
 \begin{lstlisting}[language=LLVM]
@@ -144,14 +145,14 @@ value of \verb|%8| is used instead.
 
 The rationale of \gls{ssa} is that we can abstract away anti- and output
 dependences by never assigning to the same variable twice, while only true
-data-flow dependences remain.  Anti-dependence is a dependence relation when a
-read operation must precede a write to the same variable, and output dependence
-is when two writes refer to the same location.  By removing these dependences
-and deferring the analysis of them, certain program optimization analyses
-can run much more efficiently.  Analyses that may benefit from this include
-scheduling~\cite{rau94}, and liveness analysis (figure out the life time
+data-flow dependences remain.  An anti-dependence is a dependence relation
+when a read operation must precede a write to the same variable, and an output
+dependence is when two writes refer to the same location.  By removing these
+dependences and deferring the analysis of them, certain program optimization
+analyses can run much more efficiently.  Analyses that may benefit from this
+include scheduling~\cite{rau94}, liveness analysis (estimating the lifetime
 of variables to reduce register requirements)~\cite{cytron91}, detecting
-opportunities of parallelism~\cite{cytron87}, and finding equivalent parts in
+opportunities for parallelism~\cite{cytron87}, and finding equivalent parts in
 the program~\cite{alpern88}.
 
 In a cyclic \gls{cfg}, the control-flow could potentially revisit a \gls{bb},
@@ -170,17 +171,17 @@ There are a number of alternative \glspl{ir} that are similar in construction
 to the \gls{ssa} and \gls{cfg} approach in \gls{llvmir}\@.  For instance, the
 data-dependence graph~\cite{rau94} introduced in Section~\ref{bg:sub:sdc} are
 designed for the purpose of capturing data-flow dependences in polyhedral
-methods. \gls{dfg} is a popular alternative to \gls{ssa}, which is often a
-\gls{dag} that do not contain cyclic paths.  In general, a \gls{dfg}'s vertices
-are input, output and operation nodes, and the edges capture the dependences
-between these nodes.  Both of them, however, generally do not preserve enough
-information for us to reconstruct a program from the graph itself.  A group of
-data structures, known as \gls{cdfg}~\cite{orailoglu86}, is commonly used to
-represent programs in \gls{hls} tools, \eg~SPARK~\cite{gupta04}.  A \gls{cdfg}
-resembles a \gls{cfg} such as the one used in \gls{llvmir}, but in lieu of
-using sequential instructions in \gls{ssa} form in graph vertices, each vertex
-contains a \gls{dfg}, where no \gls{ssa} temporary variables are used and
-data-flow dependences can by explicitly identified by edges.
+methods. \gls{dfg} is a popular alternative to \gls{ssa}, which is often
+a \gls{dag}.  In general, a \gls{dfg}'s vertices are input, output and
+operation nodes, and the edges capture the dependences between these nodes.
+A \glspl{dfg} however generally does not preserve enough information for us
+to reconstruct a program from the graph itself.  A group of data structures,
+known as \gls{cdfg}~\cite{orailoglu86}, is commonly used to represent programs
+in \gls{hls} tools, \eg~SPARK~\cite{gupta04}.  A \gls{cdfg} resembles a
+\gls{cfg} such as the one used in \gls{llvmir}, but in lieu of using sequential
+instructions in \gls{ssa} form in graph vertices, each vertex contains a
+\gls{dfg}, where no \gls{ssa} temporary variables are used and data-flow
+dependences can by explicitly identified by edges.
 
 
 \subsection{Equality Saturation}
@@ -196,17 +197,17 @@ apply these optimization phases in a fixed order, but a good ordering of these
 phases is crucial to achieve a good optimized result, and the optimal ordering
 varies across applications being compiled~\cite{almagor04}.  The process of
 finding the optimal ordering is known as the \emph{phase-ordering problem},
-which is in general undecidable~\cite{touati06} and hence is a difficult
-problem.  Moreover, programs running \glspl{cpu} or \glspl{gpu} usually care
-only about their throughput, in contrast, designs on \glspl{fpga} concern us
-with additional objectives besides run time, such as power consumption and
-resource utilization that impact the quality of synthesized circuit.  Multiple
-designs that trade-off these objectives could exist, and which design to
-choose relies on the specifics of the use case.  It is therefore sensible to
-explore the design space by optimizing multiple objectives simultaneously.
-For the above reasons, it is desirable to have an \gls{ir} and the associated
-optimization procedures to efficiently discover equivalent structures that lead
-to different implementations of the original program.
+which is in general undecidable~\cite{touati06}.  Moreover, programs running
+on \glspl{cpu} or \glspl{gpu} are usually quantified by their throughput or
+latency, in contrast, designs on \glspl{fpga} concern us with additional
+objectives besides run time, such as power consumption and resource utilization
+that impact the quality of synthesized circuit.  Multiple designs which
+trade-off these objectives could exist, and which design to choose relies
+on the specifics of the use case.  It is therefore sensible to explore the
+design space by optimizing multiple objectives simultaneously.  For the above
+reasons, it is desirable to have an \gls{ir} and the associated optimization
+procedures to efficiently discover equivalent structures that lead to different
+implementations of the original program.
 
 In software, a novel approach called \emph{equality saturation} is proposed
 in~\cite{tate09} to find multiple possible optimized variants of the original
@@ -220,17 +221,16 @@ loop example in Figure~\ref{bg:fig:factorial}.  By understanding how the
 \gls{peg} captures the control- and data-flow information of the program.
 \glspl{peg}, similar to arithmetic expressions expressed in a tree structure,
 can be evaluated in a bottom-up fashion, by recursively propagating computed
-values from the leave nodes to the root of the tree.  However, unlike
-arithmetic expressions which are acyclic, edges in \glspl{peg} may form cycles
-to express loops in the original program.
+values from the leaf nodes to the root of the tree.  However, unlike arithmetic
+expressions which are acyclic, edges in \glspl{peg} may form cycles to express
+loops in the original program.
 \begin{figure}[ht]
     \newsavebox{\factlstbox}
     \begin{lrbox}{\factlstbox}
     \begin{lstlisting}
 int x = 1;
 int y = 1;
-while (y <= 10)
-{
+while (y <= 10) {
     x = y * x;
     y = y + 1;
 }
@@ -244,7 +244,39 @@ while (y <= 10)
     }
     \subfloat[The resulting \gls{peg}.]{%
         \begin{minipage}{0.5\textwidth}
-            \includegraphics[width=\textwidth]{bg/fig/factorial_peg.png}
+        \begin{tikzpicture}[mir]
+            \foreach \i/\v/\op in { 1/x/*, 2/y/+ } {
+                \node (\v) [mirnode] at (\i * 30mm, 0) {$\v$};
+                \node (e\i) [mirnode, right=of \v] {$\mathit{eval}_1$};
+                \node (t\i) [mirnodealt, below left=of e\i, yshift=-10mm]
+                    {$\theta_1$};
+                \node (1\i) [mirnode, below left=of t\i] {$1$};
+                \node (o\i) [mirnode, below right=of t\i] {\texttt{\op}};
+                \draw[|->] (\v) -- (e\i);
+                \draw[-] (e\i) -- (t\i.100);
+                \draw[-] (t\i) -- (1\i);
+                \node (mid\i) [coordinate, right=of o\i, yshift=-2mm] {};
+                \draw[-] (t\i) -- (o\i)
+                    to[out=-45, in=-135] (mid\i)
+                    to[out=45, in=45] (t\i.60);
+            }
+            \node (12) [mirnode, below left=of o2] {$1$};
+            \draw[-] (o2) -- (12);
+
+            \node (p) [mirnode, below right=10mm of e2] {$\mathit{pass}_1$};
+            \node (neg) [mirnode, below=of p] {$\neg$};
+            \node (leq) [mirnode, below=of neg] {$\leq$};
+            \node (10) [mirnode, below right=of leq] {$10$};
+            \draw[-] (e1) to[out=-45, in=160] (p);
+            \draw[-] (e2) -- (p.90);
+            \draw[-] (p) -- (neg) -- (leq) -- (10);
+            \node (mid3) [coordinate, left=12mm of neg] {};
+            \draw[-] (leq) to[out=-135, in=-45] (mid3)
+                           to[out=135, in=50] (t2.80);
+
+            \node (mid4) [coordinate, below=5mm of o1, xshift=2mm] {};
+            \draw[-] (o1) to[out=-135, in=180] (mid4) to[out=0, in=135] (t2);
+        \end{tikzpicture}
         \end{minipage}\label{bg:fig:factorial_peg}
     }
     \caption{%
@@ -289,9 +321,9 @@ $\mathbf{fix}\,F$ of an initial list $[i]$, which is defined as:
     \quad\text{where~}
     F(v) = \mathrm{prepend}\left(
         i, \mathrm{map}\left( \mathrm{func}, v \right)
-    \right)
+    \right).
 \end{equation}
-here, $\mathrm{map}(\mathrm{func}, v)$ applies the subgraph computation
+Here, $\mathrm{map}(\mathrm{func}, v)$ applies the subgraph computation
 $\mathrm{func}$ to all elements in the list $v$, and $\mathrm{prepend}(i,
 v^\prime)$ prepends the element $i$ to the list $v^\prime$.
 
@@ -382,7 +414,7 @@ constructed from these simple equivalence rules.
 \subsubsection{Equivalence Finding}
 
 By applying transformation passes to the \gls{peg}, their approach detects
-the incremental modifications, and append these changes to the original
+incremental modifications, and appends these changes to the original
 \gls{peg}\@.  The new changes, represented as extra structures in the
 \gls{peg}, are linked to their corresponding equivalent nodes by equivalence
 edges.  These edges indicate a pair of subgraphs are equivalent, forming a
@@ -393,8 +425,84 @@ binary choice, therefore the number of \glspl{peg} can be represented in an
 \gls{epeg} could be exponential in the number of equivalence edges.
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{bg/fig/epeg.png}
-    \caption{An simple \gls{epeg} example, taken from~\cite{tate09}.
+    \begin{tikzpicture}[mir]
+        \node (*1) [mirnode] at (0, 0) {$*$};
+        \node (t1) [mirnodealt, below left=10mm of *1] {$\theta$};
+        \node (51) [mirnode, below right=of *1] {$5$};
+        \node (01) [mirnode, below left=of t1] {$0$};
+        \node (f1) [mirnode, below right=of t1] {$\phi$};
+        \node (d1) [mirnode, below left=of f1] {$\delta$};
+        \node (+1) [mirnodealt, below=5mm of f1] {$+$};
+        \node (31) [mirnode, below left=of +1] {$3$};
+        \node (+2) [mirnodealt, below right=of +1] {$+$};
+        \node (11) [mirnode, below left=of +2] {$1$};
+        \draw[-] (*1) -- (t1.60);
+        \draw[-] (*1) -- (51);
+        \draw[-] (t1) -- (f1) -- (+1) -- (+2) -- (11);
+        \draw[-] (t1) -- (01);
+        \draw[-] (f1) -- (d1);
+        \draw[-] (f1) to[bend left] (+2);
+        \draw[-] (+1) -- (31);
+        \draw[-] (+2) -- (11);
+        \draw[-] (+2) to[out=-45, in=45, looseness=2] (t1);
+
+        \node (t2) [mirnode, right=20mm of *1] {$\theta$};
+        \draw[dashed] (*1) -- (t2);
+        \node (*2) [mirnode, below left=of t2] {$*$};
+        \node (02) [mirnode, right=of *2] {$0$};
+        \node (03) [mirnode, below left=of *2] {$0$};
+        \node (52) [mirnode, below right=of *2] {$5$};
+        \draw[-] (t2) -- (*2) -- (03);
+        \draw[-] (*2) -- (52);
+        \draw[dashed] (*2) -- (02);
+
+        \node (*3) [mirnode, below right=of t2] {$*$};
+        \node (53) [mirnode, below right=of *3] {$5$};
+        \draw[-] (t2) -- (*3) -- (53);
+        \draw[-] (*3)
+            .. controls ($(*3) +(-0.5,-1.5)$) and ($(f1) +(1,1)$) .. (f1);
+
+        \node (f2) [mirnode, right=15mm of *3] {$\phi$};
+        \node (d2) [mirnode, below left=of f2] {$\delta$};
+        \node (*4) [mirnode, below=of f2] {$*$};
+        \node (54) [mirnode, below right=of *4] {$5$};
+        \draw[dashed] (*3) -- (f2);
+        \draw[-] (f2) -- (*4) -- (54);
+        \draw[-] (f2) -- (d2);
+        \draw[-] (*4)
+            .. controls ($(*4) +(-1,-1)$) and ($(+1) +(1,1)$) .. (+1);
+
+        \node (+3) [mirnode, right=15mm of *4] {$+$};
+        \node (*5) [mirnode, below left=of +3] {$*$};
+        \node (*6) [mirnode, below right=of +3] {$*$};
+        \node (151) [mirnode, right=of *5] {$15$};
+        \node (32) [mirnode, below left=of *5] {$3$};
+        \node (55) [mirnode, below right=of *5] {$5$};
+        \node (56) [mirnode, below right=of *6] {$5$};
+        \draw[dashed] (*4) -- (+3);
+        \draw[dashed] (*5) -- (151);
+        \draw[-] (+3) -- (*5) -- (32);
+        \draw[-] (*5) -- (55);
+        \draw[-] (f2)
+            .. controls ($(f2) +(0.5,-0.5)$) and ($(*6) +(-.5,1.5)$) .. (*6)
+            .. controls ($(*6) +(-1,-2)$) and ($(+2) +(1,1)$) .. (+2);
+        \draw[-] (+3) -- (*6) -- (56);
+
+        \node (+4) [mirnode, right=15mm of *6] {$+$};
+        \node (*7) [mirnode, below left=of +4] {$*$};
+        \node (57) [mirnode, right=of *7] {$5$};
+        \node (12) [mirnode, below left=of *7] {$1$};
+        \node (58) [mirnode, below right=of *7] {$5$};
+        \draw[dashed] (*6) -- (+4);
+        \node (m1) [coordinate, right=of +4] {};
+        \draw[-] (+4) to[out=-45, in=-90, looseness=1.5] (m1)
+            .. controls ($(m1) +(0,1)$) and ($ (t2) +(1,1)$) .. (t2);
+        \draw[-] (+4) -- (*7) -- (12);
+        \draw[-] (*7) -- (58);
+        \draw[dashed] (*7) -- (57);
+    \end{tikzpicture}
+    \caption{%
+        An simple \gls{epeg} example, taken from~\cite{tate09}.
     }\label{bg:fig:epeg}
 \end{figure}
 

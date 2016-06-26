@@ -95,15 +95,13 @@ be easily compared against one another.  In \soap, the following function
 $\abserr$ is used to convert an evaluated outcome $v \in \errorset$ into a
 scalar to denote the magnitude of round-off error:
 \begin{equation}
-    \begin{aligned}
-        \abserr(e) &= \max\left(
-            \left| \mu^\sharp_{\min} \right|,
-            \left| \mu^\sharp_{\max} \right|
-        \right) \\
-        & \quad \text{where~}
-        \left(
-            x^\sharp, \left[ \mu^\sharp_{\min}, \mu^\sharp_{\max} \right]
-        \right) = \error(e),
-    \end{aligned}
+    \abserr(e) = \max\left(
+        \left| \mu^\sharp_{\min} \right|,
+        \left| \mu^\sharp_{\max} \right|
+    \right),
+    \quad \text{where~}
+    \left(
+        x^\sharp, \left[ \mu^\sharp_{\min}, \mu^\sharp_{\max} \right]
+    \right) = \error(e).
     \label{so:eq:abserr}
 \end{equation}

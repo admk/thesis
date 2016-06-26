@@ -4,8 +4,8 @@
 In this section, we explain existing optimization methods to restructure
 numerical programs with arithmetic equivalences.  Because general numerical
 programs---consisting of program statements, conditional branches and
-loops---supersede arithmetic expressions, we start by introducing optimization
-methods of expressions, followed by those of general numerical programs.
+loops---generalize arithmetic expressions, we start by introducing optimization
+methods for expressions, followed by those for general numerical programs.
 
 
 \subsection{Improving Performance by Rewriting Arithmetic Expressions}
@@ -14,7 +14,7 @@ methods of expressions, followed by those of general numerical programs.
 \subsubsection{Software Compilers}
 
 It is common knowledge to software programmers that a typical optimizing
-compiler, such as \gls{gcc}~\cite{gcc} and Clang~\cite{clang}, has some
+compiler, such as \gls{gcc}~\cite{gcc} or Clang~\cite{clang}, has some
 traditional static analysis-based optimization passes such as dead code
 elimination, loop strength reduction and constant propagation.  These
 optimization passes, however, limit themselves by producing implementations
@@ -72,17 +72,15 @@ sacrificing numerical accuracy.
 In addition to the unsafe arithmetic expression rewriting heuristics
 inherited from the \gls{llvm} framework, \gls{vhls}~\cite{vivado_hls}
 and LegUp~\cite{legup}, which are both \gls{llvm}-based, can make use
-of hardware-specific optimization passes to allow greater parallelism
-in synthesized circuit, thus improving throughput.  The newly designed
-transformation to allow data-flow graphs to be restructured to improve
-loop parallelism, which allows more computation across loop iterations to
-overlap, and subsequently faster programs.  Xilinx's \gls{vhls} has a similar
-feature called \emph{expression balancing}~\cite{vivado_hls}, which aims
-to balance an arithmetic expression tree using associativity.  Tree height
-reduction~\cite{nicolau91} further incorporates distributivity and control-flow
-rewriting.  However, neither of these methods produces optimal loop pipelining,
-as they do not examine the implications of loop-carried dependences.  For
-example, a loop body:
+of hardware-specific expression rewriting optimization passes to allow
+greater parallelism in synthesized circuit, thus improving throughput.  By
+way of illustration, Xilinx's \gls{vhls} has a similar feature called
+\emph{expression balancing}~\cite{vivado_hls}, which aims to balance an
+arithmetic expression tree using associativity.  A technique known as tree
+height reduction~\cite{nicolau91} further incorporates distributivity and
+control-flow rewriting.  However, neither of these methods produces optimal
+loop pipelining, as they do not examine the implications of loop-carried
+dependences.  For example, a loop body:
 \begin{lstlisting}
     sum = ((sum + A[i]) + B[i]) + C[i];
 \end{lstlisting}\vspace{-15pt}
@@ -112,7 +110,8 @@ It is notable that, by further delaying the addition of \verb|sum|, the loop
 now has only a delay of $1$ adder between consecutive iterations.  This
 technique can greatly reduce the run time of pipelined loops, especially if the
 inter-iteration dependences has a long chain of additions.  However, similar to
-\gls{vhls}, they only apply associativity in their restructuring.
+\gls{vhls}, they only apply associativity in their restructuring without regard
+for accuracy.
 
 \subsubsection{Polynomial Factorization}
 
@@ -128,13 +127,13 @@ reduction of resources utilized.
 
 It is well known that the Horner scheme is the optimal way to
 factorize a univariate polynomial so that its operator count is
-minimized~\cite{neumaier01}, \eg~a polynomial $x^3 + 2x^2 + 3x + 4$,
-which uses 4 multipliers and 3 adders if common subexpressions are
-eliminated, can be factorized into $x(x(x + 2) + 3) + 4$, which uses 2
-fewer multipliers.  However, a multivariate polynomial could be expressed
-in multiple ways using the Horner scheme, and finding the optimal one is
-a difficult problem.  Ceberio~\etal~\cite{ceberio04} therefore propose a
-greedy algorithm to efficiently factorize a multivariate polynomial to
+minimized~\cite{neumaier01}, \eg~a polynomial $\varx^3 + 2 \varx^2 + 3
+\varx + 4$, which uses 4 multipliers and 3 adders if common subexpressions
+are eliminated, can be factorized into $\varx(\varx(\varx + 2) + 3) + 4$,
+which uses 2 fewer multipliers.  However, a multivariate polynomial could be
+expressed in multiple ways using the Horner scheme, and finding the optimal
+one is a difficult problem.  Ceberio~\etal~\cite{ceberio04} therefore propose
+a greedy algorithm to efficiently factorize a multivariate polynomial to
 overcome this.  Hosangadi~\etal~\cite{hosangadi} propose an algorithm for the
 factorization of polynomials, in order to eliminate common subexpressions, and
 subsequently reduce addition and multiplication counts for a faster software
@@ -174,17 +173,17 @@ indices~\cite{mccullough99}.  In response, the software community has seen an
 emergence of techniques that rewrites expressions in numerical programs, to
 ameliorate round-off errors in numerically sensitive applications.  However,
 round-off errors in numerical programs are well known to be perplexing to
-debug~\cite{toronto14}, and it is in general difficult to apply intuitions
+debug~\cite{toronto14}, and it is in general difficult to apply intuition
 manually and rewrite programs to optimize numerical accuracy~\cite{toronto14}.
 The numerical accuracy optimization techniques therefore often explore the
 search space of equivalent expressions, using equivalence relations in
 real arithmetic, ranging from the simplest possible, \eg~associativity,
 commutativity and distributivity, to more sophisticated ones, such as
-trigonometry facts, rules derived from heuristics $x - y = \frac{x^2 - y^2}{x
-+ y}$~\cite{panchekha15}, and many more.
+trigonometry facts, equivalence rules that are known to sometimes improve
+accuracy $x - y = \frac{x^2 - y^2}{x + y}$~\cite{panchekha15}, and many more.
 
-As the vastness of the search space prohibits us to explore it fully,
-existing approaches confronting this problem resolve to heuristics.
+As the vastness of the search space prohibits us to explore it fully, existing
+approaches confronting this problem resort to heuristics.
 
 Darulova~\etal~\cite{darulova} use genetic programming to evolve the structure
 of arithmetic expressions into more accurate forms.  However there are several
@@ -224,7 +223,7 @@ The APEG is similar in construction to the \gls{epeg}, which is also a
 graph-based structure, and promotes the maximal sharing of common subtrees.
 The major difference is that because of the lack of control-flow in the
 program, APEGs are acyclic, and do not consist of nodes that correspond to
-control-flows.  APEGs supersede arithmetic expression by allowing all possible
+control-flows.  APEGs subsume arithmetic expressions by allowing all possible
 nodes in an arithmetic expression, \ie~it can contain leaf nodes such as a
 constant value or a variable identifier, unary or binary arithmetic operators
 that respectively have one or two child nodes.  In addition, to allow an APEG
@@ -234,7 +233,7 @@ model equivalences.
 
 Firstly, the APEG defines a node containing an \emph{abstraction box},
 \fbox{$\opsymbol, \left(p_1, p_2, \mathellipsis, p_n\right)$}\,, where
-$\opsymbol$ is a commutative associative operator such as addition $+$ and
+$\opsymbol$ is a commutative associative operator such as addition $+$ or
 multiplication $\times$, and $p_1, p_2, \mathellipsis, p_n$ are the children of
 this node.  The abstraction box can be used to represent equivalent expressions
 generated by different associative parsings of the expression $p_1 \opsymbol
@@ -243,11 +242,11 @@ p_2 \opsymbol \mathellipsis \opsymbol p_n$.  To illustrate, an expression $a
 can represent all equivalent parsings of the original expression, \ie~$(a
 + b) + c$, $a + (b + c)$ and $(a + c) + b$.  Each abstraction box with $n$
 children can represent up to $(2n - 3){!!}$ equivalent expressions without
-commutativity~\cite{ioualalen, mouilleron}, as commutativity do not impact
+commutativity~\cite{ioualalen, mouilleron}, as commutativity does not impact
 numerical accuracy for commutative operators.
 
 Secondly, in an analogous fashion to the \gls{epeg}, the APEG additionally
-admits a new kind of nodes which can be used to enclose a set of equivalent
+admits a new kind of node which can be used to enclose a set of equivalent
 subexpressions.  Defined as $\langle p_1, p_2, \mathellipsis, p_n \rangle$,
 the \emph{equivalent class} is a node which signifies all children subtrees
 with root nodes $p_1, p_2, \mathellipsis, p_n$ represent expressions that are
@@ -256,32 +255,86 @@ mathematically equivalent.  This is analogous to forming equivalence edges in
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[scale=0.4]{bg/fig/apeg.png}
+    \begin{tikzpicture}[mir, node distance=10mm and 2mm]
+        \node (o1) [draw, dashed, ellipse, minimum width=90mm,
+                    minimum height=10mm] at (0,0) {};
+        \matrix (m1) [matrix of nodes, mirnode, column sep=20mm] at (0, 0) {
+            $\times$ & $\times$ & $+$ & $+$ \\
+        };
+        \node (o2) [draw, dashed, ellipse, minimum width=30mm,
+                    minimum height=10mm, below left=of o1] {};
+        \draw[-] (m1-1-1) -- (o2);
+
+        \matrix (m2) [matrix of nodes, mirnode, column sep=15mm] at (o2) {
+            $+$ & $\square$ \\
+        };
+        \node (*1) [mirnode, below left=of m2-1-1] {$\times$};
+        \node (2) [mirnode, below left=of *1] {$2$};
+        \node (a1) [mirnode, below right=of *1] {\vara};
+        \node (b1) [mirnodealt, below right=of m2-1-1] {\varb};
+        \draw[-] (m2-1-1) -- (*1) -- (2);
+        \draw[-] (*1) -- (a1);
+        \draw[-] (m2-1-1) -- (b1);
+
+        \node (box) [rect, below=of m2-1-2, xshift=6mm]
+            {$+(\vara, \vara, \varb)$};
+        \draw[-] (m2-1-2) -- (box);
+
+        \node (c1) [mirnode, below=of m1-1-1, xshift=12mm, yshift=4mm] {\varc};
+        \draw[-] (m1-1-1) -- (c1) -- (m1-1-2)
+            .. controls ($(m1-1-2) +(2,-2)$) and ($(o2) +(1,1)$) ..  (o2);
+
+        \node (*2) [mirnode, below=of m1-1-3, xshift=12mm] {$\times$};
+        \node (c2) [mirnode, below right=of *2] {\varc};
+        \draw[-] (m1-1-3) -- (*2) -- (m1-1-4);
+        \draw[-] (*2) -- (c2);
+
+        \node (o3) [draw, dashed, ellipse, minimum width=30mm,
+                    minimum height=10mm, below left=of *2] {};
+        \matrix (m3) [matrix of nodes, mirnode, column sep=15mm] at (o3) {
+            {} & $+$ \\
+        };
+        \node (a2) [mirnode, below left=of m3-1-2] {\vara};
+        \node (a3) [mirnode, below right=of m3-1-2] {\vara};
+        \node (i1) [coordinate, below=5mm of box, xshift=-10mm] {};
+        \draw[-] (m3-1-1)
+            to[out=-135, in=0] (i1)
+            to[out=180, in=45, looseness=2] (*1.45);
+        \draw[-] (*2) -- (o3);
+        \draw[-] (a2) -- (m3-1-2) -- (a3);
+
+        \node (*3) [mirnode, below right=of m1-1-4, xshift=8mm] {$\times$};
+        \node (b2) [mirnode, below left=of *3] {\varb};
+        \node (c3) [mirnode, below right=of *3] {\varc};
+        \draw[-] (m1-1-4) -- (*3.120);
+        \draw[-] (b2) -- (*3) -- (c3);
+        \draw[-] (m1-1-3) to[out=-135, in=135] (*3);
+    \end{tikzpicture}
     \caption{%
         An example APEG for the expression $\left( \left( a + a \right) + b
-        \right) \times c$, taken from~\cite{martel12}.
+        \right) \times c$, from~\cite{martel12}.
     }\label{bg:fig:apeg}
 \end{figure}
 Take Figure~\ref{bg:fig:apeg} as our example, which not only contains standard
 tree nodes which we would expect from an arithmetic expression tree, but
 also an abstraction box and equivalent classes.  Each equivalent class is
 represented by an ellipse with a dashed border.  It is evident that each
-equivalent class indeed reflect a set of equivalent subtrees.  For instance,
+equivalent class indeed reflects a set of equivalent subtrees.  For instance,
 consider the bottom equivalent class which has two equivalent subtrees, the
-left and right ones represent $2 \times a$ and $a + a$ respectively.  Moreover,
-as the subexpression $(a + a) + b$ is a summation of multiple elements, an
-abstraction box \fbox{$+, (a, a, b)$}\, can therefore model the equivalent
-parsings of it.
+left and right ones represent $2 \times a$ and $a + a$ respectively.  In
+addition, as the subexpression $(a + a) + b$ is a summation of multiple
+elements, an abstraction box \fbox{$+, (a, a, b)$}\, can therefore model the
+equivalent parsings of it.
 
 Despite the compactness of APEGs, searching for the most accurate
 expression within an APEG is still exponentially complex, where the search
 utilizes the static analysis of floating-point errors introduced in
-Section~\ref{bg:sec:abstract_interpretation}.  For instance, consider an
-APEG with $n$ equivalent classes, each contains $2$ different choices, in
+Section~\ref{bg:sec:abstract_interpretation}.  For instance, consider an APEG
+with $n$ equivalent classes, where each contains $2$ different choices.  In
 the worst case, this may amount to a search of $2^n$ distinct equivalent
-expressions, so as to determine the optimal solution.  To resolve this problem,
-Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic to
-reduce the size of the search space\footnotemark[2].  Additionally, as it was
+expressions to determine the optimal solution.  To resolve this problem,
+Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic
+to reduce the size of the search space\footnotemark[2].  Additionally, as
 explained earlier, the time complexity to search for the optimal parsing of an
 abstraction box is double factorial.  They hence make use of another heuristic,
 which greedily pairs up terms in an abstraction box $B = \text{\fbox{$+,
@@ -317,7 +370,7 @@ distributivity and commutativity, and $\Pi_\rhd$ is the final saturated APEG\@.
 
 \subsubsection{Herbie}
 
-Unlike the APEG approach which focuses on building an \gls{ir} which can
+Unlike the APEG approach which focuses on building an \gls{ir} that can
 represent exponentially many equivalent expressions, Herbie, introduced by
 Panchekha \etal~\cite{panchekha15}, on the other hand, place emphasis on
 building an algorithm to efficiently improve numerical accuracy by arithmetic
@@ -329,15 +382,15 @@ optimization process, Herbie analyzes the discrepancy between evaluating
 an expression exactly, and in a given floating-point format with precision
 $\hat{p}$, due to round-off errors, for a common input $i \in I$.  However,
 because expressions contain irrational computations such as square roots,
-and transcendental functions, \eg~trigonometry, logarithm and~\etc, exact
+and transcendental functions, \eg~trigonometry, logarithm, \etc, exact
 computation is generally unattainable as it could require infinite precision
 in floating-point.  Instead, Herbie resorts to \gls{mpfr}, and iteratively
 increases the precision used to compute the approximate results for $e$, until
 the leading 64 bits in the result remain identical across iteration for all
 randomly sampled inputs $i \in I$.  Evaluating $e$ in the final precision $p$,
-therefore produces an \emph{almost exact} (AE)\footnotemark[3] result for
-$e$.  It is notable that in formulae, the glyph $\hat{\,}$ is used to denote
-approximation, whereas the absence of $\hat{\,}$ indicates an AE result.
+therefore produces an \emph{almost exact} (AE)\footnotemark[3] result for $e$.
+It is notable that in formulae, the term $\hat{x}$ over a $x$ is used to denote
+an approximation of $x$, whereas the absence of it indicates an AE result.
 \footnotetext[3]{%
     The original paper~\cite{panchekha15} uses ``exact'' to describe what is in
     fact a floating-point value with a precision $p$, which approximates the
@@ -347,7 +400,7 @@ approximation, whereas the absence of $\hat{\,}$ indicates an AE result.
 
 An iterative accuracy refinement procedure is then carried out to optimize an
 initial expression $e_0$.  This process identifies operators in the expression
-$e_0$ which contribute the largest round-off errors, and specifically apply
+$e_0$ which contribute the largest round-off errors, and specifically applies
 arithmetic rewriting to these operators, and repeats the process for the
 resulting expressions.  This procedure is carried out for a predetermined
 number $N$ of repeats (Herbie uses $N = 3$) as follows.
@@ -355,7 +408,7 @@ number $N$ of repeats (Herbie uses $N = 3$) as follows.
 To begin, for each operator in an original expression $e$, we accumulate all
 round-off errors for all sample inputs $i \in I$.  For instance, consider
 a binary operator $+$ which accepts two input arguments $e_1$ and $e_2$,
-where each argument are subexpressions.  To guarantee the correctness of
+where each argument is a subexpression.  To guarantee the correctness of
 the round-off error analysis of $+$, its subexpressions are evaluated
 into respective AE values $v_1$ and $v_2$ for a given input $i$.  Using
 $v_1$ and $v_2$ as inputs, the operator $+$ is then evaluated twice,
@@ -366,7 +419,7 @@ the number of floating-point values between the approximate and exact
 results\footnotemark[4]:
 \begin{equation}
     \mathcal{E}(x, y) = \log_2 \left| \left\{
-        z \in \mathsf{FP} \mid \min(x, y) \leq z \leq \max(x, y)
+        z \in \floatset \mid \min(x, y) \leq z \leq \max(x, y)
     \right\} \right|,
 \end{equation}
 The $\mathcal{E}(\hat{v}_i, v_i)$ is then accumulated for all sample inputs $i
@@ -378,7 +431,7 @@ equivalently:
 The top $M$ operators with the largest errors are then selected to be rewritten
 in the next stage.  Panchekha~\etal~use $M = 4$ in~\cite{panchekha15}.
 \footnotetext[4]{%
-    $\mathsf{FP}$ is the set of floating-point values in a precision which was
+    $\floatset$ is the set of floating-point values in a precision which was
     not mentioned by the original author~\cite{panchekha15}.
 }
 
@@ -388,36 +441,35 @@ The authors of Herbie identify that if subexpression of the selected operators
 are rewritten, transforming the selected operators' expression tree can provide
 greater chances of cancelling terms, hence significantly reduce the round-off
 errors.  The rewriting process therefore performs a recursively bottom-up
-transformation, which first rewrites the smaller subexpressions, then apply
+transformation, which first rewrites the smaller subexpressions, then applies
 transformation rules to the selected operators.  In contrast to APEGs, Herbie
 does not restrict its database of rewrites to the basic arithmetic rules such
 as associativity and distributivity, as they also admit expressions with
-fractions, square roots, exponentiation, logarithm and trigonometry functions,
+fractions, square roots, exponentiation, logarithm and trigonometric functions;
 additional rules thus must be provided for their corresponding algebraic
-identities.  In addition, Herbie has rules for special polynomial patterns,
-such as $a^3 + b^3 \equiv (a + b)(a^2 - ab + b^2)$, that are difficult to infer
-from using associativity, commutativity and distributivity alone.
+identities.  In addition, Herbie has rules for special polynomial patterns.
+For instance, it may rewrite $\vara^3 + \varb^3$ into $(\vara + \varb)(\vara^2
+- \vara\varb + \varb^2)$.
 
 The third step is to further simplify the expression generated from the
 rewriting step.  In this step, a set of simplification rules are applied to the
 expression for a small number of iterations, which transforms the original into
 a new expression.  However, unlike step 2, as new expressions are discovered,
-an equivalence graph is gradually constructed.  An expression, with the
-smallest tree structure, can then be extracted from the graph as the simplified
-result.
+an equivalence graph is gradually constructed.  An expression with the smallest
+tree structure can then be extracted from the graph as the simplified result.
 
-Herbie further identifies that some of these expressions, when evaluated,
-could produce highly inaccurate outcomes near zero or infinity.  In the fourth
-step, it will then substitute the expression with a series expansion, which
-may no longer suffer from this problem.  This series expansion can be further
-restructured in future iterations of refinement.
+Herbie further identifies that some of these expressions, when evaluated, could
+produce highly inaccurate outcomes near zero or infinity.  In the fourth step,
+it will then substitute the expression with a series expansion to approximate
+the original, which may no longer suffer from this problem.  This series
+expansion can be further restructured in future iterations of refinement.
 
 As the above process produce multiple candidate expressions, in the next
 iteration of the accuracy refinement procedure, the four steps above are
 applied to all candidate expressions, and these steps will be repeated
 $N$ times in total, generating a set of accurate expressions that are
 mathematically equivalent to the original.  Finally, because different
-candidate expressions may be excel on different input conditions, a dynamic
+candidate expressions may excel on different input conditions, a dynamic
 programming algorithm, is therefore applied to split the input space into
 multiple parts, where each part can be computed by different optimized
 expressions.  As an example, consider the following formula for finding a root
@@ -430,7 +482,7 @@ expressions to be evaluated under different conditions, to improve the
 numerical accuracy of $x_1$, when evaluated with double-precision:
 \begin{equation}
     x_1 = \left\{ \begin{aligned}
-            & \frac{4ac}{-b + \sqrt{b^2 - 4ac}} / {2a} \qquad
+            & \left. \frac{4ac}{-b + \sqrt{b^2 - 4ac}} \right/ {2a} \qquad
                 && \text{if~} b < 0, \\
             & \left( -b - \sqrt{b^2 - 4ac} \right) \frac{1}{2a}
                 && \text{if~} 0 \leq b \leq 10^{127}, \\
@@ -448,7 +500,7 @@ overhead of 40\% for the generated expressions.
 \subsection{Numerical Programs}
 \label{bg:sub:numerical_programs}
 
-The technique we have explored so far has only been limited to individual
+The techniques we have explored so far have only been limited to individual
 arithmetic expressions; for a complete numerical program transformation, not
 only is it necessary to support sequential execution of straight-line code,
 but also control-flow structures such as conditional branches and loops.
@@ -456,7 +508,7 @@ However, the techniques in this research area to optimize numerical accuracy
 are currently not mature enough to be used in compilers and \gls{hls} tools.
 
 Tate~\etal~\cite{tate09} with their \glspl{epeg}, enable equivalent programs
-to be discovered efficiently.  However their method do not consider the
+to be discovered efficiently.  However their method does not consider the
 implications of rewriting arithmetic expressions in the data-flow on numerical
 accuracy.
 
