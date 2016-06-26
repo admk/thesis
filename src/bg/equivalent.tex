@@ -527,6 +527,18 @@ their approach is not able to optimize across control-flow boundaries such as
 \iflit~statements and \whilelit~loops.  Their method can improve numerical
 accuracy by approximately 20\% for simple loop examples.
 
+To summarize, the lack of the ability to trade-off multiple performance
+objectives in program optimization provides a strong motivation for the
+work in this thesis.  We believe that rewriting a numerical program could
+not only improve its numerical accuracy, but also at the same time increase
+its throughput while optimizing for resource utilization.  In addition,
+as mentioned earlier, all above program optimization methods have their
+shortcomings, they thus form the basis for this thesis to develop an
+optimization framework which avoids these disadvantages.  Similar to these
+program optimization techniques, this thesis presents a method which builds
+on top of the formal semantics of programs.  This ensures the correctness of
+program optimization.
+
 % The structure of the PEG makes it a difficult task to analyze the graph for
 % numerical accuracy, as the $\theta$ node generates an infinite sequence, and
 % it is not clear how this sequence can be intelligently pruned to a finite
