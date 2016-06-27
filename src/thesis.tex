@@ -51,7 +51,6 @@
 \label{chp:background}
 
 \input{bg/introduction}
-\clearpage
 \input{bg/fpga}
 \input{bg/high_level_synthesis}
 \input{bg/abstract_interpretation}
@@ -61,29 +60,6 @@
 
 \chapter{Structural Optimization of Arithmetic Expressions}
 \label{chp:stropt}
-
-% \begin{abstract}
-    % This paper introduces SOAP, a new tool to automatically optimize the
-% structure of arithmetic expressions for FPGA implementation as part of a
-% high level synthesis flow, taking into account axiomatic rules derived
-% from real arithmetic, such as distributivity, associativity and others. We
-% explicitly target an optimized area/accuracy trade-off, allowing arithmetic
-% expressions to be automatically re-written for this purpose. For the first
-% time, we bring rigorous approaches from software static analysis, specifically
-% formal semantics and abstract interpretation, to bear on source-to-source
-% transformation for high-level synthesis. New abstract semantics are developed
-% to generate a computable subset of equivalent expressions from an original
-% expression. Using formal semantics, we calculate two objectives, the accuracy
-% of computation and an estimate of resource utilization in FPGA\@. The
-% optimization of these objectives produces a Pareto frontier consisting of a
-% set of expressions. This gives the synthesis tool the flexibility to choose
-% an implementation satisfying constraints on both accuracy and resource
-% usage. We thus go beyond existing literature by not only optimizing the
-% precision requirements of an implementation, but changing the structure of the
-% implementation itself. Using our tool to optimize the structure of a variety of
-% real world and artificially generated examples in single precision, we improve
-% either their accuracy or the resource utilization by up to 60\%.
-% \end{abstract}
 
 \input{stropt/introduction}
 \input{stropt/accuracy}
@@ -96,22 +72,6 @@
 
 \chapter{Numerical Program Optimization}
 \label{chp:progopt}
-
-% This paper introduces a new technique, and its associated open source tool to
-% automatically perform source-to-source optimization of numerical programs,
-% specifically targeting the trade-off between numerical accuracy and resource
-% usage as a high-level synthesis flow for FPGA implementations.  We introduce
-% a new intermediate representation, which we call metasemantic intermediate
-% representation (MIR), to empower the abstraction and optimization of
-% numerical programs.  We efficiently discover equivalent structures in
-% MIRs by exploiting the rules of real arithmetic, such as associativity
-% and distributivity, and rules that enable control flow restructuring, and
-% produce Pareto frontiers of equivalent programs that trades off LUTs, DSPs
-% and accuracy.  Additionally, we further broaden the Pareto frontier in our
-% optimization flow to automatically explore the numerical implications of
-% partial loop unrolling and loop splitting.  In real applications, our tool
-% discovers a wide range of Pareto optimal options, and the most accurate one
-% improves the accuracy of numerical programs by up to 65\%.
 
 \input{progopt/introduction}
 \input{progopt/syntax}
@@ -126,23 +86,6 @@
 
 \chapter{Accurate and Resource Efficient Pipelining of Numerical Programs}
 \label{chp:latopt}
-
-% Loops are pervasive in numerical programs, so state-of-the-art high-level
-% synthesis (HLS) tools use pipelining to schedule them efficiently. Still, the
-% run time performance of the resultant FPGA implementation is limited by data
-% dependences between loop iterations. Some of these dependence constraints can
-% be alleviated by rewriting the program according to arithmetic identities
-% (\eg~associativity and distributivity), memory access reductions, and
-% control flow optimizations (\eg~partial loop unrolling). HLS tools cannot
-% safely enable such rewrites by default because they may spoil the accuracy
-% of floating-point computations and increase area usage. In this paper,
-% we introduce the first open-source program optimizer for automatically
-% rewriting a given program to optimize latency while controlling for accuracy
-% and area. Our tool reports a three-dimensional Pareto frontier that the
-% programmer can use to resolve the trade-off according to their needs. When
-% applied to a suite of PolyBench and Livermore Loops benchmarks, our tool has
-% generated programs that enjoy up to a 12$\times$ speedup, with a simultaneous
-% 7$\times$ increase in accuracy, at a cost of up to 4$\times$ more LUTs.
 
 \input{latopt/introduction}
 \input{latopt/motivation}

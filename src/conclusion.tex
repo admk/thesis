@@ -25,8 +25,8 @@ life.  The aforementioned functional equivalence between source and circuit
 guaranteed by \gls{hls} tools is therefore unable to regain any lost accuracies
 due to approximation.
 
-Traditional \gls{ir}-level \gls{hls} program optimization consist of a series
-of transformation passes.  Most of these passes do not predict whether
+Traditional \gls{ir}-level \gls{hls} program optimization consists of a
+series of transformation passes.  Most of these passes do not predict whether
 they have negative impact on the resulting circuit, and they limit their
 capabilities by preserving functional equivalence.  Varying the order of these
 passes could have significant impact on the quality, as these passes interact
@@ -120,9 +120,12 @@ explored in Chapter~\ref{chp:progopt}.  Often as we optimize numerical programs
 by spending more resources, latency and round-off error can be simultaneously
 minimized, as more resources would allow greater flexibility to discover
 equivalent programs that often perform well in terms of run time and accuracy.
-By optimizing a suite of benchmark examples from PolyBench and Livermore loops,
-the tool improves the latency and accuracy of each by up to 12$\times$ and
-7$\times$ respectively, at a cost of 4$\times$ more resource utilization.
+Additionally, this process is simultaneously driven by resource minimization,
+allowing the area-latency product to decrease as we explore increasingly deeper
+partial unrolling.  By optimizing a suite of benchmark examples from PolyBench
+and Livermore loops, the tool improves the latency and accuracy of each by up
+to 12$\times$ and 7$\times$ respectively, at a cost of 4$\times$ more resource
+utilization.
 
 
 \section{Future Prospects}

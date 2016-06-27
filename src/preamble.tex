@@ -1,6 +1,6 @@
 \documentclass[%
     paper=A4,
-    twoside=true,
+    twoside=semi,
     openright,
     parskip=full,
     chapterprefix=true,
@@ -12,7 +12,7 @@
     captions=tableabove,
     draft=false,
 ]{scrreprt}%
-
+\usepackage{scrhack}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[
@@ -58,7 +58,10 @@
 \usepackage{verbatim}
 \usepackage{xpatch}
 
-\raggedbottom
+\def\tt{\normalfont\ttfamily}
+\pdfsuppresswarningpagegroup=1%
+
+\raggedbottom%
 
 \newacronymstyle{em-long-short}
 {%
@@ -95,14 +98,6 @@
 }
 \graphicspath{{stropt/fig/}{progopt/fig/}{latopt/fig/}}
 \DeclareGraphicsExtensions{.pdf}
-
-\pgfplotsset{select coords between index/.style 2 args={%
-    x filter/.code={%
-        \ifnum\coordindex<#1\def\pgfmathresult{}\fi
-        \ifnum\coordindex>#2\def\pgfmathresult{}\fi
-    },
-    filter discard warning=false,
-}}
 
 \lstset{%
   language=C,
@@ -362,4 +357,17 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
   },
   o/.default=1.2pt,
 }
+
+\pgfplotsset{
+    compat=1.10,
+    every axis/.style={},
+    select coords between index/.style 2 args={%
+        x filter/.code={%
+            \ifnum\coordindex<#1\def\pgfmathresult{}\fi
+            \ifnum\coordindex>#2\def\pgfmathresult{}\fi
+        },
+        filter discard warning=false,
+    }
+}
+
 % vim: nospell

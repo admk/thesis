@@ -210,14 +210,23 @@ synthesize at least 2 multipliers.
 For straight-line code, non-pipelined loops, and different loops, we use a
 simple \gls{alap} scheduling~\cite{wang_hls} to estimate resource utilization.
 
-Finally, we accumulate the number of \glspl{lut} and \gls{dsp} elements for all
-allocated operators, which is the estimated resource utilization for the full
-program:
+Finally, we accumulate the number of \glspl{lut} and \gls{dsp} elements
+for all allocated operators.  In addition, we estimate the number of
+\glspl{lut} required by multiplexers generated for sharing operators, where
+$R^\mathrm{LUTs}_\mathrm{mux}$ approximates $1/n$ of the number of \glspl{lut}
+required by an $n$-to-1 multiplexer.  The final result is the estimated
+resource utilization for the full program:
 \begin{equation}
-    r_\mathrm{LUT} =
-        \sum_{\opsymbol \in \opset} a_\opsymbol R^\mathrm{LUTs}_\opsymbol, \quad
-    r_\mathrm{DSP} =
-        \sum_{\opsymbol \in \opset} a_\opsymbol R^\mathrm{DSPs}_\opsymbol,
+    \begin{aligned}
+        r_\mathrm{LUT} &=
+            \sum_{\opsymbol \in \opset} \left(
+                a_\opsymbol R^\mathrm{LUTs}_\opsymbol +
+                \left( n_\opsymbol - a_\opsymbol \right)
+                    R^\mathrm{LUTs}_\mathrm{mux}
+            \right), \\
+        r_\mathrm{DSP} &=
+            \sum_{\opsymbol \in \opset} a_\opsymbol R^\mathrm{DSPs}_\opsymbol,
+    \end{aligned}
 \end{equation}
 where $R^\mathrm{LUTs}_\opsymbol$ and $R^\mathrm{DSPs}_\opsymbol$ denote the
 number of \glspl{lut} and \glspl{dsp} required by one operator $\opsymbol$

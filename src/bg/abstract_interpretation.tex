@@ -179,9 +179,9 @@ with~\eqref{bg:eq:dfa0} and~\eqref{bg:eq:dfa2}.  We arrive at:
     \right) \cap \{ v \in \realset \mid v > 1 \}.
     \label{bg:eq:dfa_a1}
 \end{equation}
-It turns out that the set of all real numbers greater than $1$, or:
+It turns out that the set of all real numbers greater than $1$:
 \begin{equation}
-    A(1) = \{ v \in \realset \mid v > 1 \}
+    A(1) = \{ v \in \realset \mid v > 1 \},
     \label{bg:eq:a11}
 \end{equation}
 is a solution to~\eqref{bg:eq:dfa_a1}.  Substituting $A(1)$ in the right-hand
@@ -726,9 +726,9 @@ more expressive than intervals.  This is because intervals can only imply
 inequalities of the latter form, $\pm \varx \leq c$, but not the former, $\varx
 - \vary \leq c$.
 
-Based on affine arithmetic, Ghorbal~\etal~\cite{ghorbal09} propose an abstract
-domain, Taylor1+\@.  This domain uses an equation of the form to capture the
-bound on a variable $\varx$:
+Based on \gls{aa}, Ghorbal~\etal~\cite{ghorbal09} propose an abstract domain,
+Taylor1+\@.  This domain uses an equation of the form to capture the bound on a
+variable $\varx$:
 \begin{equation}
     \tilde{\varx} =
         \alpha^\varx_0 + \sum_{i = 1}^{n} \alpha^\varx_i \varepsilon_i,
@@ -757,7 +757,7 @@ expressed by a set of linear inequalities such as the following:
 Libraries that implement the polyhedra domain include APRON~\cite{apron} and
 Parma Polyhedra Library~\cite{ppl}.  Although the polyhedra domain is very
 accurate for linear computations, Ghorbal~\etal~\cite{ghorbal09} find both
-libraries to be much slower than their affine arithmetic based approach.
+libraries to be much slower than their \gls{aa} based approach.
 
 In addition to abstract domains on reals and floating-point values,
 integer-based domains are further presented by several authors.

@@ -1,7 +1,7 @@
 \section{Evaluation}
 \label{po:sec:results}
 
-\subsection{Method}
+% \subsection{Method}
 
 In this section we optimize a set of numerical programs using \soap{} in a
 benchmark suite with six different examples.  We use the IEEE 754 32-bit
@@ -122,7 +122,7 @@ trade-off curve with the most accurate option improving the accuracy by 65\%.
 In Figure~\ref{po:fig:filter}, because the loop kernel of \texttt{filter}
 has the expression:
 \begin{equation}
-    \sum_{i=0}^2{\left( a_i y_{i+1} + b_i x_i \right)},
+    \sum_{i=0}^2{\left( a_i \vary_{i+1} + b_i \varx_i \right)},
 \end{equation}
 which has a large number of equivalent expressions, without increasing the
 resource usage, our optimization improves its accuracy by 14.5\%.

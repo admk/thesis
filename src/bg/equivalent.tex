@@ -311,8 +311,8 @@ mathematically equivalent.  This is analogous to forming equivalence edges in
         \draw[-] (m1-1-3) to[out=-135, in=135] (*3);
     \end{tikzpicture}
     \caption{%
-        An example APEG for the expression $\left( \left( a + a \right) + b
-        \right) \times c$, from~\cite{martel12}.
+        An example APEG for the expression $\left( \left( \vara + \vara \right)
+        + \varb \right) \times \varc$, from~\cite{martel12}.
     }\label{bg:fig:apeg}
 \end{figure}
 Take Figure~\ref{bg:fig:apeg} as our example, which not only contains standard
@@ -320,11 +320,11 @@ tree nodes which we would expect from an arithmetic expression tree, but
 also an abstraction box and equivalent classes.  Each equivalent class is
 represented by an ellipse with a dashed border.  It is evident that each
 equivalent class indeed reflects a set of equivalent subtrees.  For instance,
-consider the bottom equivalent class which has two equivalent subtrees, the
-left and right ones represent $2 \times a$ and $a + a$ respectively.  In
-addition, as the subexpression $(a + a) + b$ is a summation of multiple
-elements, an abstraction box \fbox{$+, (a, a, b)$}\, can therefore model the
-equivalent parsings of it.
+consider the bottom equivalent class which has two equivalent subtrees,
+the left and right ones represent $2 \times \vara$ and $\vara + \vara$
+respectively.  In addition, as the subexpression $(\vara + \vara) + \varb$ is
+a summation of multiple elements, an abstraction box \fbox{$+, (\vara, \vara,
+\varb)$}\, can therefore model the equivalent parsings of it.
 
 Despite the compactness of APEGs, searching for the most accurate
 expression within an APEG is still exponentially complex, where the search
