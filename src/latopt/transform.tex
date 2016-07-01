@@ -300,30 +300,29 @@ optimization on the latency, resource usage and accuracy of numerical programs,
 than is possible using only a subset of them.
 \begin{table}[t]
     \caption{%
-        Before-and-after examples to demonstrate the access reduction rules
-        introduced in this chapter.}\label{lo:tab:rules}
-    \newcommand\tstack[1]{\begin{tabular}[t]{@{}l@{}}#1\end{tabular}}
-        \centering
-    \begin{tabular}{@{}l@{~~~}l@{}}
-        \hline
+        Before-and-after examples to demonstrate the access reduction rules.
+    }\label{lo:tab:rules}
+    \centering
+    \begin{tabular}{ll}
+        \toprule
         \multicolumn{2}{c}{\textbf{Access Reduction Rules}}
-        \\\hline
-        \emph{Multiple reads} &
+        \\\midrule\midrule
+        \Shade\emph{Multiple reads} & \Shade%
             \texttt{x=A[i-{}-]; y=A[i+1];} $~\eqgenrel~$
             \texttt{x=A[i-{}-]; y=x;}
-        \\\hline
+        \\\midrule
         \emph{Multiple writes} &
             \texttt{A[i++]=x; A[i-1]=y;} $~\eqgenrel~$
             \texttt{A[i++]=y;}
-        \\\hline
-        \emph{Read after write} &
+        \\\midrule
+        \Shade\emph{Read after write} & \Shade%
             \texttt{A[i++]=x; y=A[i-1];} $~\eqgenrel~$
             \texttt{A[i++]=x; y=x;}
-        \\\hline
+        \\\midrule
         \emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) &
             \texttt{A[i]=x; y=A[j];} $~\eqgenrel~$
             \texttt{y=A[j]; A[i]=x;}
-        \\\hline
+        \\\bottomrule
     \end{tabular}
 \end{table}
 

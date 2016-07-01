@@ -82,10 +82,11 @@ The contributions of this chapter include:
     not only identifies common subexpressions, but also opportunities to share
     arithmetic operations temporally.
 
-    \item A significantly faster efficient discovery of equivalent programs
-    through a faster accuracy analysis that make use of the above scheduling
-    analysis for dependence checking (Section~\ref{lo:sub:accuracy}),
-    graph partitioning, and intelligent pruning of optimization candidates
+    \item A significantly faster efficient discovery of equivalent
+    programs through a faster accuracy analysis that analyze a fraction
+    of loop nest executions, speed up analysis of loop nests without
+    inter-iteration dependences (Section~\ref{lo:sub:accuracy}), graph
+    partitioning, and intelligent pruning of optimization candidates
     (Section~\ref{lo:sub:algorithm}).
 
     \item Incorporating the above-mentioned techniques, \soap{} is now

@@ -1,28 +1,29 @@
-As the computational capability of new \gls{fpga} devices grows at an
-exponential rate, numerical applications running on them become increasingly
-more complex.  Traditional design methodologies, working at the \gls{rtl},
-have become increasingly costly, forcing us to work at a higher abstraction
-level~\cite{gajski}, \eg~to implement our designs using \glspl{hll} such as
-C\@.
+As the computational capability of \gls{fpga} devices grows at an exponential
+rate, numerical applications running on them become increasingly more
+complex.  Traditional design methodologies, working at the \gls{rtl}, have
+become increasingly costly, forcing us to work at a higher abstraction
+level~\cite{gajski, bdti_xilinx, meeus12}, \eg~to implement our designs using
+\glspl{hll} such as C\@.
 
 There are many reasons why \gls{fpga} implementations of numerical algorithms
 are now best obtained via \gls{hls} from C\@: less development effort, the
 abundance of software engineers compared to hardware designers, the relative
-ease of testing C code on an ordinary microprocessor, the opportunities for
-rapid design space exploration, and so on~\cite{meeus12}. Great advances
-have been made in this area recently, and the output from \gls{hls} tools is
-nowadays competitive with hand-crafted designs~\cite{bdti_xilinx}.
+ease of testing C code on an ordinary microprocessor, the opportunities
+for rapid design space exploration, and so on~\cite{gajski94, meeus12,
+nane15}. Great advances have been made in this area recently, and the
+output from \gls{hls} tools is nowadays competitive with hand-crafted
+designs~\cite{bdti_xilinx}.
 
-Numerical C programs are typically written with floating-point arithmetic,
-following the \emph{IEEE 754 standard} for floating-point computation.
-Floating-point numbers can represent a wide range of real values, and
-most programming languages support the standard seamlessly.  The standard
-has become ubiquitous, and is used in most of our software and hardware
-implementations of numerical programs.  Recently, Altera has introduced Arria
-10 and Stratix 10 devices to incorporate hardened floating-point \gls{dsp}
-blocks in the \gls{fpga} fabric.  As a result, we expect to see floating-point
-arithmetic continuing to dominate in the \gls{fpga} implementation of numerical
-applications.
+Numerical C programs are typically written with floating-point
+arithmetic, following the \emph{IEEE 754 standard} for floating-point
+computation~\cite{ieee754}.  Floating-point numbers can represent a wide
+range of real values, and most programming languages support the standard
+seamlessly.  The standard has become ubiquitous, and is used in most of our
+software and hardware implementations of numerical programs.  Recently,
+Altera has introduced Arria 10 and Stratix 10 devices to incorporate hardened
+floating-point \gls{dsp} blocks in the \gls{fpga} fabric~\cite{stratix10fp}.
+As a result, we expect to see floating-point arithmetic continuing to dominate
+in the \gls{fpga} implementation of numerical applications.
 
 Although we make use floating-point arithmetic to implement algorithms,
 generally specified in real arithmetic, in practice, it is often neglected that
@@ -31,17 +32,17 @@ discrepancy between the actual result in real arithmetic and the rounded result
 computed with floating-point arithmetic.  Round-off errors, when accumulated,
 can have a devastating effect on numerical accuracy~\cite{higham02}.
 
-In fact, properties such as associativity $(a + b) + c \equiv a + (b + c)$
-and distributivity $a \times (b + c) \equiv a \times b + a \times c$ which
-we consider to be fundamental laws of real numbers no longer hold under
-floating-point arithmetic.  For instance, under single-precision floating-point
-arithmetic with rounding to the nearest, the result of $(2^{-24} + 2^{-24})
-+ 1 = 1.00000012\mathellipsis$ is exact, but $(1 + 2^{-24}) + 2^{-24}$ is
-rounded to $1$.  Round-off errors in a numerical program are dependent on
-every arithmetic operation and every input value, and with the impact on
-floating-point accuracy being so esoteric, it is challenging for engineers to
-understand the repercussions of switching between ``\verb|(a + b) * c|'' and
-``\verb|a * c + b * c|'' in their programs.
+In fact, properties such as associativity $(a + b) + c \equiv a + (b +
+c)$ and distributivity $a \times (b + c) \equiv a \times b + a \times c$
+which we consider to be fundamental laws of real numbers no longer hold
+under floating-point arithmetic~\cite{goldberg}.  For instance, under
+single-precision floating-point arithmetic with rounding to the nearest, the
+result of $(2^{-24} + 2^{-24}) + 1 = 1.00000012\mathellipsis$ is exact, but
+$(1 + 2^{-24}) + 2^{-24}$ is rounded to $1$.  Round-off errors in a numerical
+program are dependent on every arithmetic operation and every input value, and
+with the impact on floating-point accuracy being so esoteric, it is challenging
+for engineers to understand the repercussions of switching between
+``\verb|(a + b) * c|'' and ``\verb|a * c + b * c|'' in their programs.
 
 These numerical properties nevertheless open the possibility of using these
 rules to generate a program equivalent to the original program in real
@@ -58,22 +59,23 @@ the original code.  There does not exist a trivial process to apply steps of
 transformations using equivalence rules to \emph{optimally} trade off latency,
 resources and numerical accuracy.
 
-Existing \gls{hls} tools consider these rewrites to be unsafe, and thus make
-very limited use of them when restructuring floating-point data-paths.  For
-instance, \gls{vhls}~\cite{vivado_hls} has only a very simple \emph{expression
-balancing} feature that uses associativity to improve latency, and only
-expressions with either additions or multiplications are optimized.  Moreover,
-it does not produce optimal loop pipelining, because it does not take
-into account the implications of these transformations on inter-iteration
-dependences and does not explore partial loop unrolling.  In addition,
-\gls{vhls} cannot reason about how this feature affects numerical accuracy;
-there is no guarantee that this transformation will not result in a
-catastrophically inaccurate implementation.
+Existing \gls{hls} tools consider these rewrites to be
+unsafe~\cite{vivado_hls}, and thus make very limited use of them
+when restructuring floating-point data-paths.  For instance,
+\gls{vhls}~\cite{vivado_hls} has only a very simple \emph{expression balancing}
+feature that uses associativity to improve latency, and only expressions with
+either additions or multiplications are optimized.  Moreover, it does not
+produce optimal loop pipelining, because it does not take into account the
+implications of these transformations on inter-iteration dependences and does
+not explore partial loop unrolling.  In addition, \gls{vhls} cannot reason
+about how this feature affects numerical accuracy; there is no guarantee
+that this transformation will not result in a catastrophically inaccurate
+implementation.
 
 In response, this thesis proposes new methodologies and an associated
 tool---\soap, a fully automatic source-to-source optimizer that augments
 \gls{vhls}---to optimize a given numerical C program using these
-transformations in tandem with conventional program transformations.  Our
+transformations in tandem with conventional program transformations.  The
 optimizer discovers not only one, but a wide spectrum of program candidates.
 When synthesized in \gls{vhls}, these candidates trade off three performance
 metrics of great importance to engineers: run time, resource usage and
@@ -121,16 +123,16 @@ optimality.  Second, we further reduce the effort of exploring the new search
 space by intelligently pruning the set of candidates as it progresses up the
 input program's abstract syntax tree.
 
-All of our techniques above are designed with \emph{compositionality} in mind.
+All of the techniques above are designed with \emph{compositionality} in mind.
 This means that we recursively break down each component we work on---such
-as programs and \glspl{mir}---into smaller components and use our analysis
+as programs and \glspl{mir}---into smaller components and use our analyses
 to calculate the results of each, such as accuracy, area and latency, and
 subsequently equivalent candidates; the final results are then constructed from
 those of the subcomponents.  When compared with a global approach, there are
 two major advantages.  First, because components are considered independent
 of each other, once analyzed the results can be reused in the analysis in the
 larger enclosing components.  Another advantage of this is that although we
-will not formally prove the correctness of our methodologies in this thesis,
+will not formally prove the correctness of the methodologies in this thesis,
 they are designed to be easily expressible in a formal language, and by proving
 small lemmas, we can deductively prove the correctness of, for instance, a
 program-to-\gls{mir} translation.

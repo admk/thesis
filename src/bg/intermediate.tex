@@ -73,14 +73,14 @@ is taken.  For instance, we consider the first line of the third \gls{bb} in
 Figure~\ref{bg:lst:dotprod_ll}:
 \begin{lstlisting}[language=LLVM]
     ; <label>:2     ; preds = %2 %0
-\end{lstlisting}\vspace{-15pt}
+\end{lstlisting}\vspace{-10pt}
 which indicates it has a label value $2$ and the control-flow coming to this
 \gls{bb} is from either \gls{bb}2 or \gls{bb}0, here we use \gls{bb}$n$ as a
 shorthand denoting a \gls{bb} labelled $n$.  Additionally, this \gls{bb} ends
 with the branch terminator instruction:
 \begin{lstlisting}[language=LLVM]
     br i1 %exitcond, label %1, label %2
-\end{lstlisting}\vspace{-15pt}
+\end{lstlisting}\vspace{-10pt}
 This instruction directs the control-flow to \gls{bb}1 or \gls{bb}2,
 and the variable \verb|%exitcond| in the terminator instruction decides
 which branch is taken.  Finally, the complete \gls{cfg} is shown in
@@ -138,7 +138,7 @@ preceding \gls{bb} the control-flow came from.  For example, in \gls{llvmir},
 the instruction:
 \begin{lstlisting}[language=LLVM]
     %d.01 = phi float [ 0.000000e+00, %0 ], [ %8, %2 ]
-\end{lstlisting}\vspace{-15pt}
+\end{lstlisting}\vspace{-10pt}
 shows that if the control-flow originated from \gls{bb}0, then a constant zero
 is returned, otherwise the control-flow had to come from \gls{bb}2 and the
 value of \verb|%8| is used instead.
@@ -399,8 +399,8 @@ To illustrate, the $\mathrm{pass}_1$ node finds the first $\truelit$ in the
 list~\eqref{bg:eq:bool_seq}, $11$.  The $\mathrm{eval}$ node of the output
 variable \verb|y| subsequently fetches the $11$-th item from the list $[1, 2,
 3, 4, \mathellipsis]$ we produced earlier, which is $11$.  Similarly we can
-apply the same process to find that the output \verb|x| is $10!\,$, \ie~the
-factorial of 10.
+apply the same process to find that the output \verb|x| is \mbox{$10\,!\,$},
+\ie~the factorial of $10$.
 
 By using $\mathrm{pass}$ and $\mathrm{eval}$ nodes to represent the
 control-flow in an algebraic fashion, and mixing data- and control-flows
