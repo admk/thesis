@@ -149,14 +149,14 @@ fully pipelined, and use $7$ and $10$ cycles respectively to produce outputs.
 \begin{figure}[ht]
     \centering
     \begin{lstlisting}
-    #define N 1024
-    float dotprod(float A[N], float B[N]) {
-        float d = 0.0f;
-        for (int i = 0; i < N; i++) {
-            d = d + A[i] * B[i];
+        #define N 1024
+        float dotprod(float A[N], float B[N]) {
+            float d = 0.0f;
+            for (int i = 0; i < N; i++) {
+                d = d + A[i] * B[i];
+            }
+            return d;
         }
-        return d;
-    }
     \end{lstlisting}
     \caption{%
         A simple dot-product example which calculates the dot-product of two
@@ -352,7 +352,7 @@ simple program (Figure~\ref{bg:lst:dotprod}), one cycle,
     \node(d) at (0, 0) {\texttt{d}};
     \node(plus) at (5ex, 0) {$+$};
     \draw[->] (d)-- (plus);
-    \draw[->,dashed] (plus) to[out=115, in=65] (d);
+    \draw[->, dash pattern=on .4mm off 0.4mm] (plus) to[bend right] (d);
 },
 exists and the sums of latencies and dependence distances along this cycle are
 $10$ and $1$ respectively, thus the \gls{recmii} of this graph is $\lceil 10 /

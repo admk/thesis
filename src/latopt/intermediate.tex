@@ -111,10 +111,11 @@ for (int i=2; i<1023; i++)
             \draw[<-] (expand) -- (initmir);
 
             \node[mirnode] (fix) [below left=of expand] {$\fix$};
-            \node[mirnode] (fixA) [below right=of fix, xshift=5mm] {\texttt{A}};
+            \node[mirnode] (fixA) [below right=of fix, xshift=5mm]
+                {\texttt{A}};
             \node[mirnode] (b) [below left=10mm of fix] {$<$};
             \node[mirnode] (bi) [below left=of b] {\texttt{i}};
-            \node[mirnode] (bn) [below right=of b] {$n$};
+            \node[mirnodealt] (bn) [below right=of b, xshift=-2mm] {$1023$};
 
             \node[coordinate] (mir) [below=7mm of fix] {};
             \node[mirnode] (mA) [below right=1mm of mir] {\texttt{A}};
@@ -165,9 +166,6 @@ for (int i=2; i<1023; i++)
         {}\label{lo:fig:fib_mir}
     }
     \caption{%
-        A simple example program and its corresponding \gls{mir}\@.
+        A simple example program and its corresponding \acrshort{mir}\@.
     }
 \end{figure}
-
-\begin{lstlisting}
-\end{lstlisting}

@@ -131,7 +131,7 @@ for (int i=3; i<1023; i+=2)
         \end{tikzpicture}
         {}\label{lo:fig:fib_mir2}
     }
-    \caption{An example to illustrate how \glspl{mir} are partitioned.}
+    \caption{An example to illustrate how \acrshortpl{mir} are partitioned.}
 \end{figure}
 
 Because transformation rules can only be applied to each sub-\gls{mir} but not
@@ -186,9 +186,10 @@ selecting one point from the Pareto frontier $\epsilon_0$ (denoted by
 $\textsc{RandomSample}(\epsilon_0)$).  It then grows the set of points by
 adding the neighbours from the point that are separated by at least a certain
 distance $\delta$, where the distance $\delta$ is decreased iteratively by
-a factor $\zeta = 0.8$, until $\epsilon$ contains at least $\eta = 20\%$ of
-all points in the Pareto frontier.  The distance between two options $e$ and
-$e^\prime$ is computed as follows:
+a factor $\zeta = 0.8$, until $\epsilon$ contains at least $\eta = 20\%$
+of all points in the Pareto frontier, or a maximum number of attempts
+($\mathrm{attempt\_count}$) is reached.  The distance between two options $e$
+and $e^\prime$ is computed as follows:
 \begin{equation}
     \mathrm{dist} \left(e, e^\prime\right)
     = \sqrt{
@@ -212,7 +213,7 @@ and latency of $e$.
                     \textsc{RandomSample}\left(\epsilon_0\right)
                 \right\}$}
             \For{%
-                $i = 1, 2, \mathellipsis, \mathrm{Trials}$
+                $i = 1, 2, \mathellipsis, \mathrm{attempt\_count}$
             }
                 \For{$e \in \epsilon_0$}
                     \State{$\mathrm{in\_range} = \falselit$}
@@ -417,8 +418,8 @@ $\bar{\imath}, \bar{\jmath}$ are subscripts, and $e, e^\prime$ are expressions:
         \end{tikzpicture}
     \end{equation*}
     \caption{%
-        A sample \gls{mir} transformation using the \emph{independent accesses}
-        rule.
+        A sample \acrshort{mir} transformation using the \emph{independent
+        accesses} rule.
     }\label{lo:fig:indep_example}
 \end{figure}
 

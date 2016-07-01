@@ -334,36 +334,39 @@ Structural Optimization of Numerical Programs for High-Level Synthesis}
 }
 
 \tikzset{%
-  rect/.style = {
-    draw, rectangle, minimum height=2em, minimum width=3em, align=center
-  },
-  block/.style = {
-    draw, rectangle, minimum height=3em, minimum width=6em, align=center
-  },
-  mux/.style = {
-    draw, trapezium, text width=2mm, minimum height=3.5mm
-  },
-  mir/.style={%
-    node distance=3mm, baseline=(current bounding box.center)
-  },
-  mirnode/.style={%
-    inner sep=0.7mm, text height=1ex, text depth=0ex
-  },
-  mirnodealt/.style={%
-    inner sep=0.7mm, text depth=0ex
-  },
-  channel/.style = {
-      preaction = { -, draw = white, line width = 2pt },
-  },
-  o/.style={
-    shorten >=#1,
-    decoration={
-      markings, mark={ at position 1 with { \draw node
-          [circle, draw=black, fill=white, radius=#1, inner sep=#1] {}; } }
+    every path/.append style={
+        line width=0.6pt
     },
-    postaction=decorate
-  },
-  o/.default=1.2pt,
+    rect/.style = {
+        draw, rectangle, minimum height=2em, minimum width=3em, align=center
+    },
+    block/.style = {
+        draw, rectangle, minimum height=3em, minimum width=6em, align=center
+    },
+    mux/.style = {
+        draw, trapezium, text width=2mm, minimum height=3.5mm
+    },
+    mir/.style={%
+        node distance=3mm, baseline = (current bounding box.center)
+    },
+    mirnode/.style={%
+        inner sep=0.7mm, text height=1ex, text depth=0ex
+    },
+    mirnodealt/.style={%
+        inner sep=0.7mm, text depth=0ex
+    },
+    channel/.style = {
+        preaction = { -, draw = white, line width = 2pt },
+    },
+    o/.style={
+        shorten >=#1,
+        decoration={
+            markings, mark = { at position 1 with { \draw node
+            [circle, draw=black, fill=white, radius=#1, inner sep=#1] {}; } }
+        },
+        postaction=decorate
+    },
+    o/.default=1.2pt,
 }
 
 \pgfplotsset{

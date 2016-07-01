@@ -65,16 +65,13 @@ of values can be reached by $\varx$ is a subset of all real numbers $\realset$,
 the \emph{power set} of $\realset$, also known as the set of all subsets of
 $\realset$.
 \begin{figure}[ht]
-    \centering
-    \begin{minipage}{0.5\textwidth}
     \begin{lstlisting}
-    float simple(float x) {
-        while (x > 1.0)
-            x *= 0.9;
-        return x;
-    }
+        float simple(float x) {
+            while (x > 1.0)
+                x *= 0.9;
+            return x;
+        }
     \end{lstlisting}
-    \end{minipage}
     \caption{%
         A simple program example to be statically analyzed.
     }\label{bg:lst:simple}
@@ -111,7 +108,7 @@ evaluates to either true or false.
         \draw[->] (rtrn) -- (exit);
     \end{tikzpicture}
     \caption{%
-        The \gls{cdfg} of \texttt{simple} in Figure~\ref{bg:lst:simple}.
+        The \acrshort{cdfg} of \texttt{simple} in Figure~\ref{bg:lst:simple}.
     }\label{bg:fig:cdfg}
 \end{figure}
 
