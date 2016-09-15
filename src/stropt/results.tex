@@ -88,6 +88,20 @@ $x^6 + y^4 z^2 + y^2 z^4 - 3 x^2 y^2 z^2$, which is known to be difficult to
 evaluate accurately, especially using inputs $x\in[-0.99, 1]$, $y\in[1, 1.01]$,
 $z\in[-0.01, 0.01]$.
 
+All these above results are generated with the same type of floating-point
+operators in each expression.  Although in this chapter we do not analyze
+the number of \glspl{dsp} used in synthesized circuits, the \gls{dsp} count
+increases linearly with the estimated \gls{lut} count.  In the next chapter
+we further introduce the estimation of \gls{dsp} elements used as another
+objective to optimize.
+
+Because of the scalability problem of the depth limit $k$ mentioned in
+Section~\ref{so:sec:equivalent}, $k \leq 3$ for all of our experiments.  By
+setting $k = 4$, the tool does not terminate in reasonable amount of time and
+saturates the memory (16 GB) of our system.  In the following chapters, we
+propose methods to limit the number of iterations and the number of equivalent
+expressions discovered to mitigate the lack of scalability of $k$.
+
 Finally, Figure~\ref{so:fig:area} demonstrates the accuracy of the area
 estimation used in our analysis. It compares the actual \glspl{lut} necessary
 with the estimated number of \glspl{lut} using our semantics, by synthesizing

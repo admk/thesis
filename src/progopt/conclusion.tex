@@ -18,6 +18,13 @@ implementations of numerical algorithms often increase their number of
 arithmetic operations for reduced round-off errors.  In general, this could
 result in circuits that have longer wall-clock time.  However with greater
 area budget, we could have a greater freedom in rewriting programs to have
-greater throughputs.  In the next chapter, we therefore explore how to optimize
-numerical programs consisting of pipelined loops to trade off accuracy,
-resources and latency.
+greater throughputs.  It is also observed that even a small program requires
+a long optimization time, which prevented us from exploring greater partial
+loop unrolling depths, and hindered better accuracy improvements.  In addition,
+the optimized programs may require a substantial increase in resource budget,
+because they do not share resources among different clock cycles.  This will
+be addressed in the following chapter by introducing a new resource estimation
+analysis to allow operations to be shared temporally.  In the next chapter,
+we therefore propose refinements for a faster optimization to explore deeper
+loop unrolling, and explore how to optimize numerical programs consisting of
+pipelined loops to trade off accuracy, resources and latency.

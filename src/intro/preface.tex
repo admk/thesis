@@ -25,7 +25,7 @@ floating-point \gls{dsp} blocks in the \gls{fpga} fabric~\cite{stratix10fp}.
 As a result, we expect to see floating-point arithmetic continuing to dominate
 in the \gls{fpga} implementation of numerical applications.
 
-Although we make use floating-point arithmetic to implement algorithms,
+Although we make use of floating-point arithmetic to implement algorithms,
 generally specified in real arithmetic, in practice, it is often neglected that
 floating-point computations almost always have \emph{round-off errors}, \ie~the
 discrepancy between the actual result in real arithmetic and the rounded result
@@ -48,10 +48,10 @@ These numerical properties nevertheless open the possibility of using these
 rules to generate a program equivalent to the original program in real
 arithmetic, but which could have better quality than the original when
 evaluated in floating-point computation.  Experienced engineers often apply
-such expression rewriting intuitions in numerical programs.  For instance,
-when summing a sequence of floating-point values, one can sometimes reduce
-round-off error in the result by summing the inputs in ascending order.  On
-the other hand, one can often reduce latency by applying \emph{expression
+such expression rewriting intuitions in numerical programs.  For instance, when
+summing a sequence of floating-point values, one can sometimes reduce round-off
+error in the result by summing the inputs in ascending order of magnitude.
+On the other hand, one can often reduce latency by applying \emph{expression
 balancing}, \ie~rearranging operators in an expression to construct a balanced
 tree, so that more operators can work in parallel.  These heuristics cover a
 very limited number of possible transformations and may not always improve
@@ -96,12 +96,13 @@ optimize programs, our approach can be proved correct, in the sense that when
 executed using exact real arithmetic, the transformed version produces exactly
 the same output values as the original program. \emph{Semantics-directed}
 transformation means that not only do we use program syntax, but also the
-semantics, such as inferred numerical accuracy, to guide optimization and
-guarantee safety properties of the optimized program.  Our technique obtains
-when necessary, by analyzing the program, a bound and a round-off error bound
-on each variable in every program location.  These information are then used to
-guide program optimization, by analyzing and manipulating not only the syntax,
-but also the semantics of programs.
+semantics, \ie~the underlying meaning of programs such as inferred numerical
+accuracy, to guide optimization and guarantee safety properties of the
+optimized program.  Our technique obtains when necessary, by analyzing the
+program, a bound and a round-off error bound on each variable in every program
+location.  These information are then used to guide program optimization, by
+analyzing and manipulating not only the syntax, but also the semantics of
+programs.
 
 Generating candidate optimizations na{\"\i}vely would however produce a
 combinatorial explosion, even for small input programs.  For instance, in the

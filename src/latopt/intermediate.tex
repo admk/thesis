@@ -16,13 +16,14 @@ chapter, we extend \glspl{mir} to be able to represent programs that not only
 use scalar values, but also single- or multi-dimensional arrays.
 
 In many imperative languages such as C, arrays are stateful objects, \ie~they
-are used to store information, and changes to them are reflected to concurrent
-parts of the program that may be oblivious to the changes.  This characteristic
-is known as the lack of \emph{referential transparency}~\cite{sondergaard90}.
-Such behavior is not present in arithmetic expressions, many functional
-programming languages, \gls{ssa} forms, as well as \glspl{mir}.  This proves
-to be a challenge to us, because our efficient program optimization relies on
-recursively dividing the program into smaller subprograms that can be optimized
+have side-effects and are used to store information, and changes to them
+are reflected to concurrent parts of the program that may be oblivious to
+the changes.  This characteristic is known as the lack of \emph{referential
+transparency}~\cite{sondergaard90}.  Such behavior is not present in arithmetic
+expressions, many functional programming languages, \gls{ssa} forms, as well
+as \glspl{mir}.  This proves to be a challenge to us, because our efficient
+program optimization requires referential transparency to reliably and
+recursively divide the program into smaller subprograms that can be optimized
 independently, without affecting other subprograms.
 
 To remedy this, we treat arrays as immutable.  We use a function

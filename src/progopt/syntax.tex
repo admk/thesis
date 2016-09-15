@@ -45,12 +45,12 @@ $v$ terms $\varx, \vary, \varz \in \varset$ are variables.  In the next
 chapter, the definition of $x$ is further extended to arrays.  Additionally,
 $a, a_1, a_2 \in \aexprset$ are arithmetic expressions, and $b, b_1, b_2$
 ranges over Boolean expressions, $\bexprset$.  Program statements $s, s_1,
-s_2 \in \stmtset$ comprises assignment statements, sequential statements,
+s_2 \in \stmtset$ comprise assignment statements, sequential statements,
 \iflit~branches and \whilelit~loops.  Although \forlit~loop is not explicitly
-defined in the above syntax definition, it can be trivially expressed using a
-\whilelit~loop.  Finally, $t$ is an optional keyword that specifies the type of
-$x$, if $x$ is not previously declared.  A term of the form $[d]$ indicates $d$
-is optional.
+defined in the above syntax definition, it can be trivially expressed using
+a \whilelit~loop.  Finally, $t$ is an optional keyword which can be either
+\inttype{} or \floattype{} to specify the type of $x$ if $x$ is not previously
+declared.  Note that a term of the form $[d]$ indicates $d$ is optional.
 
 Furthermore, we introduce the ``\verb|#pragma| \verb|soap begin|'' and
 ``\verb|#pragma| \verb|soap end|'' directives to delimit the code fragment

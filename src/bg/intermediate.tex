@@ -11,9 +11,9 @@ deeper into the advantages and disadvantages of each.
 \subsection{Static Single Assignment Form and Control-Flow Graph}
 \label{bg:sub:ssa_cfg}
 
-Traditionally, \gls{ssa} form~\cite{alpern88, rau92} together with
-the \gls{cfg} are used to represent data- and control-flow of a
-program~\cite{cytron91}, because they are more favorable program
+Traditionally, \acrlong{ssa} form~\cite{alpern88, rau92} together
+with the \acrlong{cfg} are used to represent data- and control-flow
+of a program~\cite{cytron91}, because they are more favorable program
 representations on which optimization passes can be implemented, when
 compared to the original \gls{hll} or the output language.  \Gls{ssa} can be
 advantageous in implementing conventional optimization techniques, \eg~code
@@ -126,16 +126,16 @@ together, then adding the result with \verb|d| to form a new variable, and
 finally, the iteration value is incremented by $1$.  It may seem unusual that
 the accumulated sum of products and the iteration value are not assigned
 to \verb|d| and \verb|i| respectively.  We can imagine two \glspl{bb}, one
-initializes \verb|d| and \verb|i| to zeros, the other accumulates these two
-variables in a loop.  As all variables must be assigned once only, one of
-the \glspl{bb} should use different names for these two variables.  When the
-control-flows of these two \glspl{bb} join, we must introduce a way to read
-from the variables that are assigned in the two \glspl{bb} in the succeeding
-\gls{bb}\@.  A new instruction, called the $\phi$-function is therefore defined
-for our purpose.  The $\phi$-function accepts two variable names as its inputs,
-and produces the value of either variable as its output, determined by which
-preceding \gls{bb} the control-flow came from.  For example, in \gls{llvmir},
-the instruction:
+initializes \verb|d| and \verb|i| to zeros, the other updates these two
+variables in a loop.  As all variables in an \gls{ssa} form must be assigned
+once only, one of the \glspl{bb} should use different names for these two
+variables.  When the control-flows of these two \glspl{bb} join, we must
+introduce a way to read from the variables that are assigned in the two
+\glspl{bb} in the succeeding \gls{bb}\@.  A new instruction, called the
+$\phi$-function is therefore defined for our purpose.  The $\phi$-function
+accepts two variable names as its inputs, and produces the value of either
+variable as its output, determined by which preceding \gls{bb} the control-flow
+came from.  For example, in \gls{llvmir}, the instruction:
 \begin{lstlisting}[language=LLVM]
     %d.01 = phi float [ 0.000000e+00, %0 ], [ %8, %2 ]
 \end{lstlisting}\vspace{-10pt}
@@ -171,7 +171,7 @@ There are a number of alternative \glspl{ir} that are similar in construction
 to the \gls{ssa} and \gls{cfg} approach in \gls{llvmir}\@.  For instance, the
 data-dependence graph~\cite{rau94} introduced in Section~\ref{bg:sub:sdc} are
 designed for the purpose of capturing data-flow dependences in polyhedral
-methods. \gls{dfg} is a popular alternative to \gls{ssa}, which is often
+methods.  \Gls{dfg} is a popular alternative to \gls{ssa}, which is often
 a \gls{dag}.  In general, a \gls{dfg}'s vertices are input, output and
 operation nodes, and the edges capture the dependences between these nodes.
 A \glspl{dfg} however generally does not preserve enough information for us
@@ -315,9 +315,9 @@ values computed iteratively by the node's subgraph.  The first value in the
 list, is the computed result of $\iota$, which we name $i$, and values in
 the rest of the sequence are iteratively computed by $\mathrm{func}$.  In
 functional programming, this is similar to iteratively computing the fixpoint
-$\mathbf{fix}\,F$ of an initial list $[i]$, which is defined as:
+$\mathbf{fix}\,F$ of an initial empty list $[]$, which is defined as:
 \begin{equation}
-    \mathbf{fix}\,F ([i]) = \lim_{n \to \infty} F^n ([i]),
+    \mathbf{fix}\,F ([]) = \lim_{n \to \infty} F^n ([]),
     \quad\text{where~}
     F(v) = \mathrm{prepend}\left(
         i, \mathrm{map}\left( \mathrm{func}, v \right)
@@ -507,16 +507,17 @@ binary choice, therefore the number of \glspl{peg} can be represented in an
     }\label{bg:fig:epeg}
 \end{figure}
 
-By repeatedly applying all possible passes to the \gls{epeg}, this graph will
-eventually saturate, \ie~no more equivalent structure can be added to the graph
-because all possible equivalences are now discovered.  This process and the
-resulting \gls{epeg} is more space-time efficient than enumerating all possible
-\glspl{peg} along the path, because \gls{epeg} encourages sharing common
-subgraphs, even across equivalent edges.  This saturated graph can always be
-produced regardless of in what order we apply the passes, hence preventing
-the phase-ordering problem.  Furthermore, \gls{epeg} defers the decision
-of whether an optimization should be committed until we have reached full
-saturation, allowing the global optima to be discovered.  In contrast, because
-each optimization pass in a conventional compiler is performed once, the
-compilers must make the decision to commit changes immediately after applying
-the optimization, which consequently often results in local optima.
+By repeatedly applying transformation rules to append all possible equivalent
+structures to the \gls{epeg}, this graph will eventually saturate, \ie~no
+more equivalent structure can be added to the graph because all possible
+equivalences are now discovered.  This process and the resulting \gls{epeg}
+is more space-time efficient than enumerating all possible \glspl{peg} along
+the path, because \gls{epeg} encourages sharing common subgraphs, even across
+equivalent edges.  This saturated graph can always be produced regardless of in
+what order we apply the passes, hence preventing the phase-ordering problem.
+Furthermore, \gls{epeg} defers the decision of whether an optimization should
+be committed until we have reached full saturation, allowing the global
+optima to be discovered.  In contrast, because each optimization pass in a
+conventional compiler is performed consecutively, the compilers must make the
+decision to commit changes immediately after applying the optimization, which
+consequently often results in local optima.

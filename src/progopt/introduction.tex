@@ -56,38 +56,12 @@ optimized equivalent programs.
 
 The difficulty in defining program equivalence is due to the fact that two
 programs can be identical in function, but have distinct syntactic structure
-because of the expressiveness of a \gls{hll}\@.  For instance, even without
-the introduction of branches and loops, the following two C programs in
-Figure~\ref{bg:fig:equiv_progs} are equivalent, but syntactically, they are
-very different.
-\begin{figure}[ht]
-    \centering
-    \subfloat[$P_1$]{%
-        \shortstack[l]{%
-            \texttt{x = x + 1;} \\
-            \texttt{y = 2 * x;} \\
-            \texttt{x = x + 3;}
-        }
-    } \qquad \qquad
-    \subfloat[$P_2$]{%
-        \shortstack[l]{%
-            \texttt{y = x + 1;} \\
-            \texttt{x = y;} \\
-            \texttt{y = y * 2;} \\
-            \texttt{x = x + 3;}
-        }
-    }
-    \caption{%
-        Two programs that are equivalent but syntactically different.
-    }\label{bg:fig:equiv_progs}
-\end{figure}
-
-In fact, one can easily imagine infinitely many ways to rewrite numerical
-programs, and often these equivalent programs have identical resource usage,
-latency and accuracy characteristics.  In practice, it is desirable to
-eliminate as much as possible the need for these syntactic rewrites that do not
-affect our performance metrics, so that the search space of equivalent programs
-is greatly reduced.
+because of the expressiveness of a \gls{hll}\@.  In fact, one can easily
+imagine infinitely many ways to rewrite numerical programs, and often these
+equivalent programs have identical resource usage, latency and accuracy
+characteristics.  In practice, it is desirable to eliminate as much as possible
+the need for these syntactic rewrites that do not affect our performance
+metrics, so that the search space of equivalent programs is greatly reduced.
 
 We explored in Section~\ref{bg:sec:intermediate} of
 Chapter~\ref{chp:background} various \acrfullpl{ir} designed for program

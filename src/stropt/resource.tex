@@ -32,34 +32,9 @@ maps the label $\fresh(x)$ to the expression $x$ and all other labels map
 to $\bot$, in other words, if $l = \fresh(x)$ and $l^\prime \neq l$, then
 $\lambda(l) = x$ and $\lambda(l^\prime) = \bot$.
 
-\begin{figure}[ht]
-    \centering
-    \tikzstyle{block} = [
-        draw,
-        fill=white,
-        rectangle,
-        minimum height=1.5em,
-        minimum width=1.5em
-    ]
-    \begin{tikzpicture}
-        \node (+) [draw, fill=white, circle] at (0, 0) {$+$};
-        \node (a) [block, left=of +, yshift=4mm] {\vara};
-        \node (b) [block, left=of +, yshift=-4mm] {\varb};
-        \node (*) [draw, fill=white, circle, right=of +] {$\times$};
-        \draw[->] (a) -- node[auto, pos=0]{1} (+);
-        \draw[->] (b) -- node[auto, swap, pos=0]{2} (+);
-        \draw[->] (+) -- (*);
-        \draw[->] (+)
-            to[out=45, in=135]
-            node[auto, pos=0.05]{3}
-            node[auto, pos=0.95]{4} (*);
-    \end{tikzpicture}
-    \caption{%
-        The \acrshort{dfg} for the sample expression.
-    }\label{so:fig:sample_tree}
-\end{figure}
-For example, for the \gls{dfg} in Figure~\ref{so:fig:sample_tree} we have for
-the variables $\vara$ and $\varb$:
+For example, consider the expression ${(\vara + \varb)}^2 = (\vara + \varb)
+\times (\vara + \varb)$, we initially have for the variables $\vara$ and
+$\varb$:
 \begin{equation}
     \begin{aligned}
         (l_\vara, \lambda_\vara)
@@ -84,10 +59,9 @@ using the following formulation of the labeling semantics:
 Specifically, $\lambda=\lambda_x\odot\lambda_y$ signifies that $\lambda_y$
 is used to update the mapping in $\lambda_x$, if the mapping does not
 exist in $\lambda_x$, and result in a new environment $\lambda$; and
-$\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.  As
-an example, with the expression in Figure~\ref{so:fig:sample_tree}, using
-\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_\vara$, $l_2 =
-l_\varb$, we derive for the subexpression $\vara + \varb$:
+$\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.  As an
+example, using~\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_\vara$,
+$l_2 = l_\varb$, we derive for the subexpression $\vara + \varb$:
 \begin{equation}
     \begin{aligned}
         (l_{\vara + \varb}, \lambda_{\vara + \varb})
@@ -127,11 +101,10 @@ Finally, for the full expression $(\vara + \varb) \times (\vara + \varb)$:
 From the above derivation, it is clear that the semantics capture the reuse
 of subexpressions. The estimation of area is performed by counting, for an
 expression, the numbers of additions, subtractions and multiplications in the
-final labeling environment, then calculating the number of \glspl{lut} used
-to synthesize the expression. If the number of operators is $n_\opsymbol$
-where $\opsymbol \in \opset$, where $\aopset$ denotes the set of arithmetic
-operators, then the number of \glspl{lut} in total for the expressions is
-estimated as:
+final labeling environment, then calculating the number of \glspl{lut} used to
+synthesize the expression. If the number of operators is $n_\opsymbol$ where
+$\opsymbol \in \aopset$, and $\aopset$ denotes the set of arithmetic operators,
+then the number of \glspl{lut} in total for the expressions is estimated as:
 \begin{equation}
     r_\mathrm{LUT} = \sum_{\mathclap{\opsymbol\in\aopset}}
         R^\mathrm{LUT}_\opsymbol n_\opsymbol,
@@ -139,6 +112,11 @@ estimated as:
 where the value $R^\mathrm{LUT}_\opsymbol$ denotes the number of \glspl{lut}
 per $\opsymbol$ operator, which is dependent on the type of the operator and
 the floating-point format used to generate the operator.
+
+Despite the simplicity of the resource estimation model, it is observed that
+this model can accurately predict the LUT count of the synthesized circuits,
+as the resource reduction from cross-module optimizations are negligible for
+floating-point data-paths.
 
 In the following sections, we use the function $\area: \aexprset\to\naturalset$
 to denote our resource usage analysis.

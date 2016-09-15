@@ -13,7 +13,7 @@ should be introduced.  Any values $v$ representable in floating-point with
 standard exponent offset can be expressed with the format given by the
 following equation:
 \begin{equation}
-    v = s \times 2^{e + 2^{k - 1} - 1} \times 1.{m_1 m_2 m_3 \ldots m_p}.
+    v = s \times 2^{e - (2^{k - 1} - 1)} \times 1.{m_1 m_2 m_3 \ldots m_p}.
     \label{bg:eq:floating_point}
 \end{equation}
 In~\eqref{bg:eq:floating_point}, the bit $s$ is the sign bit, the $k$-bit
@@ -21,17 +21,38 @@ unsigned integer $e$ is known as the exponent bits, and the $p$-bits $m_1 m_2
 m_3 \ldots m_p$ are the mantissa bits, here we use $1.{m_1 m_2 m_3 \ldots m_p}$
 to indicate a fixed-point number represented in unsigned binary format.
 
-Hence, in \soap{}, the distance between two
-adjacent floating-point values $f_1$ and $f_2$ satisfying $f_1 \leq x \leq
-f_2$~\cite{goldberg} is characterized using the following definition:
+Note that a non-zero floating-point with the smallest magnitude can be found
+by setting $e = 0$ and $m_1, m_2, \ldots, m_p$ to $0$, which may still be far
+away from $0$ when compared to the next non-zero floating-point value, where
+$e = 0$, $m_1, m_2, \ldots, m_{p-1}$ are all $0$, and $m_p = 1$.  To solve
+this discontinuous behaviour, extra logic can be used to allow a different
+floating-point representation when $e = 0$:
+\begin{equation}
+    v = s \times 2^{-(2^{k-1} - 1)} \times 0.{m_1 m_2 m_3 \ldots m_p}.
+\end{equation}
+This alternative behaviour is known as gradual underflow, whereas the original
+is abrupt underflow.
+
+In \soap{}, the distance between two adjacent floating-point values $f_1$ and
+$f_2$ satisfying $f_1 \leq x \leq f_2$~\cite{goldberg} is characterized using
+the following definition, where GU and AU respectively indicate gradual and
+abrupt underflow modes:
 \begin{definition}
     In our analysis, the function $\ulp$ is defined as:
     \begin{equation}
         \ulp(x) = \left\{
             \begin{aligned}
                 & \infty,  && \text{if $x$ is $-\infty$ or $\infty$}, \\
-                & 2^{e(x) + 2^{k - 1} - 1} \times 2^{-p},
-                \quad && \text{otherwise}.
+                & 2^{e(x) - (2^{k - 1} - 1)} \times 2^{-p},
+                \quad && \text{%
+                    if GU and $x$ is not $-\infty$ or $\infty$
+                }, \\
+                & \max\left(
+                    2^{-(2^{k-1} - 1)},
+                    2^{e(x) - (2^{k - 1} - 1)} \times 2^{-p}
+                \right) \quad && \text{%
+                    if AU and $x$ is not $-\infty$ or $\infty$
+                }.
             \end{aligned}
         \right.
     \end{equation}
@@ -75,7 +96,7 @@ domain can be derived as follows:
             \frac{
                 x^\sharp_2 \mu^\sharp_1 - x^\sharp_1 \mu^\sharp_2
             }{
-                x^\sharp_1 \left( x^\sharp_2 + \mu^\sharp_2 \right)
+                x^\sharp_2 \left( x^\sharp_2 + \mu^\sharp_2 \right)
             } + \rounddown{\frac{x^\sharp_1}{x^\sharp_2}}
         \right).
 \end{equation}

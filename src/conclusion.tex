@@ -40,9 +40,9 @@ The above shortcomings of traditional \gls{hls} tools and optimizing compilers
 provide a strong motivation for the work proposed in this thesis.
 
 Firstly, we can apply the philosophy of relaxing the functional equivalence
-required by \gls{hls} tools.  In the mean time, we preserve the equivalence of
-the underlying mathematical objects in real arithmetic which hardware designs
-are approximating.  One can often improve the numerical accuracy by choosing a
+required by \gls{hls} tools.  In the mean time, we infer equivalences of the
+underlying mathematical objects in real arithmetic which hardware designs are
+approximating.  One can often improve the numerical accuracy by choosing a
 better alternative among these equivalences.
 
 Secondly, by the same paradigm shift, a wide range of optimization
@@ -117,15 +117,15 @@ explored is the key factor for the speed of optimization.  This problem
 is addressed in this chapter by graph partitioning and candidate pruning
 algorithms.  This further enables deeper partial loop unrolling factors not
 explored in Chapter~\ref{chp:progopt}.  Often as we optimize numerical programs
-by spending more resources, latency and round-off error can be simultaneously
-minimized, as more resources would allow greater flexibility to discover
-equivalent programs that often perform well in terms of run time and accuracy.
-Additionally, this process is simultaneously driven by resource minimization,
-allowing the area-latency product to decrease as we explore increasingly deeper
-partial unrolling.  By optimizing a suite of benchmark examples from PolyBench
-and Livermore loops, the tool improves the latency and accuracy of each by up
-to 12$\times$ and 7$\times$ respectively, at a cost of 4$\times$ more resource
-utilization.
+by allowing greater resource budgets, latency and round-off error can be
+simultaneously minimized, as more resources would allow greater flexibility
+to discover equivalent programs that often perform well in terms of run time
+and accuracy.  Additionally, this process is simultaneously driven by resource
+minimization, allowing the area-latency product to decrease as we explore
+increasingly deeper partial unrolling.  By optimizing a suite of benchmark
+examples from PolyBench and Livermore loops, the tool improves the latency and
+accuracy of each by up to 12$\times$ and 7$\times$ respectively, at a cost of
+4$\times$ more resource utilization.
 
 
 \section{Future Prospects}

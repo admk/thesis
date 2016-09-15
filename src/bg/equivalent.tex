@@ -333,15 +333,15 @@ Section~\ref{bg:sec:abstract_interpretation}.  For instance, consider an APEG
 with $n$ equivalent classes, where each contains $2$ different choices.  In
 the worst case, this may amount to a search of $2^n$ distinct equivalent
 expressions to determine the optimal solution.  To resolve this problem,
-Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic
-to reduce the size of the search space\footnotemark[2].  Additionally, as
-explained earlier, the time complexity to search for the optimal parsing of an
-abstraction box is double factorial.  They hence make use of another heuristic,
-which greedily pairs up terms in an abstraction box $B = \text{\fbox{$+,
-\left(p_1, p_2, \mathellipsis, p_n\right)$}}$\,.  To begin, the method searches
-for a pair of child subtrees $p_i$ and $p_j$ in $B$, such that the expression
-$p_i \opsymbol p_j$ computes with the smallest round-off error.  The nodes
-$p_i$ and $p_j$ are subsequently removed from $B$, and a new subtree
+Ioualalen~\etal~\cite{ioualalen} employs a depth-limited search heuristic to
+reduce the size of the search space.  Additionally, as explained earlier, the
+time complexity to search for the optimal parsing of an abstraction box is
+double factorial.  They hence make use of another heuristic, which greedily
+pairs up terms in an abstraction box $B = \text{\fbox{$+, \left(p_1, p_2,
+\mathellipsis, p_n\right)$}}$\,.  To begin, the method searches for a pair of
+child subtrees $p_i$ and $p_j$ in $B$, such that the expression $p_i \opsymbol
+p_j$ computes with the smallest round-off error.  The nodes $p_i$ and $p_j$ are
+subsequently removed from $B$, and a new subtree
 \tikz[baseline=-2.3ex]{%
     \newcommand{\edgelength}{3.6ex}
     \node(op) at (0, 0) {\small $\opsymbol$};
@@ -353,8 +353,6 @@ $p_i$ and $p_j$ are subsequently removed from $B$, and a new subtree
 is then added to $B$.  The above greedy pairing procedure is then iteratively
 repeated until finally one node is left in $B$; this last node is therefore
 the expression with an improved numerical accuracy obtained in the process.
-\footnotetext[2]{The exact technique is not explained in their original
-contribution.}
 
 Ioualalen~\etal~\cite{ioualalen} found their APEG approach can reduce round-off
 errors in expressions by up to 50\%.  They further proved the correctness of
@@ -411,10 +409,12 @@ a binary operator $+$ which accepts two input arguments $e_1$ and $e_2$,
 where each argument is a subexpression.  To guarantee the correctness of
 the round-off error analysis of $+$, its subexpressions are evaluated
 into respective AE values $v_1$ and $v_2$ for a given input $i$.  Using
-$v_1$ and $v_2$ as inputs, the operator $+$ is then evaluated twice,
-in precision $\hat{p}$ and in AE precision $p$ to produce $\hat{v}_i$
-and $v_i$ respectively.  The error between $x = \hat{v}_+$ and $y =
-v_+$ is defined as follows~\cite{panchekha15, schkufza14}, which counts
+$v_1$ and $v_2$ as inputs, the operator $+$ is then evaluated twice, in
+precision $\hat{p}$ and in AE precision $p$ to produce $\hat{v}_i$ and
+$v_i$ respectively, where $\hat{v}_i$ and $v_i$ are respectively the
+approximate result of evaluating the addition in floating-point with
+inputs $v_1$ and $v_2$.  The error between $x = \hat{v}_i$ and $y =
+v_i$ is defined as follows~\cite{panchekha15, schkufza14}, which counts
 the number of floating-point values between the approximate and exact
 results\footnotemark[4]:
 \begin{equation}
@@ -490,6 +490,9 @@ numerical accuracy of $x_1$, when evaluated with double-precision:
                 && \text{if~} 10^{127} < b.
     \end{aligned} \right.
 \end{equation}
+Note that the third alternative, $- \frac{b}{a} + \frac{c}{b}$, is not
+equivalent to the other two in real arithmetic, because series expansion is
+applied to approximate the square root.
 
 Panchekha~\etal~\cite{panchekha15} discovered that their tool can improve the
 numerical accuracy of a suite of benchmark examples from~\cite{hamming86},

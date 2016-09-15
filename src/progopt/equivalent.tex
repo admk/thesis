@@ -41,6 +41,21 @@ For the following rules, we assume $b, b_1, b_2 \in \bexprset$, $e, e_1, e_2
 \in \sexprset$, $\mu \in \mirset$, and $\opsymbol \in \{+, -, \times, /\}$, and
 each rule has its inversed version.
 
+\subsubsection{Boolean Operators}
+
+Because in this chapter boolean expressions are introduced, we also make
+use of standard boolean equivalences, which include commutativity $b_1
+\opsymbol b_2 \eqrel b_2 \opsymbol b_1$, associativity $(b_1 \opsymbol b_2)
+\opsymbol b_3 \eqrel b_1 \opsymbol (b_2 \opsymbol b_3)$, distributivity
+$(b_1 \vee b_2) \wedge b_3 \eqrel (b_1 \wedge b_3) \vee (b_2 \wedge b_3)$,
+de Morgan's laws, where $b_1, b_2, b_3$ are boolean expressions, $\opsymbol
+\in \{\vee, \wedge\}$, and $\vee$ and $\wedge$ are boolean \emph{or} and
+\emph{and} operators respectively.  Finally, reduction rules are also used
+to simplify boolean expressions, which include contradiction $b \wedge \neg
+b \eqrel \falselit$, tautology $b \vee \neg b \eqrel \truelit$, and constant
+propagation.
+
+
 \subsubsection{Ternary Conditional Operator}
 
 The ternary conditional operator has the following distributivity
@@ -80,6 +95,12 @@ Secondly, we can distribute over the conditional operators:
             \left(\select{b_1}{e}{e_1}\right)}{%
             \left(\select{b_1}{e}{e_2}\right)}.
     \end{aligned}
+\end{equation}
+Thirdly, we introduce additional reduction rules to simplify ternary
+conditional expressions if possible:
+\begin{equation}
+    \select{\truelit}{e_1}{e_2} \quad \eqrel \quad e_1, \qquad
+    \select{\falselit}{e_1}{e_2} \quad \eqrel \quad e_2.
 \end{equation}
 
 \subsubsection{Composition Operator}
@@ -126,7 +147,7 @@ of the loop \gls{mir} $\mu$, where
 \end{equation}
 This set of rules formally defines the partial unrolling of loops with
 a certain number of steps $k$.  Using the rules to unroll the loop
-\lstinline[basicstyle=\tt]|while ($b$) {$s$}| where $b \in \bexprset$,
+``\lstinline[basicstyle=\tt]|while ($b$) {$s$}|'' where $b \in \bexprset$,
 $s \in \stmtset$ is equivalent to unrolling the loop syntactically
 as follows, as an example, we consider cases when $k = 0, 1, 2$ in
 Figure~\ref{po:lst:loop_unroll}.
@@ -196,50 +217,50 @@ while ($b$) {
     }\label{po:lst:loop_unroll}
 \end{figure}
 
-The next set of rules in~\eqref{po:eq:tree} allows us to inductively discover
-equivalent structures in child expressions.  In these rules, the formulae above
-the line are the premises, whereas the ones below the line are conclusions,
-this means that in such a rule, if the premise is true, then the conclusion
-must be true.  For instance, in a conditional expression $\select{\varx <
-\vary}{(\varx + \vary) + \varz}{\varx}$, because the subexpression $(\varx
-+ \vary) + \varz$ is equivalent to $\varx + (\vary + \varz)$, it also
-has an equivalent expression $\select{\varx < \vary}{\varx + (\vary +
-\varz)}{\varx}$.  We define similar rules respectively for the conditional,
-fixpoint and composition operators, and finally we also have an analogous rule
-for \glspl{mir}, which formalizes that if any subexpressions $\mu(\varx)$ of
-an \gls{mir} $\mu$ has an equivalent expression $e_\varx$, then the \gls{mir}
-also has an equivalent \gls{mir} by replacing the expression $\mu(\varx)$ with
-$e_\varx$.
+The next set of rules in~\eqref{po:eq:tree} extends the structural induction
+rules for arithmetic expression in~\eqref{so:eq:equivalence_tree} of
+Chapter~\ref{chp:stropt} to inductively discover equivalent structures in child
+expressions.  In these rules, recall that the formulae above the line are the
+premises, whereas the ones below the line are conclusions, and if the premise
+is true, then the conclusion must be true.  For instance, in a conditional
+expression $\select{\varx < \vary}{(\varx + \vary) + \varz}{\varx}$, because
+the subexpression $(\varx + \vary) + \varz$ is equivalent to $\varx + (\vary
++ \varz)$, it also has an equivalent expression $\select{\varx < \vary}{\varx
++ (\vary + \varz)}{\varx}$.  We define similar rules respectively for the
+conditional, fixpoint and composition operators, and finally we also have an
+analogous rule for \glspl{mir}, which formalizes that if any subexpressions
+$\mu(\varx)$ of an \gls{mir} $\mu$ has an equivalent expression $e_\varx$, then
+the \gls{mir} also has an equivalent \gls{mir} by replacing the expression
+$\mu(\varx)$ with $e_\varx$.
 \begin{equation}
+    \begin{aligned}
+    &
     \begin{aligned}
         \inference{%
             b \eqrel b^\prime \quad
             e_1 \eqrel e^\prime_1 \quad
             e_2 \eqrel e^\prime_2
         }{%
-            \select{b}{e_1}{e_2} \eqrel
+            \select{b}{e_1}{e_2} \quad \eqrel \quad
             \select{b^\prime}{e^\prime_1}{e^\prime_2}
-        }
+        },
         & \quad
         \inference{%
             b \eqrel b^\prime \quad
             \mu \eqrel \mu^\prime
         }{%
-            \fix\left(b, \mu, \varx\right) \eqrel
+            \fix\left(b, \mu, \varx\right) \quad \eqrel \quad
             \fix\left(b^\prime, \mu^\prime, \varx\right)
-        }
-    \end{aligned}
-    \nonumber
-\end{equation}
-\vspace{-10pt}
-\begin{equation}
+        },
+    \end{aligned} \\
+    &
     \begin{aligned}
         \inference{%
             e \eqrel e^\prime \quad
             \mu \eqrel \mu^\prime
         }{%
-            e \expand \mu \eqrel e^\prime \expand \mu^\prime
-        }
+            e \expand \mu \quad \eqrel \quad e^\prime \expand \mu^\prime
+        },
         & \quad
         \inference{%
             \forall \varx \in \varset:
@@ -247,7 +268,8 @@ $e_\varx$.
             \left( \mu\left(\varx\right) \eqrel e_x \right)
         }{%
             \mu \quad \eqrel \quad [\varx \mapsto e_\varx]_{\varx \in \varset}
-        }
+        }.
+    \end{aligned}
     \end{aligned}
     \label{po:eq:tree}
 \end{equation}
@@ -257,8 +279,8 @@ $e_\varx$.
 \label{po:sub:discovering}
 
 As we discussed earlier, discovering the full set of equivalent expressions
-by finding the transitive closure of the relations is infeasible because of
-combinatorial explosion.  Chapter~\ref{chp:stropt} proposed a new method to
+by finding the transitive closure of the relations is infeasible because
+of combinatorial explosion.  Chapter~\ref{chp:stropt} proposed a method to
 drastically reduce the space and time complexity of discovering equivalent
 expressions, while achieving high quality optimizations.
 
@@ -277,18 +299,21 @@ Section~\ref{so:sec:equivalent} of Chapter~\ref{chp:stropt}.
 \subsubsection{Ternary Conditional Operator}
 
 For conditional expressions of the form $\select{b}{e_1}{e_2}$, we first
-optimize the Boolean expression $b$.  Then we use each equivalent expression
-of $b$ to constraint the program state for the optimization of $e_1$ and
-$e_2$.  Finally, after optimizing child nodes, we combine the equivalent
-expressions of these three child nodes to form a set of equivalent
-conditional expressions.
+optimize the Boolean expression $b$.  Then we use each equivalent expression of
+$b$ to constraint the program state for the optimization of $e_1$ and $e_2$.
+After optimizing child nodes, we combine the equivalent expressions of these
+three child nodes to form a set of equivalent conditional expressions.  We
+further discover additional equivalent expressions from this set, and finally
+keep only those that are Pareto-optimal.
 
 \subsubsection{Composition Operator}
 
 Expressions of the form $e \expand \mu$ are optimized by first finding
-equivalences of $\mu$, and then for each of them discovered, we compute a new
-program state $\sigma^\sharp_0 = \mirerrorfunc{\mu} \sigma^\sharp$, and use it
-to optimize $e$.
+equivalences of $\mu$, and then for each of them discovered, we compute a
+new program state $\sigma^\sharp_0 = \mirerrorfunc{\mu} \sigma^\sharp$, and
+use it to optimize $e$.  Finally, all optimized combinations of $e$ and
+$\mu$ form a complete set of expressions equivalent to $e \expand \mu$, and
+Pareto-suboptimal candidates are pruned from this set.
 
 \subsubsection{Fixpoint Operator}
 
@@ -297,17 +322,17 @@ partially unrolled versions are discovered using the rules defined
 in~\eqref{po:eq:unroll}, the expressions are partially unrolled by a factor up
 to $3$.  Then for each unrolled version, we obtain its loop invariant using
 the algorithm illustrated in Figure~\ref{po:alg:fix}, and the loop invariant
-is then used to optimize its child nodes, which are the Boolean expression and
-the loop \gls{mir}\@.  Finally, a set of equivalent fixpoint expressions can be
-derived by combining equivalent child nodes together, and $\frontier$ is then
-used on this set to eliminate Pareto-suboptimal fixpoint expressions.
+is then used to optimize its child nodes, which are the Boolean expression
+and the loop \gls{mir}\@.  Finally, a set of equivalent fixpoint expressions
+can be derived by combining equivalent child nodes together, and we eliminate
+Pareto-suboptimal fixpoint expressions from this set.
 
 \subsubsection{MIR}
 
 \Glspl{mir} can be optimized by first optimizing their expressions
 individually, then constructing a set of \glspl{mir} by enumerating all
-combinations of optimized expressions for each variable.  The $\frontier$
-function is additionally applied to reduce the size of the final set.
+combinations of optimized expressions for each variable.  The size of the final
+set is then reduced by pruning Pareto-suboptimal candidates.
 
 However, because a \gls{mir} consists of multiple expressions and each has its
 own accuracy, we need a strategy to quantify the accuracy of a \gls{mir}\@.

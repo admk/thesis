@@ -35,8 +35,8 @@ loop body is shown in Figure~\ref{lo:fig:fib_mir2}.  The partition boundaries
 are indicated by the region surrounded by the red dotted curve \tikz{\draw[red,
 dashed, rounded corners=1ex] (0,0) rectangle (20pt,2ex);}.  A multiply shared
 subexpression, such as $\texttt{i} - 1$, also determines the partition boundary
-by sharing a partition with one of its parents with the smallest partition by
-node count.  If all parents contains the same number of nodes then a choice is
+by merging its partition with one of its parents with the smallest partition by
+node count.  If all parents contain the same number of nodes then a choice is
 made randomly.
 \begin{figure}[ht]
     \centering
@@ -134,12 +134,12 @@ for (int i=3; i<1023; i+=2)
     \caption{An example to illustrate how \acrshortpl{mir} are partitioned.}
 \end{figure}
 
-Because transformation rules can only be applied to each sub-\gls{mir} but not
+Because transformation rules can only be applied to each partition but not
 across them, the size of the search space can be reduced further.  In turn,
-each are optimized separately and generate a set of equivalent sub-\glspl{mir}.
-We then select combinations from these sub-\glspl{mir} to be merged, this
-generates a set of \glspl{mir} that are equivalent to the original.  Finally,
-we preserve those \glspl{mir} merged on the Pareto frontier.
+each are optimized separately and generate a set of partitions equivalent to
+the original.  We then select combinations from these partitions to be merged,
+this generates a set of \glspl{mir} that are equivalent to the original.
+Finally, we preserve those \glspl{mir} merged on the Pareto frontier.
 
 \subsubsection{Optimization}
 
@@ -198,9 +198,9 @@ and $e^\prime$ is computed as follows:
         \right)}^2
     },
 \end{equation}
-where $f \in F$ enumerates the functions that evaluates the performance of a
+where $f \in F$ enumerates each function that evaluates the performance of a
 candidate $e$, \ie~the function $f \in F$ computes either the accuracy, area
-and latency of $e$.
+or latency of $e$.
 
 \begin{figure}[ht]
     \centering
@@ -245,10 +245,13 @@ This method is superior to random sampling, because random sampling often
 samples points that are close together, which usually are very similar
 implementations.
 
-We found that with our improvements, the algorithm is significantly faster than
+We found that with all improvements above and a faster accuracy analysis in
+Section~\ref{lo:sub:accuracy}, the algorithm is significantly faster than
 the original optimization algorithm in Section~\ref{po:sub:discovering} of
-Chapter~\ref{chp:progopt}, with a 5-fold increase in speed, at a cost of a less
-optimal Pareto frontier and fewer points on it.
+Chapter~\ref{chp:progopt}.  Even though this algorithm may discover potentially
+fewer candidates on the Pareto frontier, we can now explore greater partial
+loop unrolling depths to widen the swing of the Pareto frontier in the same
+amount of time.
 
 % \todo{Move this algorithm to Chapter~stropt.}
 % \begin{figure}[ht]
@@ -299,6 +302,14 @@ restructuring rules introduced respectively in Chapters~\ref{chp:stropt}
 and~\ref{chp:progopt}.  This enables a much better automatic structural
 optimization on the latency, resource usage and accuracy of numerical programs,
 than is possible using only a subset of them.
+
+In Chapters~\ref{chp:stropt} and~\ref{chp:progopt}, \soap{} provides a range
+of equivalence rules that are used in the optimization, such as associativity,
+distributivity, commutativity, constant propagation, and partial loop
+unrolling.  In Table~\ref{lo:tab:rules}, we list those rules that proved
+effective when minimizing loop latencies.  Although these rules are used to
+transform \glspl{mir}, we present before-and-after examples written in C to
+allow the effect of each rule to be readily understood.
 \begin{table}[t]
     \caption{%
         Before-and-after examples to demonstrate the access reduction rules.
@@ -323,17 +334,9 @@ than is possible using only a subset of them.
         \emph{Indep.\ accesses} (where $\texttt{i}\not\equiv\texttt{j}$) &
             \texttt{A[i]=x; y=A[j];} $~\eqgenrel~$
             \texttt{y=A[j]; A[i]=x;}
-        \\\bottomrule
-    \end{tabular}
-\end{table}
-
-In Chapters~\ref{chp:stropt} and~\ref{chp:progopt}, \soap{} provides a range
-of equivalence rules that are used in the optimization, such as associativity,
-distributivity, commutativity, constant propagation, and partial loop
-unrolling.  In Table~\ref{lo:tab:rules}, we list those rules that proved
-effective when minimizing loop latencies.  Although these rules are used to
-transform \glspl{mir}, we present before-and-after examples written in C to
-allow the effect of each rule to be readily understood.
+        \\\bottomrule%
+    \end{tabular}%
+\end{table}%
 
 Our new rules, the access reduction rules, with formal definitions below and
 examples in Table~\ref{lo:tab:rules}, remove extraneous data-dependences that

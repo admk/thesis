@@ -8,10 +8,10 @@ errors.  In Section~\ref{so:sec:resource}, an alternative semantics that
 eliminate common subexpressions are introduced, which we call the labelling
 environments.  The environments define the meaning of arithmetic operations
 on the environments.  In this section, we now take the leap from not only
-analyzing an expression for its quality, to defining arithmetic operations on
-sets of equivalent expressions, and use these rules to discover equivalent
-expressions.  Before this, it is necessary to formally define equivalent
-expressions and functions to discover them.
+analyzing an expression for its quality, to defining arithmetic operations
+on \emph{sets} of equivalent expressions, and use these rules to discover
+equivalent expressions.  Before this, it is necessary to formally define
+equivalent expressions and the functions used to discover them.
 
 
 \subsection{Discovering Equivalent Expressions}
@@ -200,8 +200,8 @@ in the expression is reduced.
 To make use of the new relation we define the following category of functions:
 \begin{definition}
     We call a function an \gls{eeg} function if and only if the function takes
-    as an input an initial set of equivalent expressions, and generates a set
-    of equivalent expressions.
+    as an input an initial set of equivalent expressions, and generates another
+    set of expressions equivalent to those in the input set.
 \end{definition}
 
 For instance, an \gls{eeg} function $\eqstep: \eqexprpowerset \to
@@ -280,21 +280,30 @@ closure. This approach is similar to Martel's depth-limited equivalent
 expression transform~\cite{martel07}, however Martel's method eventually allows
 transformation of subexpressions beyond the depth limit, because rules of
 equivalence would transform these to have a smaller depth.  This contributes
-to a time complexity at least exponential in terms of the expression size. In
-contrast, our technique has a time complexity that does not depend on the size
-of the input expression, but grows with respect to the depth limit $k$. Note
-that the full equivalence closure using the inference system we defined earlier
-in~\eqref{so:eq:transitive_closure} is at least $\bigo((2n - 3)\,!!)$ where $n$
-is the number of terms in an expression, as we discussed earlier.
+to a time complexity at least exponential in terms of the expression size.
+In contrast, our technique has a time complexity that does not depend on the
+size of the input expression, but grows with respect to the depth limit $k$.
+Note that the full equivalence closure using the inference system we defined
+earlier in~\eqref{so:eq:transitive_closure} is at least $\bigo((2n - 3)\,!!)$
+where $n$ is the number of terms in an expression, as we discussed earlier.  As
+the maximum number of terms in a binary tree with a depth $k$ grows at a rate
+$\bigo(2^k)$, the number of equivalent expressions that can be discovered is at
+least $\bigo((2\times 2^k - 3)\,!!)$ with respect to $k$.
 
 Finally, we use an iterative algorithm to accelerate the computation of
-$\closure_N \eqstep_k (\epsilon)$.  In each iteration, we keep track
-of the equivalent expressions that are newly discovered in the current
-iteration, so that in the next iteration we apply $f$ only to those
+$\closure_N f (\epsilon)$, where $f$ is a \emph{$\cup$-distributive} \gls{eeg}
+(see Definition~\ref{so:def:cup}) such as $\eqstep_k$.  In each iteration,
+we keep track of the equivalent expressions that are newly discovered in the
+current iteration, so that in the next iteration we apply $f$ only to those
 expressions, to avoid redundant computation.  This algorithm is shown in
 Figure~\ref{so:alg:closure} to efficiently compute $\closure_N f(\epsilon)$,
 where $f$ can be $\eqstep_k$.  The correctness of this algorithm is discussed
 in greater depth in Appendix~\ref{app:sound_acceleration}.
+\begin{definition}
+    We say an \gls{eeg} function $f$ is \emph{$\cup$-distributive} if and only
+    if the function satisfies $f(\epsilon_a \cup \epsilon_b) = f(\epsilon_a)
+    \cup f(\epsilon_b)$.\label{so:def:cup}
+\end{definition}
 \begin{figure}[ht]
     \centering
     \begin{algorithmic}
@@ -372,12 +381,13 @@ Similar to the analysis of accuracy and resource usage, a set of equivalent
 expressions can be computed with semantics. That is, we define structures,
 \ie~sets of equivalent expressions, that can be manipulated with arithmetic
 operators. In our equivalent expressions semantics, an element of
-$\eqexprpowerset$ is used to assign a set of expressions to each node
-in an expression parse tree. To begin with, at each leaf of the tree, the
+$\eqexprpowerset$ is used to assign a set of expressions to each node in
+an expression parse tree. To begin with, at each leaf of the tree, the
 variable or constant is assigned a set containing itself, as for $x$, the set
 $\epsilon_x$ of equivalent expressions is $\epsilon_x = \{x\}$. After this, we
 propagate the equivalence expressions in the parse tree's direction of flow,
-using~\eqref{so:eq:equivalence_semantics} defined below:
+using~\eqref{so:eq:equivalence_semantics} defined below, where $\frontier$ is
+the algorithm shown in Figure~\ref{so:alg:pareto}:
 \begin{equation}
     \begin{aligned}
         \epsilon_x \opsymbol \epsilon_y &\defeq \frontier\left(
@@ -417,8 +427,8 @@ expression with a unary subtraction:
 To reduce computation effort, we select only those expressions on the Pareto
 frontier for the propagation in the \gls{dfg}\@. Although in worst case the
 complexity of this process is exponential, the selection by Pareto optimality
-accelerates the algorithm significantly. For example, for the subexpression $a
-+ b$ of our sample expression in Figure~\ref{so:fig:sample_tree}:
+accelerates the algorithm significantly.  For example, consider the sample DFG
+in Figure~\ref{so:fig:sample_tree}, for the subexpression $a + b$, we have:
 \begin{equation}
     \begin{aligned}
         \epsilon_a + \epsilon_b
@@ -437,6 +447,33 @@ accelerates the algorithm significantly. For example, for the subexpression $a
                 \right).
     \end{aligned}
 \end{equation}
+\begin{figure}[ht]
+    \centering
+    \tikzstyle{block} = [
+        draw,
+        fill=white,
+        rectangle,
+        minimum height=1.5em,
+        minimum width=1.5em
+    ]
+    \begin{tikzpicture}
+        \node (+) [draw, fill=white, circle] at (0, 0) {$+$};
+        \node (a) [block, left=of +, yshift=4mm] {\vara};
+        \node (b) [block, left=of +, yshift=-4mm] {\varb};
+        \node (*) [draw, fill=white, circle, right=of +] {$\times$};
+        \draw[->] (a) -- node[auto, pos=0]{1} (+);
+        \draw[->] (b) -- node[auto, swap, pos=0]{2} (+);
+        \draw[->] (+) -- (*);
+        \draw[->] (+)
+            to[out=45, in=135]
+            node[auto, pos=0.05]{3}
+            node[auto, pos=0.95]{4} (*);
+    \end{tikzpicture}
+    \caption{%
+        The \acrshort{dfg} for the sample expression $(\vara + \varb) \times
+        (\vara + \varb)$.
+    }\label{so:fig:sample_tree}
+\end{figure}
 
 Alternatively, we could view the semantics in terms of \glspl{dfg} representing
 the algorithm for finding equivalent expressions. The parsing of an expression
@@ -446,7 +483,7 @@ in Figure~\ref{so:fig:sample_tree}. This tree structure can be used to generate
 a \gls{dfg} illustrated in Figure~\ref{so:fig:tree_expr_flow}, which when
 data-flow analysis is applied, discovers a set of equivalent expressions to
 $e_0$. The circles labeled $3$ and $7$ in this diagram are shorthands for the
-operation $E_+$ and $E_\times$ respectively, where $E_+$ and $E_\times$ is
+operations $E_+$ and $E_\times$ respectively, where $E_+$ and $E_\times$ are
 defined in~\eqref{so:eq:equivalence_semantics}.
 \begin{figure}[ht]
     \centering

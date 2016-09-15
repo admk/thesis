@@ -56,17 +56,18 @@ the properties of the resulting analysis are further discussed.
 In this section, we use the \gls{dfa} framework~\cite{nielson99} to deduce
 the semantics of a program named \verb|simple| in Figure~\ref{bg:lst:simple},
 which consists of only one variable $\varx$.  We assume an initial set $\iota
-\subseteq \realset$ of values of $\varx$, and the property pertaining to us
-is whether a particular value $\varx_\mathrm{invalid}$ is unreachable.  By
-computing an $X$, the set of all reachable final values of $\varx$, it suffices
-to check $\varx_\mathrm{invalid} \notin X$.  A sensible definition for the set
-of values can be reached by $\varx$ is a subset of all real numbers $\realset$,
+\subseteq \realset$ of values of $\varx$, and the property pertaining to
+us is whether a particular value $\varx_\mathrm{invalid}$ is unreachable.
+Computations are performed in real arithmetic for simplicity.  By computing an
+$X$, the set of all reachable final values of $\varx$, it suffices to check
+$\varx_\mathrm{invalid} \notin X$.  A sensible definition for the set of
+values can be reached by $\varx$ is a subset of all real numbers $\realset$,
 \ie~an element of $\powersetof\realset$, where $\powersetof\realset$ denotes
 the \emph{power set} of $\realset$, also known as the set of all subsets of
 $\realset$.
 \begin{figure}[ht]
     \begin{lstlisting}
-        float simple(float x) {
+        real simple(real x) {
             while (x > 1.0)
                 x *= 0.9;
             return x;
@@ -382,18 +383,20 @@ in Figure~\ref{bg:lst:simple}.
 \label{bg:ssub:interval}
 
 \Gls{ia}, is a method to enclose a set of solutions that may arise in
-computation problems~\cite{moore}.  The standard method is to use a pair of the
-form $\interval{a}{b}$, to represent $\{ v \mid a \leq v \leq b \}$, a set of
-real numbers between $a$ and $b$.  As it is closely related to sets of reals
-and real arithmetic, \gls{ia} gets the benefits of both worlds.
+computation problems~\cite{moore}.  The standard method is to use a \emph{pair}
+of values $\interval{a}{b}$, to represent $\{ v \mid a \leq v \leq b \}$, a
+potentially \emph{infinite} set of real numbers between $a$ and $b$.  As it
+is closely related to sets of reals and real arithmetic, \gls{ia} gets the
+benefits of both worlds.
 
 Firstly, operations, similar to the set operations such as the subset relation
 ``$\subseteq$'', union ``$\cup$'' and intersection ``$\cap$'' from $\realset$,
-can also be defined for real intervals $\intervalset$, and indeed real
-intervals form a complete lattice.  The corresponding operations are known
-as the partial ordering ``$\sqsubseteq$'', \emph{join} ``$\join$'' and
-\emph{meet} ``$\meet$''.  The definitions of these operators on two intervals
-$\interval{a}{b}$ and $\interval{c}{d}$ are as follows:
+can also be defined for real intervals $\intervalset$.  The corresponding
+operations are known as the partial ordering ``$\sqsubseteq$'', \emph{join}
+``$\join$'' and \emph{meet} ``$\meet$'', a partially ordered set with these
+operations defined for all elements within it is a complete lattice.  The
+definitions of these operators on two intervals $\interval{a}{b}$ and
+$\interval{c}{d}$ are as follows:
 \begin{equation}
     \arraycolsep=0.5ex
     \begin{array}{lcll}
@@ -433,6 +436,7 @@ also be defined for real intervals:
     \begin{aligned}
         \interval{a}{b} + \interval{c}{d} &= \interval{a + c}{b + d}, \\
         \interval{a}{b} - \interval{c}{d} &= \interval{a - d}{b - c}, \\
+        -\interval{a}{b} &= \interval{-b}{-a}, \\
         \interval{a}{b} \times \interval{c}{d}
             &= \interval{\min(s)}{\max(s)}, \\
         \text{where~} s &= \left\{
@@ -573,23 +577,38 @@ defined as follows:
 \begin{equation}
     \begin{aligned}
         \alpha(X) &= \interval{\inf(X)}{\sup(X)}, \\
-        \gamma\left(
-            \interval{\underline{X^\sharp}}{\overline{X^\sharp}}
-        \right) &= \left\{
-            v \mid \underline{X^\sharp} \leq v \leq \overline{X^\sharp}
+        \gamma\left( \interval{a}{b} \right) &= \left\{
+            v \mid a \leq v \leq b
         \right\},
     \end{aligned}
 \end{equation}
 where $\inf(X)$ and $\sup(X)$ are respectively the infimum and supremum of $X$.
+Here $\alpha$ takes a potentially infinite set of reals and translate it into
+a pair of values representing an interval bounding the reals, whereas $\gamma$
+performs the backwards translation from an interval to a set of reals.  For
+instance:
+\begin{equation}
+    \begin{aligned}
+        \alpha\left(\left\{1, 1.2, 3\right\}\right) &= \interval{1}{3}, \\
+        \gamma\left(\interval{1}{3}\right) &= \left\{
+            v \mid 1 \leq v \leq 3
+        \right\}.
+    \end{aligned}
+\end{equation}
+It is clear that information could be lost when the abstraction function
+$\alpha$ is applied.  As shown in the example above, a set of three real values
+$1$, $1.2$ and $3$ can be approximated by an interval $\interval{1}{3}$, which
+represents a set of real values ranging from $1$ to $3$.
 
-Furthermore, from a function $g: \mathsf{L} \to \mathsf{L}$, the
-\gls{ai} framework allows an approximated function $g^\sharp:
-\mathsf{M} \to \mathsf{M}$ to be inductively abstracted by the Galois
-connection~\cite{nielson99}.  For example, consider~\eqref{bg:eq:a1_transfer}
-which is not computable, an approximated candidate $f^\sharp$ can be
-computed by $\alpha \circ f \circ \gamma$.  Since we are computing in
-$\intervalset$, we assume that $\iota = \gamma(\iota^\sharp)$ and $X^\sharp =
-\interval{\underline{X^\sharp}}{\overline{X^\sharp}}$:
+Furthermore, from a function $g: \mathsf{L} \to \mathsf{L}$, the \gls{ai}
+framework allows an approximated function $g^\sharp: \mathsf{M} \to \mathsf{M}$
+to be inductively abstracted by the Galois connection~\cite{nielson99}.  For
+example, consider~\eqref{bg:eq:a1_transfer} which is not computable, an
+approximated candidate $f^\sharp$ can be computed by $\alpha \circ f \circ
+\gamma$.  Since we are computing in $\intervalset$, we assume that $\iota =
+\gamma(\iota^\sharp)$ and use $\underline{a^\sharp}$ and $\overline{a^\sharp}$
+respectively denote the lower- and upper-bounds of an interval $a^\sharp$,
+\ie~$a^\sharp = \interval{\underline{a^\sharp}}{\overline{a^\sharp}}$:
 \begin{equation}
     \begin{aligned}
         f^\sharp(X^\sharp)
@@ -616,6 +635,7 @@ $\intervalset$, we assume that $\iota = \gamma(\iota^\sharp)$ and $X^\sharp =
         \right).
     \end{aligned}
 \end{equation}
+
 We introduce $\epsilon$ to denote an infinitesimal positive value.  Because
 $\alpha(A \cup B) = \alpha(A) \sqcup \alpha(B)$:
 \begin{equation}
@@ -644,7 +664,10 @@ The term $\epsilon$ vanishes when the abstraction function $\alpha$ is applied:
         \right\} \right) \sqcup
         \left( \interval{
             \min(\underline{0.9X^\sharp}, 1)
-        }{\overline{0.9X^\sharp}} \right) \\
+          }{
+            \overline{0.9X^\sharp}
+          }
+        \right) \\
         &= \left( \iota^\sharp \sqcap \interval{1}\infty \right) \sqcup
            \left( 0.9 X^\sharp \sqcap \interval{1}\infty \right)
          = \left( \iota^\sharp \sqcup 0.9 X^\sharp \right) \sqcap
@@ -718,9 +741,10 @@ the form:
 where $\varx$ and $\vary$ are variables and $c$ is a constant.  This domain
 is very efficient as a Floyd-Warshall algorithm~\cite{floyd62}, which runs in
 $\bigo(n^3)$, where $n$ is the number of variables, can be used to compute
-it~\cite{mine04}.  Although not as efficient as intervals, it is much
-more expressive than intervals.  This is because intervals can only imply
-inequalities of the latter form, $\pm \varx \leq c$, but not the former, $\varx
+it~\cite{mine04}.  Although not as efficient as intervals, it is much more
+expressive than intervals.  This is because intervals are equivalent to a
+set of inequalities of the latter form, $\pm \varx \leq c$, but they cannot
+represent the former which captures the correlations between variables, $\varx
 - \vary \leq c$.
 
 Based on \gls{aa}, Ghorbal~\etal~\cite{ghorbal09} propose an abstract domain,
@@ -731,11 +755,11 @@ variable $\varx$:
         \alpha^\varx_0 + \sum_{i = 1}^{n} \alpha^\varx_i \varepsilon_i,
 \end{equation}
 where $\alpha^\varx_i \in \realset$ for each $i$, and each $\varepsilon_i$
-known as the noise symbol, which has an unknown quantity that lies in
-$[-1, 1]$, introduces a perturbation on the constant $\alpha^\varx_0$.
-If two variables $\varx$ and $\vary$ has correlation, $\tilde{\varx}$
-and $\tilde{\vary}$ can consist of the same $\varepsilon_i$ to encode
-the correlation.  They found that for a $2^\mathrm{nd}$ order \gls{iir}
+known as the noise symbol, which has an unknown quantity that lies in $[-1,
+1]$, introduces a perturbation weighted by $\alpha^\varx_i$ on the constant
+$\alpha^\varx_0$.  If two variables $\varx$ and $\vary$ has correlation,
+$\tilde{\varx}$ and $\tilde{\vary}$ can consist of the same $\varepsilon_i$ to
+encode the correlation.  They found that for a $2^\mathrm{nd}$ order \gls{iir}
 filter, Taylor1+ can give an exact bound on the filter output, whereas both
 $\intervalset$ and $\mathbf{Octagon}$ failed as the bound size increase
 exponentially in each iteration, albeit slower than both methods.
@@ -839,7 +863,39 @@ Furthermore, the error domain forms the following Galois connection:
 \end{equation}
 
 Finally, arithmetic operations can also be defined for the values in
-$\errorset$.  For addition and subtraction:
+$\errorset$.  To start we introduce the functions $\roundupop$ and
+$\rounddownop$, which respectively compute the interval of rounded
+floating-point results and the range of round-off error from arithmetic
+operations under a given rounding mode.  The function $\roundupop: \intervalset
+\to \floatintervalset$ computes the floating-point bound from a real
+bound, by rounding the infimum $a$ and supremum $b$ of the input interval
+$\interval{a}{b}$:
+\begin{equation}
+    \roundupop\left(\left[a, b\right]\right)
+    \defeq {\left[
+        \uparrow_\circ{\left(a\right)},
+        \uparrow_\circ{\left(b\right)}
+    \right]}_\floatset.
+\end{equation}
+where the subscript $\floatset$ indicates the interval is a floating-point
+interval, and $\uparrow_\circ{\left(v\right)}$ indicates rounding a value
+$v$ to a floating-point value.  The function $\rounddownop: \intervalset \to
+\intervalset$ determines the range of round-off error due to the floating-point
+computation:
+\begin{equation}
+    \downarrow^\sharp_\circ(\interval{a}{b}) \defeq
+        \left[ -\frac{z}{2}, \frac{z}{2}\right], \quad \text{where~}
+        z = \max(\ulp(a), \ulp(b)).
+\end{equation}
+Here $z$ denotes the maximum rounding error that can occur for values
+within the range $\interval{a}{b}$, and the unit of the last place ($\ulp$)
+function $\ulp(x)$ characterizes the gap between two floating-point numbers
+closest to $x$.  However there are multiple different variations of the
+definition of $\ulp$, which one is the most fitting is still subject to
+debate~\cite{muller}.
+
+We can now define the arithmetic operations on values in $\errorset$.  For
+addition, subtraction and unary subtraction, we have:
 \begin{equation}
     \begin{aligned}
     \left( x^\sharp_1, \mu^\sharp_1 \right) +
@@ -857,7 +913,10 @@ $\errorset$.  For addition and subtraction:
             \roundup{x^\sharp_1 - x^\sharp_2},
             \mu^\sharp_1 - \mu^\sharp_2 +
             \rounddown{x^\sharp_1 - x^\sharp_2}
-        \right).
+        \right), \\
+    -\left( x^\sharp_1, \mu^\sharp_1 \right)
+    &\defeq
+        \left( -x^\sharp_1, -\mu^\sharp_1 \right).
     \end{aligned}
     \label{bg:eq:error_arithmetic}
 \end{equation}
@@ -877,37 +936,8 @@ x^\sharp_2$ and error terms:
         \right).
     \label{bg:eq:error_arithmetic_mult}
 \end{equation}
-
 The addition, subtraction and multiplication of intervals follow the standard
 rules of \gls{ia} defined earlier in~\eqref{bg:eq:interval_operations}.
-In~\eqref{bg:eq:error_arithmetic} and~\eqref{bg:eq:error_arithmetic_mult}, the
-function $\rounddownop: \intervalset \to \intervalset$ determines the range of
-round-off error due to the floating-point computation under the rounding mode.
-For instance, for rounding towards the nearest floating-point value, we have:
-\begin{equation}
-    \downarrow^\sharp_\circ(\interval{a}{b}) \defeq
-        \left[ -\frac{z}{2}, \frac{z}{2}\right], \quad \text{where~}
-        z = \max(\ulp(a), \ulp(b)).
-\end{equation}
-Here $z$ denotes the maximum rounding error that can occur for values
-within the range $\interval{a}{b}$, and the unit of the last place ($\ulp$)
-function $\ulp(x)$ characterizes the gap between two floating-point numbers
-closest to $x$.  However there are multiple different variations of the
-definition of $\ulp$, which one is the most fitting is still subject to
-debate~\cite{muller}.
-
-The function $\roundupop: \intervalset \to \floatintervalset$ computes the
-floating-point bound from a real bound, by rounding the infimum $a$ and
-supremum $b$ of the input interval $\interval{a}{b}$:
-\begin{equation}
-    \roundupop\left(\left[a, b\right]\right)
-    \defeq {\left[
-        \uparrow_\circ{\left(a\right)},
-        \uparrow_\circ{\left(b\right)}
-    \right]}_\floatset.
-\end{equation}
-where the subscript $\floatset$ indicates the interval is a floating-point
-interval.
 
 Expressions can be evaluated for their accuracy by the method as follows.
 Initially, for real-valued variables, the following function can be used to

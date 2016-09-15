@@ -17,25 +17,27 @@ loop- and branch-fusion, and to allow sharing of expressions across nested
 
 After the first stage, we create a topological sort of all nodes, which
 produces a linear ordering of all nodes such that the control- and
-data-dependences are preserved.  After this, we perform a simple one-to-one
-mapping from the list of nodes to program code.  An arithmetic node is
-translated into an assignment statement which assigns a temporary variable with
-the result of the arithmetic computation.  A ternary conditional and a fixpoint
-node respectively generate an \iflit~statement and a \whilelit~loop.  Finally,
+data-dependences are preserved.  We then perform a simple one-to-one mapping
+from the list of nodes to program code.  An arithmetic node is translated into
+an assignment statement which assigns a temporary variable with the result
+of the arithmetic computation.  A ternary conditional and a fixpoint node
+respectively generate an \iflit~statement and a \whilelit~loop.  Finally,
 a composition node \binarymir{$\expand$}{$e$}{$\mu$} ensures that $\mu$ is
 generated before $e$.
 
 The final and optional step of our code generation, is to perform code sinking,
 which moves parts of the code so that when their results are not needed, they
 are not executed~\cite{llvm}.  For instance, the result of the statement
-``\lstinline[basicstyle=\tt]{y = x + 1;}''
-is only used in the true-branch of the program:
+``\lstinline[basicstyle=\tt]{y = x + 1;}'' is only used in the true-branch of
+the program:
 \begin{lstlisting}
     y = x + 1;
     if (x < 1)
-        y = y + 1;
+        y = y * 2;
     else
         y = x;
 \end{lstlisting}
 This statement can therefore be moved into the true-branch of the
-\iflit~statement, so it may be evaluated only when needed.
+\iflit~statement, so it may be evaluated only when needed.  This final step
+further allows \gls{hls} tools to apply \iflit-conversion to revert the changes
+if the tool believe this improves the resulting circuit.

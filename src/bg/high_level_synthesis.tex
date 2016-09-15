@@ -176,9 +176,9 @@ arrays, and the arrows indicate the data-flow of \verb|d| across iterations.
 This schedule allows consecutive iterations to start every 10 cycles; and this
 number of clock cycles between the start of consecutive iterations is known
 as the \gls{ii}\@.  Loop iterations in this schedule repeat for $1024$ times
-(the \emph{trip count}, $N$), and each iteration requires $19$ cycles (the
+(the \emph{trip count}, $N$), and each iteration requires $20$ cycles (the
 \emph{depth}, $D$, of the loop), as a result the overall latency $L$ of this
-loop is $(N - 1) \times \II + D = (1024 - 1) \times 10 + 19 = 10,249$ cycles.
+loop is $(N - 1) \times \II + D = (1024 - 1) \times 10 + 20 = 10,250$ cycles.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.8\linewidth]{bg/fig/schedule}
@@ -403,7 +403,7 @@ length of critical paths in combinational logics, such that for instance, a
 long chain of additions can be broken down into multiple cycles to guarantee
 the frequency requirement.  For all paths $u \rightarrow \cdots \rightarrow
 v$ between inter-iteration dependent vertices $u$ and $v$ consisting of
-only combinational logics, it is possible to compute a critical path delay
+only combinational logics, it is possible to estimate a critical path delay
 $\mathrm{delay}(u, v)$.  This critical path delay is defined as the largest sum
 of propagation delays of each intermediate operation along any combinational
 path from $u$ to $v$.  For a pair of dependent vertices $u$ and $v$ such

@@ -259,9 +259,9 @@ individually, because loop splitting could enhance the accuracy of both $x$ and
 $z$.  After this, in the resulting \gls{mir}, fixpoint expressions may or may
 not share computations.  The fixpoint expressions can often be fused together
 to save resources in the conditional expressions and the control logic that
-are formerly duplicated, if they share common computations.  For instance,
-Figure~\ref{po:fig:mir_fix_fusion_2} shows how two expressions can be fused
-into one fixpoint expression.
+are formerly duplicated, if they share common computations that can be merged
+without conflict.  For instance, Figure~\ref{po:fig:mir_fix_fusion_2} shows how
+two expressions can be fused into one fixpoint expression.
 \begin{figure}[ht]
     \centering
     \newsavebox{\loopfusionlst}

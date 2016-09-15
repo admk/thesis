@@ -19,9 +19,9 @@ the loop, and subsequently, the total latency of the program.
 Following LegUp~\cite{legup}, we compute \gls{mii} values using the first
 few steps of modulo \gls{sdc} scheduling~\cite{canis14} introduced in depth
 in Section~\ref{bg:sub:sdc} of Chapter~\ref{chp:background}, by viewing
-\glspl{mir} as dependence graphs, as the structure of \glspl{mir} already
+\glspl{mir} as dependence graphs, as the structure of a \gls{mir} already
 captures intra-iteration data-dependences.  In addition to this, we add extra
-latency information as attributes on the edges of \glspl{mir}, plus new edges
+latency information as attributes on the edges of \glspl{mir}, and new edges
 to form cycles that capture inter-iteration data-dependences.  The analysis is
 carried out in three stages.
 
@@ -95,10 +95,11 @@ Figure~\ref{lo:fig:example_latency}.
 Note the new dashed edge from the $\updateop$ node to the $\accessop$ node,
 which is labeled $\pair{-2}{1}$.  The first value, $-2$, signifies that the
 latency of the edge between $\times$ and $\accessop$, which is 2 cycles, is
-canceled out because the multiplier can reuse its output from the previous
-iteration as the input for the current iteration. The second value, $1$,
-indicates that there is a data flow dependence from iteration $i$ to iteration
-$i+1$.
+canceled out.  This is because the multiplier can reuse its output from the
+previous iteration as the input for the current iteration without requiring a
+$2$-cycle delay to read from \verb|A| for the value that was updated in the
+previous iteration.  The second value, $1$, indicates that there is a data flow
+dependence from iteration $i$ to iteration $i+1$.
 
 We assume no limit on the number of operators we can allocate, so operators
 do not constraint \gls{ii}.  However, in \gls{vhls}, each array is usually
@@ -135,8 +136,8 @@ Recalling from Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background}, $N$ is
 the maximum \emph{trip count}, \ie~the loop's total number of iterations, and
 $D$ is the loop's depth, \ie~the total number of cycles per iteration.
 
-Because we optimize \glspl{mir} in a bottom-up hierarchy, when an
-expression that does not constitute a inter-iteration dependence is
+Because we optimize \glspl{mir} in a bottom-up hierarchy, when an expression
+is optimized that does not constitute an inter-iteration dependence is
 optimized, its latency is estimated by scheduling its operations by using
 an \gls{alap}~\cite{wang_hls} scheduling algorithm, where each operation
 is scheduled to the latest opportunity, while respecting the order of data
@@ -159,7 +160,7 @@ cycles:
 \end{lstlisting}
 Here as we optimize this program in a bottom-up hierarchy, $f$ is optimized
 before the loop body.  For \gls{mii} considerations, the subexpression tree $f$
-is thus rewritten such that the following latency cost is minimized:
+is thus rewritten such that the following latency cost is minimized in the latency analysis of $f$:
 \begin{equation}
     L = \max \left(
         \frac{l_1}{d_1}, \frac{l_2}{d_2}
@@ -178,11 +179,11 @@ write of \verb|A|, where $d_1 = 1$ and $d_2 = 2$.
 
 The hardware resource usage analysis of Chapter~\ref{chp:stropt} captures the
 sharing of common subexpressions, but cannot analyze resource binding, which
-allows common operations to be shared across clock cycles. For instance, in the
-floating-point expression $\vara + (\varb + \varc)$, the two additions can be
-computed using one addition operator only.  In this section, we develop a new
-resource usage analysis that fully understands how resources are shared in an
-\gls{fpga} implementation of numerical programs.
+allows common operations to be shared across clock cycles. For instance, in
+the floating-point expression $\vara + (\varb + \varc)$, the two additions can
+be computed using one addition operator only.  In this section, we develop a
+new resource usage analysis that fully understands how resources are shared
+temporally in an \gls{fpga} implementation of numerical programs.
 
 We rely on the foundation of resource usage analysis from
 Chapters~\ref{chp:stropt} and~\ref{chp:progopt}, which counts the number
@@ -274,8 +275,8 @@ $A$ thus produces an abstract state which collects all elements in $A$:
     \end{aligned}
 \end{equation}
 where $i \in \exprerrorfunc{\bar\imath}\sigma^\sharp$ ranges over all possible
-indices that are tuples with $N$ non-negative integers, where $A$ is an
-$N$-dimensional array.
+indices bounded by $\exprerrorfunc{\bar\imath}\sigma^\sharp$ that are tuples
+with $N$ non-negative integers.
 
 Additionally, because most of the loops in our benchmark programs consist
 of nested loops and have large iterations, the fixpoint analysis routine

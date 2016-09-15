@@ -18,8 +18,8 @@ tridiagonal linear system of equations.
 matrix/vector transpositions, additions and multiplications (\verb|2mm|,
 \verb|3mm|, \verb|atax|, \verb|gemm|, \verb|gemver|, \verb|mvt|), the
 bi-conjugate gradient stabilized method (\verb|bicg|), the Seidel stencil
-computation (\verb|seidel|), and symmetric rank-2k operations
-(\verb|syr2k|).
+computation (\verb|seidel|, modified to compute with $5$ points), and symmetric
+rank-2k operations (\verb|syr2k|).
 
 \end{itemize}
 
@@ -304,15 +304,16 @@ in a 6.7$\times$ reduction of total run time.  Furthermore, we have found that
 numerical accuracy can often be optimized at the same time as we optimize the
 initiation intervals of loops. Because by partially unrolling loops, the sizes
 of the expressions in loop grow, which provides \soap{} a greater freedom in
-terms of discovering more accurate expressions. In this example, the most
-efficient program is also the most accurate one: it minimizes round-off errors
-by approximately 2.5$\times$. It is worth noting that \soap{} can detect
-that as it explores deep levels of partial loop unrolling, we start to see a
-diminishing return in performance as it hits a bottleneck in memory bandwidth.
-This is due to the fact that \gls{vhls} synthesizes dual port \glspl{ram} for
-arrays, and in one clock cycle we can only read from the memory allocating
-array twice.  Our optimization flow is aware of this bottleneck and stops
-exploring further loop unrolling.
+terms of restructuring expressions and discovering more accurate variants. In
+this example, the fastest program is also the most accurate one: it minimizes
+round-off errors by approximately 2.5$\times$. It is worth noting that \soap{}
+can detect that as it explores deep levels of partial loop unrolling, we
+start to see a diminishing return in performance as it hits a bottleneck in
+memory bandwidth.  This is due to the fact that \gls{vhls} synthesizes dual
+port \glspl{ram} for arrays, and in one clock cycle we can only read from the
+memory allocating array twice.  Our optimization flow detects this bottleneck
+as it prunes them from the Pareto frontier, and stops exploring further loop
+unrolling.
 
 Similar graphs for the other benchmarks can be viewed
 online,\footnote{\url{https://admk.github.io/soap/plot.html}} each showing
@@ -338,8 +339,8 @@ programs reveals that they all share a common programming idiom:
 \end{lstlisting}
 %
 We found that \gls{vhls} occasionally fails to find the optimal schedule,
-predicted by \soap, that could pipeline this loop as tightly as possible.  By
-rewriting the above code into the following:
+predicted by \soap, that could pipeline this loop as tightly as possible.
+Rewriting the above code into the following:
 %
 \begin{lstlisting}
   for (int i=0; i<N; i++) {

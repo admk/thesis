@@ -75,9 +75,11 @@ these syntactic rewrites that do not affect our performance metrics, \eg~the
 numerical accuracy and resource usage of synthesized circuits.  It is therefore
 desirable to perform transformations on a \gls{dag} representation of the
 program, rather than on the program text directly.  This section introduces a
-new \gls{ir}, which we call the \acrfull{mir}.  It expresses how each program
-variable is updated, but abstracts away the order in which the updates occur,
-and ignores any temporary variables that are not marked as program outputs.
+new \gls{dag}-based \gls{ir}, which we call the \acrfull{mir}.  It expresses
+how each program variable is updated while preserving the control- and
+data-flow of the original program, but abstracts away the order in which the
+updates occur, and ignores any temporary variables that are not marked as
+program outputs.
 
 As an example, the two equivalent programs $P_1$ and $P^\prime_1$ in
 Figure~\ref{po:fig:equiv_progs} can be automatically translated into an
@@ -206,8 +208,8 @@ instance, an expression written as $(\varx + 1) \times (\varx + 1)$ shares the
 subexpression node $\varx + 1$ by reusing the node in the \gls{dag}\@.  For
 each other program variable $\vary \in \varset$, where $\vary \neq \varx$,
 $\vary$ is associated with a semantic expression $\vary \in \sexprset$,
-representing that the \gls{mir} does not the value of all program variables
-except $\varx$, because only $\varx$ is updated in the statement.
+representing that the \gls{mir} does not alter the value of all program
+variables except $\varx$, because only $\varx$ is updated in the statement.
 
 For example, we consider a program with two variables $\varx$ and $\vary$.
 Analyzing the statement ``\verb|y = x * 2;|'' produces the following \gls{mir}
@@ -249,11 +251,12 @@ a new operator $\expand$, the \emph{composition operator}, such that the
 $\mu_2$ are the \glspl{mir} of $s_1$ and $s_2$ respectively.  The resulting
 \gls{mir} of $\mu_2 \expand \mu_1$ is constructed by substituting, for every
 expression $e \in \sexprset$ in $\mu_2$, each variable $\varx$ in $e$ with
-$\mu_1(\varx)$, which is the associated expression of $\varx$ in $\mu_1$.
-Furthermore, the operator allows the format $e \expand \mu$, where $e \in
-\sexprset$ is called the target expression and $\mu \in \mirset$ is the source
-\gls{mir}, to mean the variables in $e$ is substituted with $\mu$ using the
-composition strategy above.
+$\mu_1(\varx)$, which is the associated expression of $\varx$ in $\mu_1$.  It
+is noteworthy that $\mu_1$ is always computed before $\mu_2$ when evaluated, as
+there is a data-dependence from $\mu_2$ to $\mu_1$.  Furthermore, the operator
+allows the format $e \expand \mu$, where $e \in \sexprset$ is called the target
+expression and $\mu \in \mirset$ is the source \gls{mir}, to mean the variables
+in $e$ is substituted with $\mu$ using the composition strategy above.
 
 We illustrate this by finding the \gls{mir} of a simple example program,
 ``\verb|x=x+1; y=x*2;|''.  Using the \gls{mir} of assignments, the
@@ -430,33 +433,37 @@ resulting \gls{mir} is semantically equivalent to the original:
 \end{equation}
 
 The traditional approach of program abstraction uses
-\glspl{cdfg}~\cite{namballa04}, which preserves the ordering of sequential
-statements, uses a one-to-one mapping from assignment statements to assignment
-nodes, storage nodes are used to store the result of assignments, \ie~it allows
-nodes to act as a memory to store values, and finally, uses cycles in graphs
-to represent program loops.  In contrast, our \glspl{mir}, from our analysis
-point of view, use no local storage of temporary values, discard unnecessary
-intermediate statements.  Most importantly, we treat control structures as
-operators in expressions, in the same way as arithmetic computations.  In
-comparison with \glspl{cdfg}, these above facts make \glspl{mir} a more
-suitable candidate for exploring the search space of program transformations.
+\glspl{cdfg}~\cite{namballa04}.  \Glspl{cdfg} preserves the ordering of
+sequential statements, uses a one-to-one mapping from assignment statements
+to assignment nodes, uses storage nodes to store the result of assignments,
+\ie~it allows nodes to act as a memory to store values, and finally,
+contains cycles in graphs to represent program loops.  In contrast, our
+\glspl{mir}, from our analysis point of view, use no local storage of
+temporary values, and discard unnecessary intermediate statements.  Most
+importantly, we treat control structures as operators in expressions,
+in the same way as arithmetic computations, and we will show later in
+Section~\ref{po:sec:equivalence_analysis} this enables greater flexibility in
+program transformation based on \glspl{mir}.  In comparison with \glspl{cdfg},
+these above facts make \glspl{mir} a more suitable candidate for exploring the
+search space of program transformations.
 
 \subsection{Loops}
 
 A possible way to represent a \whilelit~loop,
 ``\lstinline[basicstyle=\tt]|while ($b$) {$s$}|'', where $b \in \bexprset$
-and $s \in \stmtset$, is to effectively view it as the semantic expression of
-a fully unrolled loop.  Unfortunately this expression has an infinite depth,
-which cannot be represented fully in a data structure.  We therefore introduce
-a new operator for semantic expressions, ``$\fix$'', which we call the
-\emph{fixpoint} operator.  We further use the fixpoint expression $\fix(f)$ to
-represent the \whilelit~loop, where the function $f: \sexprset \to \sexprset$,
-defined as $f(e_\varx) = \select{b}{e_\varx \expand \mu_s}{\varx}$, represents
-the computation of one iteration of the loop, and $\mu_s$ is the \gls{mir}
-of the loop body.  Finally, the fixpoint expression of a \whilelit~loop can
-be written more succinctly using $lambda$-expression~\cite{barendregt13},
-\ie~$\fix\left(\lambda e_\varx \dotop \select{b}{e_\varx \expand
-\mu_s}{\varx}\right)$.
+and $s \in \stmtset$, is to effectively analyze it as a fully unrolled loop.
+Unfortunately the resulting semantic expressions have an infinite depth, which
+cannot be represented fully in a data structure.  Because these expressions
+have recurring patterns, we therefore introduce a new operator for semantic
+expressions, ``$\fix$'', which we call the \emph{fixpoint} operator, to
+capture this pattern.  For each variable $\varx$ updated in loop, we further
+use the fixpoint expression $\fix(f)$ to represent the \whilelit~loop,
+where the function $f: \sexprset \to \sexprset$, defined as $f(e_\varx) =
+\select{b}{e_\varx \expand \mu_s}{\varx}$, represents the computation of one
+iteration of the loop, and $\mu_s$ is the \gls{mir} of the loop body.  Finally,
+the fixpoint expression of a \whilelit~loop can be written more succinctly
+using $lambda$-expression~\cite{barendregt13}, \ie~$\fix\left(\lambda e_\varx
+\dotop \select{b}{e_\varx \expand \mu_s}{\varx}\right)$.
 
 In graph form, for simplicity the fixpoint node admits three child nodes,
 namely, the Boolean expression $b$, the loop body represented by a \gls{mir},

@@ -46,7 +46,7 @@ readily used.
 In previous chapters, we only analyze structural reuse in the form of common
 subexpressions.  HLS tools further allows certain arithmetic operations to be
 shared temporally.  In this chapter, we therefore additionally analyze resource
-utilization by considering the implications of sharing the same resources in
+utilization by considering the implications of sharing the same resources among
 different clock cycles.  For this purpose, we use a variant of the first few
 steps shared by modulo \gls{sdc} scheduling~\cite{canis14} and \acrfull{ims}
 algorithm~\cite{rau94}, which efficiently analyze the run time and resource
@@ -112,7 +112,7 @@ improvements made to this procedure to further increase its performance.
 This process in turn makes use of the two new performance analyses in
 Section~\ref{lo:sec:performance_analysis}, which respectively estimate the
 latency and resource utilization.  This section further explains how round-off
-errors can be bound in a given program written with arrays.  The optimized C
+errors can be bounded in a given program with arrays.  The optimized C
 programs can then be generated from the \glspl{mir}, using the code generation
 routines from Chapter~\ref{chp:progopt}, to be synthesized in \gls{vhls} to
 obtain \gls{rtl} implementations.  In Section~\ref{lo:sec:results} we evaluate

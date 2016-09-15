@@ -8,9 +8,9 @@ benchmark suite with six different examples.  We use the IEEE 754 32-bit
 single precision format with rounding to nearest mode as the data types of the
 floating-point values used in these examples.  The benchmark consists of two
 introductory numerical programs, and four real applications that are frequently
-encountered in numerical analyses, and round-off errors have big impacts on the
-quality of their execution.  Appendix~\ref{app:source} contains the source code
-of all benchmark examples below.
+encountered in numerical analyses, where round-off errors could have big
+impacts on the quality of their execution.  Appendix~\ref{app:source} contains
+the source code of all benchmark examples below.
 \begin{itemize}
 
     \item \texttt{simple}: for an input $x \in [0, 20]$, we repeatedly multiply
@@ -48,15 +48,23 @@ Our configuration for the efficient discovery of equivalent expressions uses a
 depth limit $k = 2$, and a $D = 3$ as the maximum number of times of partial
 loop unrolling.  For each program we optimize it with \soap~to discover a wide
 range of implementations, and select the most accurate and least resource
-demanding equivalent implementations for further analysis.  The selected
-implementations are then simulated $1000$ times, with a sample of $1000$ unique
-random inputs for each benchmark example, then we compare the maximum round-off
-errors encountered.  Our code generator produces C source codes from the
+demanding equivalent implementations for further analysis.
+
+Our code generator produces C source codes from the
 optimized \glspl{mir}, which are then synthesized with LegUp~\cite{legup}, with
 floating-point operator sharing turned off to achieve maximum frequency, then
 compiled and verified with Quartus~\cite{quartus}, targeting an Altera Stratix
 IV device (\textrm{EP4SGX530})~\cite{stratix4} for the actual resource usage
 statistics and the frequency achieved.
+
+In order to provide evidence that the minimization of the statically analyzed
+round-off errors strongly correlates with the reduction of actual errors
+encountered during computation in circuits, the selected optimization
+candidates are also simulated for numerical accuracy.  This simulation is
+carried out $1000$ times with $1000$ uniformly distributed random inputs
+for each benchmark example, then we compare the maximum round-off errors
+encountered.
+
 
 \subsection{Results}
 
@@ -124,7 +132,7 @@ has the expression:
 \begin{equation}
     \sum_{i=0}^2{\left( a_i \vary_{i+1} + b_i \varx_i \right)},
 \end{equation}
-which has a large number of equivalent expressions, without increasing the
+which has a large number of equivalent expressions, even without increasing the
 resource usage, our optimization improves its accuracy by 14.5\%.
 
 Moreover, points within the shaded region are Pareto-optimal as they optimize
