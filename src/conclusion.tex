@@ -276,13 +276,16 @@ performance improvements.  Currently the tool stops exploring further loop
 unrolling when this happens.  By automatically partitioning arrays upon hitting
 such a memory bottleneck, further throughput improvements can be achieved.
 
-\textbf{Other practical considerations.}  Finally, we may consider design
-perspectives that could make the resulting tool much more usable.  For
-instance, programs may still be optimized by not having any knowledge about
-the input variables.  Herbie~\cite{panchekha15} makes no assumption about the
-input space, and can nevertheless optimize arithmetic expressions, by splitting
-the input space into multiple parts to be evaluated by expressions that are
-optimized for different regions.
+\textbf{Other practical considerations.}  Finally, we may consider limiting
+perspectives if overcome could make the resulting tool much more usable.
+Firstly, \soap{} does not scale well for programs larger than a few loops,
+which still requires the user to manually partition the program into smaller
+snippets to be optimized individually and tune parameters to trade quality for
+optimization speed.  Another limitation is that programs cannot be optimized
+without knowledge about the input variables.  Herbie~\cite{panchekha15} makes
+no assumption about the input space, and can nevertheless optimize arithmetic
+expressions, by splitting the input space into multiple parts to be evaluated
+by expressions that are optimized for different regions.
 
 
 % \section{Tool Usage}
