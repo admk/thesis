@@ -17,8 +17,8 @@ synthesis tool flow compiles \gls{rtl} implementations into circuits by taking
 Altera Quartus II~\cite{quartus} as an example.
 
 Because of the ever-increasing complexity of applications designed into
-circuits, low-level approaches such as \gls{rtl} design become humanly
-intractable~\cite{gajski}, and a gradual adoption of \gls{hls} tools has been
+circuits, low-level approaches such as \gls{rtl} design become intractable
+for humans~\cite{gajski}, and a gradual adoption of \gls{hls} tools has been
 observed in the \gls{fpga} community in recent years.  For this reason, in
 Section~\ref{bg:sec:high_level_synthesis}, we review the current state and
 advantages of \gls{hls}, and describe the stages employed by these tools to
@@ -40,7 +40,7 @@ analysis example.
 \Glspl{ir} are often used to facilitate program optimization and program
 analysis.  Section~\ref{bg:sec:intermediate} we therefore study in detail
 the existing \glspl{ir} designed for program optimization.  We take a closer
-at how the \gls{ssa} and \gls{cfg} approach of \gls{llvm}~\cite{llvm_ir}
+look at how the \gls{ssa} and \gls{cfg} approach of \gls{llvm}~\cite{llvm_ir}
 encodes a simple program example.  As this technique limits itself to
 optimizing a single \gls{ir} of a program, a novel approach known as equality
 saturation~\cite{tate09} which uses a data structure to simultaneously

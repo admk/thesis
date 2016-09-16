@@ -22,7 +22,7 @@ true or always false for all programs, is in general \emph{undecidable};
 or in other words, it cannot be answered algorithmically.  Even a question
 as seemingly innocuous as \emph{``does this program return zero''} falls
 into this category.  A static analyzer, when faced with such a question,
-therefore do not attempt to produce a definite \emph{yes} or \emph{no},
+therefore does not attempt to produce a definite \emph{yes} or \emph{no},
 instead it answers with either a definite \emph{yes} or \emph{I don't
 know}~\cite{mine04}; and producing a meaningful \emph{yes} in an efficient
 manner poses a challenging task to static analyzers.  Additionally, they
@@ -60,8 +60,8 @@ which consists of only one variable $\varx$.  We assume an initial set $\iota
 us is whether a particular value $\varx_\mathrm{invalid}$ is unreachable.
 Computations are performed in real arithmetic for simplicity.  By computing an
 $X$, the set of all reachable final values of $\varx$, it suffices to check
-$\varx_\mathrm{invalid} \notin X$.  A sensible definition for the set of
-values can be reached by $\varx$ is a subset of all real numbers $\realset$,
+$\varx_\mathrm{invalid} \notin X$.  A sensible definition for the set of values
+that can be reached by $\varx$ is a subset of all real numbers $\realset$,
 \ie~an element of $\powersetof\realset$, where $\powersetof\realset$ denotes
 the \emph{power set} of $\realset$, also known as the set of all subsets of
 $\realset$.
@@ -224,7 +224,7 @@ natural number.
 
 It is evident to us the latter solution~\eqref{bg:eq:a12} is more precise,
 hence more desirable, than the former~\eqref{bg:eq:a11}.  Not only does it
-contain information the former has, \ie~all values reachable by $A(1)$ is
+contain information the former has, \ie~all values reachable by $A(1)$ are
 greater than 1, it also expresses the fact that it only consists of values
 of the form $0.9^k v$ that are greater than $1$, where $v \in \iota$ and $k
 \in \naturalset$.  A useful definition of preciseness is therefore the subset
@@ -259,15 +259,16 @@ $f$:
         X \in \powersetof\realset \mid
         f(X) = X
     \right\}.
-\end{equation}
+\end{equation}%
 \footnotetext[1]{%
     Another common name for \emph{fixpoint} is \emph{fixed point}.  To avoid
     being mistaken for the fixed point representation, a binary number
     representation, the term \emph{fixpoint} is used instead.
-}
+}%
 
-By using this particular definition of preciseness, two important questions
-arise:
+By using this particular definition of preciseness, it is clear that we wish to
+find the fixpoint of $f$ with the smallest number of elements in it.  With this
+in mind, two important questions arise:
 \begin{enumerate}
 
     \item Is the most precise solution unique?  A unique most precise solution
@@ -292,10 +293,11 @@ indeed unique.
 For the second question, Kleene's fixpoint theorem shows that in our example
 analysis, the most precise solution of $A(1)$ can be computed using:
 \begin{equation}
-    \lfp (f) = \bigcup_{k \in \naturalset} f^k (\varnothing),
+    \lfp (f) = \bigcup_{k \in \naturalset} f^k (\varnothing).
 \end{equation}
-where a function of the form $h^n(x)$, where $h: \mathsf{M} \to \mathsf{M}$ for
-any domain $\mathsf{M}$ and $n \in \naturalset$, is recursively defined as:
+Here, $\varnothing$ is the empty set, and a function of the form $h^n(x)$,
+where $h: \mathsf{M} \to \mathsf{M}$ for any domain $\mathsf{M}$ and $n \in
+\naturalset$, is recursively defined as:
 \begin{equation}
     h^n(x) = \left\{
         \begin{aligned}
@@ -371,11 +373,11 @@ computable, it is much more efficient to work out an \emph{approximation} of
 the \gls{lfp}\@.  Despite the outcome of an \gls{ai}-based static analysis not
 being as precise as the \gls{lfp}, the significant benefits of \gls{ai} is
 two-fold.  Firstly, the program analysis framework can now produce a ``yes'' or
-``I don't know'' answer to a query of program property in a finite amount of
+``I don't know'' answer to a query of a program property in a finite amount of
 time.  Secondly, it provides the means to prove the correctness of an answer
 produced by the static analyzer using \gls{ai} in formal mathematics.
 
-Here a simple formulation of \acrlong{ia} is first introduced, which is then
+Here, a simple formulation of \acrlong{ia} is first introduced, which is then
 exercised in the \gls{ai} framework, again by using the \verb|simple| example
 in Figure~\ref{bg:lst:simple}.
 
@@ -436,12 +438,12 @@ also be defined for real intervals:
     \begin{aligned}
         \interval{a}{b} + \interval{c}{d} &= \interval{a + c}{b + d}, \\
         \interval{a}{b} - \interval{c}{d} &= \interval{a - d}{b - c}, \\
-        -\interval{a}{b} &= \interval{-b}{-a}, \\
         \interval{a}{b} \times \interval{c}{d}
             &= \interval{\min(s)}{\max(s)}, \\
         \text{where~} s &= \left\{
             a \times c, a \times d, b \times c, b \times d
-        \right\}.
+        \right\}, \\
+        -\interval{a}{b} &= \interval{-b}{-a}.
     \end{aligned}
     \label{bg:eq:interval_operations}
 \end{equation}
@@ -477,9 +479,9 @@ accordingly for $\tilde{f}$.
 When given an input $X$, $f$ must enumerate on all $X$ to compute the result
 $f(X)$ precisely.  As we have discussed earlier this is infeasible as $X$
 could contain infinite number of values.  Conversely, $\tilde{f}$ does not
-suffer from this problem, since~\eqref{bg:eq:interval_operations} dictates any
-\gls{ia} operations can be performed by \emph{finite} number of real arithmetic
-computations.
+suffer from this problem, since~\eqref{bg:eq:interval_operations} dictates
+any \gls{ia} operations can be performed by a \emph{finite} number of real
+arithmetic computations.
 
 As it is possible to prove that both fixpoint theorems in
 Section~\ref{bg:sub:lfp} hold for $\intervalset$ and $\tilde{f}$, its
@@ -507,14 +509,14 @@ executing the statement ``\verb|x *= 0.9;|'' is indeed $[1, 10]$.
 
 In many cases, an algorithm to compute $\tilde{f}^k(\bot)$ can terminate.
 It is clear that if $\tilde{f}^k(\bot) = \tilde{f}^{k+1}(\bot)$ for some
-$k \in \naturalset$, then for all integers $j$ that is greater than $k$,
+$k \in \naturalset$, then for all integers $j$ that are greater than $k$,
 $\tilde{f}^{j}(\bot) = \tilde{f}^{k}(\bot)$ and there is no point in computing
 $\tilde{f}^{j}(\bot)$.  Widening and narrowing operators~\cite{cousot77,
-nielson99} can be used to reduce the number of iterations required to reach
-a fixpoint, hence accelerating, or even ensuring, termination by sacrificing
-precision of the computed fixpoint, \ie~the result is no longer the \gls{lfp},
-but is a fixpoint $X \sqsupseteq \lfp(\tilde{f})$ that can be computed more
-easily.
+nielson99} can be used to reduce the number of iterations required in the
+iterative computation steps, hence accelerating, or even ensuring, termination
+by sacrificing precision of the computed fixpoint, \ie~the result is no longer
+the \gls{lfp}, but is a fixpoint $X \sqsupseteq \lfp(\tilde{f})$ that can be
+computed more easily.
 
 \subsubsection{Galois Connection}
 \label{bg:ssub:galois}
@@ -706,7 +708,10 @@ the following Galois connection between mappings can also be constructed:
     [\varset \to \intervalset],
 \end{equation}
 where $\alpha^\prime(f) = \alpha \circ f$, $\gamma^\prime(g) = \gamma \circ g$,
-and a term of the form $s \circ t (x)$ denotes $s(t(x))$.
+and a term of the form $s \circ t$, where $s: B \to C$ and $t: A \to B$ denotes
+a function which accepts an input from $A$ and produces an intermediate output
+in $B$ using $t$, then in turn $s$ is used on the intermediate value to compute
+a final output in $C$.
 
 
 \subsection{Abstract Domains}
@@ -757,11 +762,11 @@ variable $\varx$:
 where $\alpha^\varx_i \in \realset$ for each $i$, and each $\varepsilon_i$
 known as the noise symbol, which has an unknown quantity that lies in $[-1,
 1]$, introduces a perturbation weighted by $\alpha^\varx_i$ on the constant
-$\alpha^\varx_0$.  If two variables $\varx$ and $\vary$ has correlation,
+$\alpha^\varx_0$.  If two variables $\varx$ and $\vary$ are correlated,
 $\tilde{\varx}$ and $\tilde{\vary}$ can consist of the same $\varepsilon_i$ to
 encode the correlation.  They found that for a $2^\mathrm{nd}$ order \gls{iir}
 filter, Taylor1+ can give an exact bound on the filter output, whereas both
-$\intervalset$ and $\mathbf{Octagon}$ failed as the bound size increase
+$\intervalset$ and $\mathbf{Octagon}$ failed as the bound size increases
 exponentially in each iteration, albeit slower than both methods.
 
 Cousot~\etal~\cite{cousot78} introduce the polyhedra approach to abstract
@@ -817,9 +822,9 @@ expressions.
 Martel~\cite{martel07} introduces an abstract error semantics for the
 calculation of round-off errors in the evaluation of floating-point
 expressions.  It consists of three components: an abstract domain to enclose
-computed floating-point values and round-off errors, a suite of operations on
-the partial order, and finally, a set of arithmetic operations to evaluate
-arithmetic expressions in the error semantics.
+computed floating-point values and round-off errors, a suite of partial order
+operations on the abstract domain, and finally, a set of arithmetic operations
+to evaluate arithmetic expressions using the abstract domain.
 
 First we define the domain $\errorset = \floatintervalset\times\intervalset$,
 where $\intervalset$ and $\floatintervalset$ respectively represent the

@@ -34,7 +34,7 @@ discrepancies, when accumulated, could potentially result in wildly inaccurate
 outputs.
 
 There are a number of compiler options in \gls{gcc}~\cite{gcc} that
-specifically performs the above optimizations.  For example, the following
+specifically perform the above optimizations.  For example, the following
 options exist to enable expression-rewriting heuristics:
 \begin{itemize}
 
@@ -170,7 +170,7 @@ particular, Panchekha \etal~\cite{panchekha15} show that inaccurate
 computations, due to round-off errors, resulted in the retraction of scientific
 articles~\cite{altman99}, and even wild discrepancies in stock market
 indices~\cite{mccullough99}.  In response, the software community has seen an
-emergence of techniques that rewrites expressions in numerical programs, to
+emergence of techniques that rewrite expressions in numerical programs, to
 ameliorate round-off errors in numerically sensitive applications.  However,
 round-off errors in numerical programs are well known to be perplexing to
 debug~\cite{toronto14}, and it is in general difficult to apply intuition
@@ -227,7 +227,7 @@ control-flows.  APEGs subsume arithmetic expressions by allowing all possible
 nodes in an arithmetic expression, \ie~it can contain leaf nodes such as a
 constant value or a variable identifier, unary or binary arithmetic operators
 that respectively have one or two child nodes.  In addition, to allow an APEG
-to encode exponential number of equivalent expressions within a polynomial
+to encode an exponential number of equivalent expressions within a polynomial
 space, it further introduces two different kinds of nodes that efficiently
 model equivalences.
 
@@ -511,24 +511,24 @@ However, the techniques in this research area to optimize numerical accuracy
 are currently not mature enough to be used in compilers and \gls{hls} tools.
 
 Tate~\etal~\cite{tate09} with their \glspl{epeg}, enable equivalent programs
-to be discovered efficiently.  However their method does not consider the
+to be discovered efficiently.  However, their method does not consider the
 implications of rewriting arithmetic expressions in the data-flow on numerical
 accuracy.
 
 Damouche~\etal~\cite{damouche15} developed a new semantics-based method, built
 on top of the foundation of APEGs from Ioualalen~\etal~\cite{ioualalen}, for
 the purpose of accuracy optimization in general numerical programs.  Their
-method formally defines a set of inference rules for rewriting a sequent,
-which encode the original program, into another, representing an optimized
-program.  To summarize from an informal standpoint, the inference rules
-analyze the basic blocks in the numerical program, which consist of arithmetic
-operations and variable assignments, into standard arithmetic expressions.
-These arithmetic expressions can then be analyzed and optimized by constructing
-APEGs and extracting an optimized expression from the APEGs.  Because they
-only focus on the basic blocks of the program, containing only data-flows,
-their approach is not able to optimize across control-flow boundaries such as
-\iflit~statements and \whilelit~loops.  Their method can improve numerical
-accuracy by approximately 20\% for simple loop examples.
+method formally defines a set of inference rules for rewriting a sequent, a
+formula used encode the original program, into another one representing an
+optimized program.  To summarize from an informal standpoint, the inference
+rules analyze the basic blocks in the numerical program, which consist of
+arithmetic operations and variable assignments, into standard arithmetic
+expressions.  These arithmetic expressions can then be analyzed and optimized
+by constructing APEGs and extracting an optimized expression from the APEGs.
+Because they only focus on the basic blocks of the program, containing only
+data-flows, their approach is not able to optimize across control-flow
+boundaries such as \iflit~statements and \whilelit~loops.  Their method can
+improve numerical accuracy by approximately 20\% for simple loop examples.
 
 To summarize, the lack of the ability to trade-off multiple performance
 objectives in program optimization provides a strong motivation for the

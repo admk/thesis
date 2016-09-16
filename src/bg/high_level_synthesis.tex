@@ -129,7 +129,7 @@ communication interfaces between them are synthesized and programmed into the
 \gls{fpga} device.  Because some of the functions in the original C source
 code were implemented as hardware accelerators in the \gls{hls} compilation
 flow, LegUp replaces them with wrapper functions which can invoke the hardware
-accelerators in runtime.  Finally, this modified source code can then be
+accelerators at runtime.  Finally, this modified source code can then be
 compiled into a MIPS binary to be executed on the \gls{fpga}\@.
 
 
@@ -223,7 +223,7 @@ instructions for \gls{vliw} processors~\cite{mcnairy03}.  This method has also
 been widely adopted in \gls{hls} tools such as PICO-NPA~\cite{schreiber02},
 Trident~\cite{tripp05} and LegUp~\cite{canis13, canis14}.  \Gls{ims} for
 software pipelining~\cite{rau94}, however did not consider operator chaining,
-\ie~allowing operations with combinational logics in a data-flow sequence to
+\ie~allowing operations with combinational logic in a data-flow sequence to
 be carried out in the same clock cycle.  Schreiber~\etal~\cite{schreiber02}
 in their adoption of \gls{ims} in \gls{hls}, found operator chaining
 to be non-trivial in \gls{ims} and requires static timing analysis of
@@ -386,7 +386,7 @@ $s_v$ are respectively the time slots for vertices $u$ and $v$:
     s_u - s_v \leq \II \times d - l.
 \end{equation}
 For instance, the edge $\times \xrightarrow{\langle 7, 0 \rangle} +$ is an
-intra-iteration dependence, hence \gls{ii} does not constraint the scheduling
+intra-iteration dependence, hence \gls{ii} does not constrain the scheduling
 relation between these two operations and we substitute $d$ with $0$ and $l$
 with $7$, and the \gls{ii} term vanishes, to derive~\eqref{bg:eq:sdc_intra}
 below, and the back-edge $+ \xrightarrow{\langle 10, 1 \rangle} \mathtt{d}$
@@ -399,11 +399,11 @@ produces the following inequality in~\eqref{bg:eq:sdc_inter}:
 \end{align}
 
 Besides dependence constraints, additional constraints are used to limit the
-length of critical paths in combinational logics, such that for instance, a
+length of critical paths in combinational logic, such that for instance, a
 long chain of additions can be broken down into multiple cycles to guarantee
 the frequency requirement.  For all paths $u \rightarrow \cdots \rightarrow
 v$ between inter-iteration dependent vertices $u$ and $v$ consisting of
-only combinational logics, it is possible to estimate a critical path delay
+only combinational logic, it is possible to estimate a critical path delay
 $\mathrm{delay}(u, v)$.  This critical path delay is defined as the largest sum
 of propagation delays of each intermediate operation along any combinational
 path from $u$ to $v$.  For a pair of dependent vertices $u$ and $v$ such
@@ -469,9 +469,9 @@ in the \gls{mrt}, a new constraint $s_u = t_u$ is constructed, otherwise a
 different constraint $s_u \geq t_u + 1$ is used to ensure the operation $u$
 is scheduled at least one cycle later, so that it does not compete for the
 resource in time slot $t_u$.  This newly created constraint is then tentatively
-added to the \gls{sdc} problem.  For a feasible resulting \gls{sdc} problem,
-a new solution can be found incrementally, otherwise the algorithm backtracks
-to a latest feasible \gls{sdc} formulation and try to schedule other operators
+added to the \gls{sdc} problem.  For a feasible resulting \gls{sdc} problem, a
+new solution can be found incrementally, otherwise the algorithm backtracks to
+a latest feasible \gls{sdc} formulation and tries to schedule other operators
 before $u$.  A time budget can also be used to limit the number of attempts to
 schedule resource-constrained operators; if a valid schedule cannot be found
 under the given budget, the \gls{ii} can be incremented by $1$ to relax the
@@ -484,7 +484,7 @@ repeated until a valid schedule is found.
 
 High-level synthesis, with its development-cost advantage over traditional
 \gls{rtl} design paradigm, is gaining traction in the circuit design community.
-It is however in its early phase, and these tools still pose challenges in
+It is, however, in its early phase, and these tools still pose challenges in
 terms of using them as early adopters.
 
 \Gls{hls} tools may have limited support for \gls{hll} constructs.  For
@@ -518,13 +518,13 @@ by enumerating combinations of loop tile sizes, loop nest ordering and unroll
 factors, they were able to select the best implementation by analytically
 estimating the throughput of each.  Similarly, Suda~\etal~\cite{suda16}
 explored the design space of their \gls{cnn} accelerator by solving a
-resource-constrained throughput optimization problem, in order to generate
-a high-performance \gls{cnn} accelerator to be synthesized in Altera OpenCL
+resource-constrained throughput optimization problem, in order to generate a
+high-performance \gls{cnn} accelerator to be synthesized in the Altera OpenCL
 compiler~\cite{aoc}.  \Gls{hls} tools can provide some syntactic constructs
 to automate lower-level code transformations such as instruction parallelism,
-loop pipelining and unrolling.  It is however up to the engineer to decide how
-to utilize these transformations, and to determine whether they will improve
-the design.  Higher-level optimizations such as the manual design space
+loop pipelining and unrolling.  It is, however, up to the engineer to decide
+how to utilize these transformations, and to determine whether they will
+improve the design.  Higher-level optimizations such as the manual design space
 exploration explained in earlier examples, may allow tools to vastly improve
 the performance of \gls{hls} applications.  Automating these techniques in
 \gls{hls}, however, remains a significant challenge.

@@ -10,9 +10,9 @@ are now best obtained via \gls{hls} from C\@: less development effort, the
 abundance of software engineers compared to hardware designers, the relative
 ease of testing C code on an ordinary microprocessor, the opportunities
 for rapid design space exploration, and so on~\cite{gajski94, meeus12,
-nane15}. Great advances have been made in this area recently, and the
-output from \gls{hls} tools is nowadays competitive with hand-crafted
-designs~\cite{bdti_xilinx}.
+nane15}. Great advances have been made in this area recently, and the output
+from \gls{hls} tools is nowadays competitive with hand-crafted designs for
+certain types of applications~\cite{bdti_xilinx}.
 
 Numerical C programs are typically written with floating-point
 arithmetic, following the \emph{IEEE 754 standard} for floating-point
@@ -100,7 +100,7 @@ semantics, \ie~the underlying meaning of programs such as inferred numerical
 accuracy, to guide optimization and guarantee safety properties of the
 optimized program.  Our technique obtains when necessary, by analyzing the
 program, a bound and a round-off error bound on each variable in every program
-location.  These information are then used to guide program optimization, by
+location.  This information is then used to guide program optimization, by
 analyzing and manipulating not only the syntax, but also the semantics of
 programs.
 
