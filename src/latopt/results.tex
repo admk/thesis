@@ -354,3 +354,11 @@ Rewriting the above code into the following:
 fixes this problem, and enables \gls{vhls} to generate a hardware
 implementation with the expected \gls{ii}. The ratios in parentheses in
 Table~\ref{lo:tab:results} reflect the speedup by performing this simple fix.
+
+After this modification, we discovered that for all of the benchmark examples,
+\gls{vhls} generated circuits with the same \gls{ii} values predicted by \soap,
+despite in practice, the \gls{mii} may be unachievable for certain applications
+that are resource-constrained.  Because floating-point operations are often
+associated with long latencies, the \gls{mii} of floating-point numerical
+programs could require multiple cycles, reducing the constrain imposed by
+resources on the actual \gls{ii}.

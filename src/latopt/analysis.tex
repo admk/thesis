@@ -132,16 +132,17 @@ Finally, we estimate the total latency $L$ of the loop with:
         \MII = \max\left(\RecMII, \ResMII\right).
     \nonumber
 \end{equation}
-Recalling from Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background}, $N$ is
-the maximum \emph{trip count}, \ie~the loop's total number of iterations, and
-$D$ is the loop's depth, \ie~the total number of cycles per iteration.
+Recalling from Section~\ref{bg:sub:sdc} in Chapter~\ref{chp:background}, $N$
+is the maximum \emph{trip count}, \ie~the loop's total number of iterations,
+and $D$ is the loop's depth, \ie~the total number of cycles per iteration.
 
 Because we optimize \glspl{mir} in a bottom-up hierarchy, when an expression
 is optimized that does not constitute an inter-iteration dependence is
 optimized, its latency is estimated by scheduling its operations by using
 an \gls{alap}~\cite{wang_hls} scheduling algorithm, where each operation
 is scheduled to the latest opportunity, while respecting the order of data
-dependences.
+dependences.  This fast scheduling algorithm is also used to estimate the depth
+$D$ of a pipelined loop.
 
 Because the expression is eventually used in a loop, and the \gls{ii} of
 the loop is critical to how fast the loop can execute, it is necessary
@@ -150,7 +151,7 @@ latency analysis of a \gls{mir} or an expression that is a fragment of a
 inter-iteration dependence cycle, our algorithm automatically shortens any
 paths between any pairs of dependent accesses in the \gls{mir}\@, as we use the
 latency analysis as a component to manoeuvre our optimization on the Pareto
-frontier.  Moreover, we place greater weights on dependent accesses with
+frontier.  Moreover, we place greater weight on dependent accesses with
 smaller dependence distances, because these impact the resulting loop \gls{ii}
 more significantly than larger distances.  For instance, consider a loop body
 that has two dependent accesses across iterations, \ie~the graph contains two
@@ -240,10 +241,11 @@ respectively.
 We extend the accuracy analysis of Chapter~\ref{chp:progopt} to support arrays.
 Because our benchmark suite consists of programs with large arrays, we keep
 the analysis efficient by treating an \emph{entire} array as a pair of a
-floating-point interval and an interval of accumulated round-off errors.  These
-intervals accumulate all values that are assigned to the array, and never
-shrink the range bounded by these intervals when we assign new values to an
-array location.  We therefore define the read and write accesses to an array as
+floating-point interval and an interval of accumulated round-off errors.
+These intervals, representing the worst case bounds of all elements in the
+array, accumulate all values that are assigned to the array, and never shrink
+the range bounded by these intervals when we assign new values to an array
+location.  We therefore define the read and write accesses to an array as
 follows in the accuracy analysis:
 \begin{equation}
     \begin{aligned}
@@ -279,8 +281,8 @@ indices bounded by $\exprerrorfunc{\bar\imath}\sigma^\sharp$ that are tuples
 with $N$ non-negative integers.
 
 Additionally, because most of the loops in our benchmark programs consist
-of nested loops and have large iterations, the fixpoint analysis routine
-in Section~\ref{po:sub:fixpoint} is modified to analyze only a small
+of nested loops and have large iteration counts, the fixpoint analysis
+routine in Section~\ref{po:sub:fixpoint} is modified to analyze only a small
 fraction of the innermost loop execution of a loop nest.  By ensuring the
 innermost loop iterator increments by the same amount, we can guarantee the
 accuracy analysis to be fair for each equivalent implementation for fixpoint

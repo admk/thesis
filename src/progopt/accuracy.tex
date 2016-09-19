@@ -211,7 +211,7 @@ For instance, the above analysis cannot capture the fact that all evaluated
 result $v$ satisfies either $-1.1 \leq v < -0.1$ or $0 \leq v \leq 10$.  The
 majority of such information losses occur because \gls{ia} computes loose
 bounds on the analyzed floating-point results.  In contrast, joining two error
-bounds generally produce a precise bound, because error bounds are often
+bounds generally produces a precise bound, because error bounds are often
 much less correlated, and they often overlap as there is a high chance that
 there exists an arithmetic computation which produces an exact floating-point
 outcome.  In Section~\ref{po:sec:results}, empirical results show that despite
@@ -256,7 +256,7 @@ Figure~\ref{po:lst:syntax_example}.  If our input is $n = 10$, then the
 by $[0, 9]$ on loop entry, whereas on loop exit, $x$ is always equal to $10$.
 The reason for inferring the \gls{li} is as follows.  Since we optimize the
 fixpoint expression's child nodes in a bottom-up hierarchy, the optimization of
-$\mu_s$ precedes \fixexprmir~itself.  Hence we use the \gls{li} as the input
+$\mu_s$ precedes \fixexprmir~itself.  Hence, we use the \gls{li} as the input
 state to optimize $\mu_s$, as the \gls{li} encompasses all possible program
 states the loop body $\mu_s$ will encounter when executed.
 
@@ -264,7 +264,7 @@ Our accuracy analysis of \fixexprmir~follows the above pattern.  Initially,
 we start with an input state $\sigma^\sharp_0$.  In the first iteration
 $k = 0$, $\sigma^\sharp_k = \sigma^\sharp_0$ is split into two disjoint
 parts, namely, $\sigma^\sharp_0|_b$ and $\sigma^\sharp_0|_{\neg b}$, they
-respectively satisfies and violates the Boolean constraint $b$.  The state
+respectively satisfy and violate the Boolean constraint $b$.  The state
 $\sigma^\sharp_0|_b$ represents all possible program states that enters the
 loop $\mu_s$, so $\sigma^\sharp_1 = \mirerrorfunc{\mu_s}{\sigma^\sharp_0|_b}$
 captures all possible program states after the loop body.  This procedure
@@ -350,8 +350,10 @@ to signify the result $\loopinvar$.
 
 Our method extends the iterative method we have previously explained in
 Section~\ref{bg:sec:abstract_interpretation} of Chapter~\ref{chp:background},
-by not only evaluating the \gls{li}, but also the loop exit state.
-Because this iterative process may not terminate, we introduce a constant
-$\mathrm{max\_iter}$ to limit the number of iterations.  Widening
+by not only evaluating the \gls{li}, but also the loop exit state.  Because
+this iterative process may not terminate for non-terminating loops, we
+introduce a parameter $\mathrm{max\_iter}$ to limit the number of iterations;
+if this limit is reached, the tool will produce a warning to indicate that
+the analysis may never terminate and thus it may be inaccurate.  Widening
 operators~\cite{cousot04} are additionally used to accelerate the fixpoint
 computation.

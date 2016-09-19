@@ -58,7 +58,7 @@ using the following formulation of the labeling semantics:
 \end{equation}
 Specifically, $\lambda=\lambda_x\odot\lambda_y$ signifies that $\lambda_y$
 is used to update the mapping in $\lambda_x$, if the mapping does not
-exist in $\lambda_x$, and result in a new environment $\lambda$; and
+exist in $\lambda_x$, and results in a new environment $\lambda$; and
 $\lambda[l\mapsto{x}]$ is a shorthand for $\lambda\odot[l\mapsto{x}]$.  As an
 example, using~\eqref{so:eq:variable_env}, recall to mind that $l_1 = l_\vara$,
 $l_2 = l_\varb$, we derive for the subexpression $\vara + \varb$:
@@ -101,10 +101,12 @@ Finally, for the full expression $(\vara + \varb) \times (\vara + \varb)$:
 From the above derivation, it is clear that the semantics capture the reuse
 of subexpressions. The estimation of area is performed by counting, for an
 expression, the numbers of additions, subtractions and multiplications in the
-final labeling environment, then calculating the number of \glspl{lut} used to
-synthesize the expression. If the number of operators is $n_\opsymbol$ where
-$\opsymbol \in \aopset$, and $\aopset$ denotes the set of arithmetic operators,
-then the number of \glspl{lut} in total for the expressions is estimated as:
+final labeling environment, then calculating an approximation to the number
+of \glspl{lut} used to synthesize the expression by adding the \glspl{lut}
+requirement for each operator. If the number of operators is $n_\opsymbol$
+where $\opsymbol \in \aopset$, and $\aopset$ denotes the set of arithmetic
+operators, then the number of \glspl{lut} in total for the expressions is
+estimated as:
 \begin{equation}
     r_\mathrm{LUT} = \sum_{\mathclap{\opsymbol\in\aopset}}
         R^\mathrm{LUT}_\opsymbol n_\opsymbol,
@@ -114,9 +116,11 @@ per $\opsymbol$ operator, which is dependent on the type of the operator and
 the floating-point format used to generate the operator.
 
 Despite the simplicity of the resource estimation model, it is observed that
-this model can accurately predict the LUT count of the synthesized circuits,
-as the resource reduction from cross-module optimizations are negligible for
-floating-point data-paths.
+this model can accurately predict the \gls{lut} count of the synthesized
+circuits, as the resource reduction from cross-module optimizations are
+negligible for floating-point data-paths.  In later chapters, we will further
+demonstrate how our approach can be extended to provide estimate \gls{dsp}
+block counts additionally.
 
 In the following sections, we use the function $\area: \aexprset\to\naturalset$
 to denote our resource usage analysis.

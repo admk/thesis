@@ -113,12 +113,22 @@ Fixes the offset values in the definition of the IEEE 754 format in both (3.1)
 and (3.2).  Also adds the definition of gradual and abrupt underflows, and how
 ``ulp`` can be computed in each case.
 
+Clarifies what ``two adjacent floating-point values`` mean.
+
+
+Page 88
+=======
+
+A reminder for the up-arrow and down-arrow functions.
+
 
 Page 91
 =======
 
 Explains why our simple resource estimation is accurate.  (Because
 floating-point data-paths do not exhibit much cross-module optimization.)
+
+Mentions that the analysis will be extended to DSP counts in later chapters.
 
 
 Page 96
@@ -127,12 +137,35 @@ Page 96
 Explains how the number of equivalent expressions that can be discovered scales
 with $k$, which is not very scalable.
 
+Explains the algorithm we have so far does not have any direction in terms of
+optimization.  Mentions that in the following section the Pareto frontier
+provides the direction.
 
 Page 98
 =======
 
-Mentions the meaning of the function $\mathsf{fr}$.  (The Pareto frontier
-algorithm.)
+Defines the function $\mathsf{fr}$.  (The Pareto frontier algorithm.)
+
+
+Page 99
+=======
+
+Explains that the set of optimized expressions equivalent to the original can
+be found by solving the set of equations in (3.29) for $A(10)$.
+
+
+Page 100
+========
+
+Explains that the latter method is pruning the set of discovered candidates
+more frequently than the former.
+
+
+Page 102
+========
+
+Explains that (3.35) computes the worst-case bound on errors encountered in the
+evaluation of all individual expressions in the system of multiple expressions.
 
 
 Page 105
@@ -164,6 +197,13 @@ Mentions that $\mu_1$ is always evaluated before $\mu_2$ in $\mu_2 \star
 \mu_1$.
 
 
+Page 130
+========
+
+Explains ``max_iter`` is for cases when the analysis may never terminate
+because of non-terminating loops.
+
+
 Page 137
 ========
 
@@ -190,11 +230,30 @@ Adds shortcomings of this chapter addressed in the next chapter:
     - Significant increase in the resource requirements of optimized circuits
 
 
+Page 154
+========
+
+Clarifies that $N$ is the number of repetitions.
+
+
 Page 155
 ========
 
 Clarifies that the lack of referential transparency indicates side-effects may
 present.
+
+
+Page 164
+========
+
+Mentions the loop's depth $D$ is computed using a fast ALAP algorithm.
+
+
+Page 172
+========
+
+Mentions that the IIs of synthesized circuits is the same as our estimations
+and the reasons for this (multi-cycle II -> less resource-constrained).
 
 
 Page 182

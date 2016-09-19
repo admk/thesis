@@ -142,10 +142,10 @@ applications.
 \textbf{\gls{llvmir}-Level Program Optimization.}  We could envision
 a back-and-forth translator from \gls{llvmir}~\cite{llvm, llvm_ir} to
 \gls{mir} graphs.  This could enable a much wider applicability of the
-technique presented in the thesis to both \gls{llvm}-based \gls{hls} tools
+techniques presented in the thesis to both \gls{llvm}-based \gls{hls} tools
 and software compilers.  Additionally, it could benefit from existing
 \gls{llvm} optimizations passes by using the optimized \gls{llvmir} code
-as inputs.  There are however obstacles in migrating to \gls{llvmir} as
+as inputs.  There are, however, obstacles in migrating to \gls{llvmir} as
 the source language.  Firstly, \gls{llvmir} is \gls{ssa}-based.  Since it
 uses temporary variables for intermediate results in computation, a full
 liveness analysis~\cite{hathhorn12, nielson99, boissinot08} may be necessary
@@ -190,7 +190,7 @@ program can more efficiently trade-off resources, accuracy and latency.
 \textbf{Multiple word-lengths.}  In this thesis, experiments have been carried
 out on floating-point operations with a fixed mantissa width only.  It would be
 beneficial to further integrate fixed-point support.  Additionally, by further
-supporting multiple precisions in the data-path, \ie~allowing each operators
+supporting multiple precisions in the data-path, \ie~allowing each operator
 to compute with different precisions, the trade-off relationship among our
 three primary performance measures can be even more effective.  Techniques,
 known as multiple word-length optimization~\cite{constantinides, lee06,
@@ -209,7 +209,7 @@ latency.
 
 \textbf{Numerical analysis and linear algebra.}  There are two distinct
 approaches to the analysis of round-off errors.  One focuses on the round-off
-errors by statically analyzing numerical programs, and apply this in a way
+errors by statically analyzing numerical programs, and applies this in a way
 which is as general as possible, similar to the method presented in this
 thesis.  On the other hand, there are techniques employed by numerical analysts
 to evaluate and improve the numerical accuracy and stability of particular
@@ -250,7 +250,7 @@ unexplored by the tool.
 \end{figure}
 
 \textbf{Continuity analysis and optimization.} The robustness of programs
-are very important to us.  In many cases, we wish our algorithms to be
+is very important to us.  In many cases, we wish our algorithms to be
 free from discontinuity, \ie~a small change in the initial condition
 would not result in an undesirably large jump in the outputs.  For this,
 Chaudhuri~\etal~\cite{chaudhuri11} and Goubault~\etal~\cite{goubault13}

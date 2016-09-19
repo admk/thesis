@@ -162,10 +162,10 @@ Finally, we preserve those \glspl{mir} merged on the Pareto frontier.
 % Transformations that are not Pareto-optimal are immediately pruned from the
 % search space, thus reducing the average complexity of the algorithm.
 
-Previously in \soap, as we optimize parts of \glspl{mir}, the Pareto frontier
-is used to filter discovered equivalent candidates (\glspl{mir} or semantic
-expressions), which keeps the size of the set relatively small and manageable.
-As we optimize larger programs, the run time of the algorithm increases
+Previously in \soap, as we optimize parts of \glspl{mir}, the Pareto
+frontier is used to filter discovered equivalent candidates (\glspl{mir} or
+semantic expressions), which keeps the size of the set relatively small and
+manageable.  As we optimize larger programs, the run time of the tool increases
 significantly.  Currently, the \soap{} framework prunes the \glspl{mir} that
 are Pareto-suboptimal, leaving only those that are on the Pareto frontier.
 However, because our Pareto frontier is three-dimensional, there is a large
@@ -435,9 +435,8 @@ By partially unrolling the loop with a factor 2, we obtain the program in
 Figure~\ref{lo:fig:fib2}.  We can see that because of the rigid array access
 pattern, associativity cannot be applied easily to the loop kernel.  However,
 by applying the above access reduction rules first, we give associativity the
-freedom to reduces latency by half and improves accuracy by 50\%, as shown in
+freedom to reduce latency by half and improve accuracy by 50\%, as shown in
 Figure~\ref{lo:lst:fib_opt}.
-
 \begin{figure}[ht]
     \centering
     \begin{lstlisting}

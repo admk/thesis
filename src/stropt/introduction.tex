@@ -16,7 +16,7 @@ in terms of the following two quality metrics relevant to \gls{fpga}
 implementation: the resource usage when synthesized into circuits, and a bound
 on roundoff errors when evaluated. Our goal is the joint minimization of these
 two quality metrics.  This optimization process provides a Pareto optimal set
-of implementations.  For example, the tool discover that with single-precision
+of implementations.  For example, the tool discovers that with single-precision
 floating-point representation, if $\vara \in [0.1, 0.2]$, then the expression
 ${(\vara + 1)}^2$ uses fewest resources when implemented in the form $(\vara +
 1) \times (\vara + 1)$ but is most accurate when expanded into $(((\vara \times
@@ -28,7 +28,7 @@ optimize the structure of expressions.
 
 A na{\"\i}ve implementation of equivalent expression finding
 would be to explore all possible equivalent expressions to find
-optimal choices.  However this would result in combinatorial
+optimal choices.  However, this would result in combinatorial
 explosion~\cite{ioualalen}.  Since none of the techniques explained
 in Section~\ref{bg:sec:discovering_equivalent_programs} of
 Chapter~\ref{chp:background} capture the optimization of both accuracy and

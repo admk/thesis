@@ -27,7 +27,7 @@ new \soap~in this chapter \emph{automatically} produces results that are
 significantly better than \emph{manually} tuning partial unrolling factors
 and expression balancing \verb|#pragma|s in \gls{vhls}, because it is fully
 aware of how data-dependences are carried across iterations, and uses this
-to steer the optimization process. \soap~is also fully aware of the impact
+to steer the optimization process. \soap~is also concious of the impact
 these transformations could have on round-off errors, and minimizes them in
 the optimization process, as we treat numerical accuracy as one of the three
 simultaneous objectives.  Furthermore, \gls{vhls} only generates one result
@@ -66,12 +66,13 @@ The contributions of this chapter include:
 \begin{itemize}
 
     \item An extended suite of program equivalence rules, which introduces
-    access reduction rules that removes extraneous array accesses.  This
-    chapter provides evidence that standard program equivalence that do not
-    affect program behavior, \eg~partial loop unrolling and access reduction
-    rules, can give rise to the freedom for non-standard transformation rules,
-    \eg~arithmetic rules, to significantly impact latency, resource usage and
-    accuracy in a loop (Section~\ref{lo:sub:transformation_rules}).
+    access reduction rules that removes extraneous array accesses.
+    This chapter provides evidence that standard program equivalence
+    techniques that do not affect program behavior, \eg~partial loop
+    unrolling and access reduction rules, can give rise to the freedom
+    for non-standard transformation rules, \eg~arithmetic rules, to
+    significantly impact latency, resource usage and accuracy in a loop
+    (Section~\ref{lo:sub:transformation_rules}).
 
     \item A new scheduling analysis that estimates the
     latency and resource usage of a given optimized candidate

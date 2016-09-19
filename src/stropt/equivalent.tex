@@ -3,15 +3,15 @@
 
 In Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background}, we introduce
 semantics that define additions and multiplications on intervals, then
-gradually transition to error semantics that compute bounds of values and
-errors.  In Section~\ref{so:sec:resource}, an alternative semantics that
-eliminate common subexpressions are introduced, which we call the labelling
-environments.  The environments define the meaning of arithmetic operations
-on the environments.  In this section, we now take the leap from not only
-analyzing an expression for its quality, to defining arithmetic operations
-on \emph{sets} of equivalent expressions, and use these rules to discover
-equivalent expressions.  Before this, it is necessary to formally define
-equivalent expressions and the functions used to discover them.
+transition to error semantics that compute bounds of values and errors.  In
+Section~\ref{so:sec:resource}, an alternative semantics that eliminate common
+subexpressions are introduced, which we call the labelling environments.  The
+environments define the meaning of arithmetic operations on the environments.
+In this section, we now take the leap from not only analyzing an expression for
+its quality, to defining arithmetic operations on \emph{sets} of equivalent
+expressions, and use these rules to discover equivalent expressions.  Before
+this, it is necessary to formally define equivalent expressions and the
+functions used to discover them.
 
 
 \subsection{Discovering Equivalent Expressions}
@@ -235,12 +235,13 @@ surrounding the input of $\closure_N$ for simplicity, \eg~$\closure_N (f)$ can
 be written as $\closure_N f$.
 
 As an example use of the functional $\closure_N$, we may note that we can
-substitute $f$ with $\eqstep$ in $\closure_N f (\epsilon)$ to generate a set
-of equivalent expressions, by taking the union of $N$ steps of $\eqstep$ of
-$\epsilon$.  By further allowing $N$ to approach $\infty$, we obtain the full
-set of equivalent expressions of $\epsilon$ that can be discovered using our
-inference system, \ie~the transitive closure of equivalent expressions related
-by $f$, from an initial set of equivalent expressions $\epsilon$:
+substitute $f$ with $\eqstep$ in $\closure_N f (\epsilon)$ to generate a
+set of equivalent expressions, by taking the union of $N$ steps of repeated
+application of $\eqstep$ to $\epsilon$.  By further allowing $N$ to approach
+$\infty$, we obtain the full set of equivalent expressions of $\epsilon$ that
+can be discovered using our inference system, \ie~the transitive closure of
+equivalent expressions related by $f$, from an initial set of equivalent
+expressions $\epsilon$:
 \begin{equation}
     \closure_\infty \eqstep (\epsilon) =
         \bigcup_{i = 0}^\infty \eqstep^i(\epsilon).
@@ -263,7 +264,8 @@ equivalent expressions.
 Firstly, instead of exploring the full transitive closure, that is, by allowing
 the number of steps $N$ in~\eqref{so:eq:transitive_generator} to be infinite,
 we may restrict $N$ to be a small finite value to allow a smaller set of
-equivalent expressions to be computed.
+equivalent expressions to be computed.  In later experiments, we have chosen $N
+= 10$.
 
 Secondly, the complexity of equivalent expression finding is reduced by
 fixing the structure of subexpressions at a certain depth $k$ in the original
@@ -288,7 +290,8 @@ earlier in~\eqref{so:eq:transitive_closure} is at least $\bigo((2n - 3)\,!!)$
 where $n$ is the number of terms in an expression, as we discussed earlier.  As
 the maximum number of terms in a binary tree with a depth $k$ grows at a rate
 $\bigo(2^k)$, the number of equivalent expressions that can be discovered is at
-least $\bigo((2\times 2^k - 3)\,!!)$ with respect to $k$.
+least $\bigo((2\times 2^k - 3)\,!!)$ with respect to $k$.  In the production of
+experimental results, $k$ is chosen to be either $2$ or $3$.
 
 Finally, we use an iterative algorithm to accelerate the computation of
 $\closure_N f (\epsilon)$, where $f$ is a \emph{$\cup$-distributive} \gls{eeg}
@@ -328,6 +331,13 @@ in greater depth in Appendix~\ref{app:sound_acceleration}.
         $f$ from an initial set of equivalent expressions $\epsilon$.
     }\label{so:alg:closure}
 \end{figure}
+
+The algorithms we have described so far do not incorporate analyses detailed
+in Sections~\ref{so:sec:accuracy} and~\ref{so:sec:resource}, hence, they do
+not guide the optimization process with objectives to minimize.  The following
+section explains how the analyses can be used to steer the algorithms to
+optimize the trade-off between accuracy and area in synthesized circuits of
+transformed expressions.
 
 
 \subsection{Pareto Frontier}
@@ -408,7 +418,7 @@ The equation implies that in the propagation procedure, it recursively
 constructs a set of equivalent subexpressions for the parent node from two
 child expressions, and uses the depth-limited equivalence function $\closure
 \eqstep_k$ to work out a larger set of equivalent expressions.  Similarly, we
-can define another equation that propagate equivalent subexpressions in an
+can define another equation that propagates equivalent subexpressions in an
 expression with a unary subtraction:
 \begin{equation}
     \begin{aligned}
@@ -514,15 +524,18 @@ now produces equivalent expressions:
     \end{aligned}
     \label{so:eq:tree_expr_flow}
 \end{equation}
-Because of loops in the \gls{dfg}, it is no longer trivial to find the
-solution.  In general, the analysis equations are solved iteratively, using
-the \gls{dfa} approach discussed in Section~\ref{bg:sub:data_flow} of
-Chapter~\ref{chp:background}. We can regard the set of equations as a single
-transfer function $F$ as in \eqref{so:eq:transfer_function}, where the function
-$F$ takes as input the variables $A(1), \ldots, A(10)$ appearing in the
-right-hand sides of \eqref{so:eq:tree_expr_flow} and outputs the values $A(1),
-\ldots, A(10)$ appearing in the left-hand sides. Our aim is then to find an
-input $\vec{x}$ to $F$ such that $F(\vec{x}) = \vec{x}$, \ie~a fixpoint of $F$.
+By solving this system of equations for the value $\enter{10}$, we find
+a set of expressions that are equivalent to the original that produce an
+optimized trade-off between area and accuracy.  Because of loops in the
+\gls{dfg}, it is no longer trivial to find the solution.  In general, the
+analysis equations are solved iteratively, using the \gls{dfa} approach
+discussed in Section~\ref{bg:sub:data_flow} of Chapter~\ref{chp:background}.
+We can regard the set of equations as a single transfer function $F$ as
+in~\eqref{so:eq:transfer_function}, where the function $F$ takes as input
+the variables $A(1), \ldots, A(10)$ appearing in the right-hand sides
+of~\eqref{so:eq:tree_expr_flow} and outputs the values $A(1), \ldots, A(10)$
+appearing in the left-hand sides.  Our aim is then to find an input $\vec{x}$
+to $F$ such that $F(\vec{x}) = \vec{x}$, \ie~a fixpoint of $F$.
 \begin{equation}
       F((\enter{1}, \ldots, \enter{10}))
     = (\enter{1} \cup \{a\}, \ldots, \frontier(\enter{9})).
@@ -537,7 +550,7 @@ compute the least fixpoint of $F$:
 This expression can be computed iteratively by first evaluating
 $F(\vec\varnothing)$, $F^2(\vec\varnothing) = F(F(\vec\varnothing))$,
 and so forth, until the fixpoint is reached for some iteration $n$,
-\ie~$F(F^n(\vec\varnothing)) = F^{n + 1}(\vec\varnothing)$. Hence we know that
+\ie~$F(F^n(\vec\varnothing)) = F^{n + 1}(\vec\varnothing)$. Hence, we know that
 for any iterations $m > n + 1$, $F^m(\vec\varnothing) = F^n(\vec\varnothing)$.
 The value $n$ should be a finite constant, because the relation $\eqgenrel$
 can only reach a finite number of expressions.  In cases when $\lfp F$ is
@@ -552,12 +565,15 @@ subexpressions that are locally Pareto optimal to the parent expressions in a
 bottom-up hierarchy.
 
 The problem with the semantics above is that the time complexity of $\closure
-\eqstep_k$ scales poorly, since the worst case number of subexpressions needed
-to explore increases exponentially with $k$. Therefore an alternative method
-is to optimize it by changing the structure of the \gls{dfg} slightly, as
-shown in Figure~\ref{so:fig:tree_expr_flow_greedy}.  The difference is that
-at each iteration, the Pareto frontier filters the results to decrease the
-number of expressions to process for the next iteration.  Equivalently, this
+\eqstep_k$ scales poorly, since the worst case number of subexpressions
+needed to explore increases exponentially with $k$. Therefore an alternative
+method is to optimize it by changing the structure of the \gls{dfg} slightly,
+as shown in Figure~\ref{so:fig:tree_expr_flow_greedy}.  The difference is
+that at each iteration, the Pareto frontier filters the results to decrease
+the number of expressions to process for the next iteration, whereas the
+former approach filters the Pareto-suboptimal candidates only at the end of
+the iterative procedure.  The latter method is therefore pruning the set of
+discovered candidates more frequently than the former.  Equivalently, this
 approach yields the following semantics for arithmetic operations on equivalent
 expressions as an alternative to~\eqref{so:eq:equivalence_semantics}:
 \begin{equation}
@@ -628,7 +644,7 @@ Section~\ref{so:sec:resource}.
 
 The barrier operator has no rules of equivalence to discourage any transforms
 across the expression boundaries.  For a single expression, the quality of
-accuracy is determined by its round-off error.  However when evaluating
+accuracy is determined by its round-off error.  However, when evaluating
 multiple expressions there are choices to make in terms of determining the
 overall accuracy of the system of multiple expressions.  The reasons are
 two-fold~\cite{martel09}.  Firstly, perhaps only a user-defined subset of the
@@ -644,7 +660,9 @@ expressions joined by the barrier operator:
     \defeq (x^\sharp_1, \mu^\sharp_1) \join (x^\sharp_2, \mu^\sharp_2),
 \end{equation}
 where the $\join$ operator on the abstract semantics is introduced in
-Section~\ref{bg:ssub:accuracy}.
+Section~\ref{bg:ssub:accuracy}.  This approach computes the worst-case bound
+on errors encountered in the evaluation of all individual expressions in the
+system of multiple expressions.
 
 With the extended accuracy analysis in place, the automatic multi-objective
 optimization techniques for single expression can be adapted to multiple

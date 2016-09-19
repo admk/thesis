@@ -5,7 +5,7 @@ The accuracy analysis used by \soap{} follows the method based on abstract
 error domain introduced by Martel~\cite{martel07} to analyze the round-off
 error of restructured floating-point expressions.  As it was mentioned in
 Section~\ref{bg:ssub:accuracy}, they did not have a preference for the choice
-of definition of $\ulp$.  Hence here we propose to use a definition of $\ulp$
+of definition of $\ulp$.  Hence, here we propose to use a definition of $\ulp$
 derived from the standard IEEE 754 floating-point representation.
 
 To begin, the concepts of the floating-point representation~\cite{ieee754}
@@ -34,11 +34,14 @@ This alternative behaviour is known as gradual underflow, whereas the original
 is abrupt underflow.
 
 In \soap{}, the distance between two adjacent floating-point values $f_1$ and
-$f_2$ satisfying $f_1 \leq x \leq f_2$~\cite{goldberg} is characterized using
-the following definition, where GU and AU respectively indicate gradual and
+$f_2$ satisfying $f_1 \leq x \leq f_2$ for a value $x$~\cite{goldberg} is known
+as the \emph{unit of the last place} function $\ulp(x)$.  To characterize
+this function, we further restrict that $f_1$ and $f_2$ must not equal and
+no other floating-point values exists between them.  We can now provide the
+definition for $\ulp(x)$, where GU and AU respectively indicate gradual and
 abrupt underflow modes:
 \begin{definition}
-    In our analysis, the function $\ulp$ is defined as:
+    In our analysis, the function $\ulp(x)$ is defined as:
     \begin{equation}
         \ulp(x) = \left\{
             \begin{aligned}
@@ -100,6 +103,11 @@ domain can be derived as follows:
             } + \rounddown{\frac{x^\sharp_1}{x^\sharp_2}}
         \right).
 \end{equation}
+Recall from Section~\ref{bg:ssub:accuracy} of Chapter~\ref{chp:background},
+$\roundup{\frac{x^\sharp_1}{x^\sharp_2}}$ computes the range of floating-point
+values by rounding values in $\frac{x^\sharp_1}{x^\sharp_2}$, and
+$\rounddown{\frac{x^\sharp_1}{x^\sharp_2}}$ returns the range of errors
+introduced in the rounding process.
 
 We use the function $\error: \aexprset\to\errorset$ to represent the
 analysis of round-off error in an expression tree, as described in
