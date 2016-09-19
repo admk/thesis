@@ -63,7 +63,7 @@ The explanation for $s \circ t$ has been rewritten.
 Page 59
 =======
 
-Ambiguity mentioned during viva about the following.
+Clarifies ambiguity mentioned during viva about the following.
 
 ::
     This is because intervals can only imply inequalities of the latter form,
@@ -259,4 +259,7 @@ and the reasons for this (multi-cycle II -> less resource-constrained).
 Page 182
 ========
 
-Explains the shortcoming in scalability in ``other practical considerations``.
+Explains the shortcoming in scalability in ``other practical considerations``:
+  * Can only optimize short programs;
+  * Requiring user to manually partition the program and select optimized
+  candidates.
