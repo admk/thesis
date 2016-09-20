@@ -261,5 +261,15 @@ Page 182
 
 Explains the shortcoming in scalability in ``other practical considerations``:
   * Can only optimize short programs;
-  * Requiring user to manually partition the program and select optimized
-  candidates.
+  * Requires parameters to be fine-tuned, and this process is difficult because
+    of the lack of scalability of the parameters;
+  * Requires user to manually partition the program and select optimized
+    candidates.
+
+Extends future work with integer programs, currently the tool with integer
+programs, but with limitations:
+  * Accuracy analysis is no longer useful, because there are no round-off
+    errors;
+  * Latency estimation is difficult because of operator chaining;
+  * Resource estimation is difficult because a single array of LUTs can be
+    used to implement multiple arithmetic/logic operations.

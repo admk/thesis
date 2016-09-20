@@ -272,9 +272,24 @@ as another objective.
 diminishing performance return when loops are deeply unrolled, because of a
 memory bottleneck.  As memory accesses saturate in loop execution, \ie~all
 memory ports are working in 100\% utilization, it is impossible to gain further
-performance improvements.  Currently the tool stops exploring further loop
+performance improvements.  Currently, the tool stops exploring further loop
 unrolling when this happens.  By automatically partitioning arrays upon hitting
 such a memory bottleneck, further throughput improvements can be achieved.
+
+\textbf{Integer programs.} \soap{} can optimize programs written with integer
+operations, but with notable limitations.  Firstly, accuracy analysis does not
+provide useful information, because integer operations do not have round-off
+errors.  Secondly, the scheduling analysis in Chapter~\ref{chp:latopt} can no
+longer accurately predict the run time performance of the resulting circuit,
+because \gls{hls} tools employ \emph{operator chaining} to schedule multiple
+fast dependent operations within one clock cycle, whereas currently our
+analysis cannot estimate the impact of this technique.  Finally, resource
+estimation could be much less accurate, because optimizations performed by
+\gls{rtl} allow a single array of \glspl{lut} to be used to implement multiple
+arithmetic/logic operations.  It is notable that because floating-point
+operations require multiple cycles to complete and their circuits are compactly
+designed, the latter two limitations apply specifically to integer programs,
+and have negligible impact on floating-point programs.
 
 \textbf{Other practical considerations.}  Finally, we may consider limiting
 perspectives if overcome could make the resulting tool much more usable.
